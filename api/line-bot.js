@@ -32,7 +32,8 @@ function parseDirectQuery(text) {
 
   // 4. 抓取「躁」的防呆邏輯
   let zao = '否'; // 預設為否 (完全沒提到也當作否)
-  const notZaoRegex = /(不|非|無|沒)躁/; // 包含這些字眼代表沒有躁
+  // 升級版防呆：包含「不/非/無/沒/沒有/不會」，且與「躁」之間最多可以隔 3 個字 (例如: 不覺得躁、沒有很躁)
+  const notZaoRegex = /(不|非|無|沒|沒有|不會).{0,3}躁/; 
   
   if (notZaoRegex.test(text)) {
     zao = '否';
