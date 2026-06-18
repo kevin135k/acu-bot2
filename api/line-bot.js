@@ -1,6 +1,5 @@
 // 1. 治療原則與穴位資料庫 (以男性為基準預設值)
 const treatmentDB = {
-  // ... (與原本相同，這裡省略以節省篇幅，請保留你原本的 treatmentDB) ...
   "補肝瀉膽": { bu: "右腳曲泉(遠心、淺刺15度、陽數、順轉)", xie: "左腳足臨泣/陽輔(向心、深刺45度、陰數、逆轉)" },
   "補腎瀉膀胱": { bu: "右腳復溜(遠心、淺刺15度、陽數、順轉)", xie: "左腳通谷/束骨(向心、深刺45度、陰數、逆轉)" },
   "補脾瀉胃": { bu: "右腳大都(遠心、淺刺15度、陽數、順轉)", xie: "左腳足三里/厲兌(向心、深刺45度、陰數、逆轉)" },
@@ -15,9 +14,68 @@ const treatmentDB = {
   "補大腸瀉肺": { bu: "左手商陽/曲池(向心、淺刺15度、吐氣進針、陽數、順轉)", xie: "右手尺澤(遠心、深刺45度、吐氣進針、陰數、逆轉)" }
 };
 
-// 2. 動態產生問題選單的函式 (Quick Reply 版)
+// 2. 智能文字解析 (Direct Query)
+function parseDirectQuery(text) {
+  // 1. 抓取性別 (預設男)
+  const gender = text.includes('女') ? '女' : '男';
+
+  // 2. 抓取脈位
+  let pulse = null;
+  if (text.includes('人迎')) pulse = '人迎';
+  else if (text.includes('脈口')) pulse = '脈口';
+
+  // 3. 抓取盛衰程度
+  let level = null;
+  if (text.includes('一盛')) level = '一';
+  else if (text.includes('二盛')) level = '二';
+  else if (text.includes('三盛')) level = '三';
+
+  // 4. 抓取「躁」的防呆邏輯
+  let zao = '否'; // 預設為否 (完全沒提到也當作否)
+  const notZaoRegex = /(不|非|無|沒)躁/; // 包含這些字眼代表沒有躁
+  
+  if (notZaoRegex.test(text)) {
+    zao = '否';
+  } else if (text.includes('躁')) {
+    // 只有在「沒有否定詞」且「有躁字」的情況下，才判定為是
+    zao = '是';
+  }
+
+  // 核心判斷：只要這段文字同時包含「脈位」和「盛衰程度」，我們就啟動直覺回答！
+  if (pulse && level) {
+    let principle = "";
+    if (pulse === '人迎') {
+      if (zao === '否') {
+        if (level === '一') principle = "補肝瀉膽";
+        if (level === '二') principle = "補腎瀉膀胱";
+        if (level === '三') principle = "補脾瀉胃";
+      } else { // 是躁
+        if (level === '一') principle = "補心包瀉三焦";
+        if (level === '二') principle = "補心瀉小腸";
+        if (level === '三') principle = "補肺瀉大腸";
+      }
+    } else if (pulse === '脈口') {
+      if (zao === '否') {
+        if (level === '一') principle = "補膽瀉肝";
+        if (level === '二') principle = "補膀胱瀉腎";
+        if (level === '三') principle = "補胃瀉脾";
+      } else { // 是躁
+        if (level === '一') principle = "補三焦瀉心包";
+        if (level === '二') principle = "補小腸瀉心";
+        if (level === '三') principle = "補大腸瀉肺";
+      }
+    }
+    
+    // 將結果組合為之前寫好的答案字串格式，交給 calculateTreatmentResult 處理
+    return `${gender},${pulse},${zao},${principle}`;
+  }
+  
+  // 資訊不足，無法直接給答案
+  return null;
+}
+
+// 3. 動態產生問題選單的函式 (Quick Reply 泡泡按鈕版)
 function getQuickReplyTemplate(step, previousAnswers = "") {
-  // ... (與原本的 getQuickReplyTemplate 相同，請保留你原本的邏輯) ...
   let text = "";
   let options = [];
   const ansArr = previousAnswers ? previousAnswers.split(',') : [];
@@ -59,16 +117,11 @@ function getQuickReplyTemplate(step, previousAnswers = "") {
     };
   });
 
-  return {
-    type: "text",
-    text: text,
-    quickReply: { items: quickReplyItems }
-  };
+  return { type: "text", text: text, quickReply: { items: quickReplyItems } };
 }
 
-// 3. 計算最終結果與「女性左右反轉」邏輯
+// 4. 計算最終結果與「女性左右反轉」邏輯
 function calculateTreatmentResult(answerString) {
-  // ... (與原本的 calculateTreatmentResult 相同) ...
   const ansArr = answerString.split(',');
   const gender = ansArr[0];
   const pulse = ansArr[1];
@@ -81,6 +134,7 @@ function calculateTreatmentResult(answerString) {
   let buText = method.bu;
   let xieText = method.xie;
 
+  // 女性左右反轉
   if (gender === '女') {
     buText = buText.replace(/左/g, '__L__').replace(/右/g, '左').replace(/__L__/g, '右');
     xieText = xieText.replace(/左/g, '__L__').replace(/右/g, '左').replace(/__L__/g, '右');
@@ -91,39 +145,41 @@ function calculateTreatmentResult(answerString) {
   return { type: 'text', text: resultText };
 }
 
-// 4. Vercel 專用的主程式入口 (注意 req, res 的寫法改變了)
+// 5. Vercel 主程式入口
 export default async function handler(req, res) {
-  // 處理非 POST 請求 (避免 GET 訪問時崩潰)
-  if (req.method !== 'POST') {
-    return res.status(200).send('LINE Bot Webhook is running!');
-  }
+  if (req.method !== 'POST') return res.status(200).send('LINE Bot Webhook is running!');
 
   try {
-    // Vercel 自動解析了 JSON，不需要 JSON.parse(event.body)
     const body = req.body;
-
-    // 防呆機制：LINE 驗證 Webhook 時，可能會傳送空的 events 陣列
-    if (!body || !body.events || body.events.length === 0) {
-      console.log("收到空的 events，回應 200 OK (可能為 LINE 驗證)");
-      return res.status(200).send('OK');
-    }
+    if (!body || !body.events || body.events.length === 0) return res.status(200).send('OK');
 
     const lineEvent = body.events[0];
     const replyToken = lineEvent.replyToken;
     
-    // 如果是 webhook 驗證事件 (例如 00000000000000000000000000000000)，直接回應
     if (replyToken === '00000000000000000000000000000000' || replyToken === 'ffffffffffffffffffffffffffffffff') {
         return res.status(200).send('OK');
     }
 
     let replyMessages = [];
 
+    // --- 【修改重點】: 使用者在群組打字時的判斷 ---
     if (lineEvent.type === 'message' && lineEvent.message.type === 'text') {
       const userMessage = lineEvent.message.text.trim();
-      if (userMessage.includes('選穴') || userMessage.includes('評估')) {
+      
+      // 1. 先嘗試「智能解析」這串長文字
+      const directResultStr = parseDirectQuery(userMessage);
+
+      // 2. 如果成功解析出脈位+盛度，直接給出最終解答！
+      if (directResultStr) {
+        replyMessages = [calculateTreatmentResult(directResultStr)];
+      } 
+      // 3. 如果解析失敗(沒提到脈位或盛度)，但句子裡有「選穴」兩字，就退回泡泡點擊模式
+      else if (userMessage.includes('選穴') || userMessage.includes('評估')) {
         replyMessages = [getQuickReplyTemplate(0)];
       }
-    } else if (lineEvent.type === 'postback') {
+    } 
+    // --- 使用者點選按鈕時的判斷 (維持不變) ---
+    else if (lineEvent.type === 'postback') {
       const postbackData = new URLSearchParams(lineEvent.postback.data);
       if (postbackData.get('action') === 'survey') {
         const nextQuestionIndex = parseInt(postbackData.get('q'));
@@ -137,35 +193,24 @@ export default async function handler(req, res) {
       }
     }
 
-    // 發送回覆
+    // 發送回覆給 LINE
     if (replyMessages.length > 0) {
-      if (!process.env.LINE_CHANNEL_ACCESS_TOKEN) {
-          console.error("錯誤：環境變數 LINE_CHANNEL_ACCESS_TOKEN 尚未設定！");
-          return res.status(500).send('Missing Access Token');
-      }
-
-      const response = await fetch('https://api.line.me/v2/bot/message/reply', {
+      if (!process.env.LINE_CHANNEL_ACCESS_TOKEN) return res.status(500).send('Missing Access Token');
+      
+      await fetch('https://api.line.me/v2/bot/message/reply', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${process.env.LINE_CHANNEL_ACCESS_TOKEN}`
         },
-        body: JSON.stringify({
-          replyToken: replyToken,
-          messages: replyMessages
-        })
+        body: JSON.stringify({ replyToken: replyToken, messages: replyMessages })
       });
-
-      if (!response.ok) {
-          const errorText = await response.text();
-          console.error('LINE API 發生錯誤:', errorText);
-      }
     }
 
     return res.status(200).send('OK');
 
   } catch (error) {
-    console.error('執行過程中發生未預期的錯誤:', error);
+    console.error('執行過程中發生錯誤:', error);
     return res.status(500).send('Internal Server Error');
   }
 }
