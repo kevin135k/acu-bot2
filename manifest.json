@@ -1,0 +1,17 @@
+{
+  "name": "針灸臨床決策輔助工具",
+  "short_name": "針灸決策",
+  "description": "湯液針法與內經終始針法整合學習輔助",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4f46e5",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
