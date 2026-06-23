@@ -1,399 +1,470 @@
-// ==========================================
-// 1. 醫療資料庫 (整合湯液與終始針法)
-// ==========================================
-
-const POINT_LOCATIONS = {
-  '少府': { icon: '✋', text: '手掌面，第4、5掌骨之間，握拳時小指尖處。' },
-  '勞宮': { icon: '✋', text: '手掌心，第2、3掌骨之間，握拳時中指尖處。' },
-  '少衝': { icon: '✋', text: '小指末節橈側，距指甲角0.1寸。' },
-  '中衝': { icon: '✋', text: '中指末節尖端中央。' },
-  '前谷': { icon: '✋', text: '手尺側，微握拳，第5指掌關節前尺側，橫紋頭赤白肉際。' },
-  '後溪': { icon: '✋', text: '手尺側，微握拳，第5指掌關節後尺側，橫紋頭赤白肉際。' },
-  '液門': { icon: '✋', text: '手背，第4、5指間，指蹼緣後方赤白肉際。' },
-  '中渚': { icon: '✋', text: '手背，第4、5掌骨間，第4掌指關節後上方凹陷處。' },
-  '商陽': { icon: '✋', text: '食指末節橈側，距指甲角0.1寸。' },
-  '二間': { icon: '✋', text: '食指本節（第2掌指關節）前，橈側凹陷處。' },
-  '經渠': { icon: '💪', text: '前臂掌面橈側，橈骨莖突與橈動脈之間。' },
-  '陽溪': { icon: '💪', text: '腕背橫紋橈側，手拇指向上翹起時，在伸拇短肌腱與伸拇長肌腱之間的凹陷中。' },
-  '支溝': { icon: '💪', text: '前臂背側，陽池穴上3寸，尺骨與橈骨之間。' },
-  '天井': { icon: '💪', text: '臂外側，屈肘時，當肘尖直上1寸凹陷處。' },
-  '陽谷': { icon: '💪', text: '手腕尺側，尺骨莖突與三角骨之間的凹陷處。' },
-  '小海': { icon: '💪', text: '肘內側，尺骨鷹嘴與肱骨內上髁之間凹陷處。' },
-  '太淵': { icon: '💪', text: '腕掌側橫紋橈側，橈動脈搏動處。' },
-  '曲池': { icon: '💪', text: '肘橫紋外側端，屈肘，當尺澤與肱骨外上髁連線中點。' },
-  '尺澤': { icon: '💪', text: '肘橫紋中，肱二頭肌腱橈側凹陷處。' },
-  '神門': { icon: '💪', text: '腕部腕掌橫紋上，尺側腕屈肌腱橈側凹陷處。' },
-  '大陵': { icon: '💪', text: '腕掌橫紋的中點處，當掌長肌腱與橈側腕屈肌腱之間。' },
-  '大敦': { icon: '🦶', text: '足大趾末節外側，距指甲角0.1寸。' },
-  '足竅陰': { icon: '🦶', text: '足第4趾末節外側，距指甲角0.1寸。' },
-  '太白': { icon: '🦶', text: '足內側緣，足大趾本節（第1跖趾關節）後下方赤白肉際凹陷處。' },
-  '陷谷': { icon: '🦶', text: '足背，第2、3跖骨結合部前方凹陷處。' },
-  '足臨泣': { icon: '🦶', text: '足背外側，第4、5跖骨底結合部前方，第5長伸肌腱外側凹陷處。' },
-  '俠溪': { icon: '🦶', text: '足背外側，第4、5趾間，趾蹼緣後方赤白肉際。' },
-  '通谷': { icon: '🦶', text: '足外側，足小趾本節（第5跖趾關節）前下方赤白肉際凹陷處。' },
-  '束骨': { icon: '🦶', text: '足外側，足小趾本節（第5跖趾關節）後下方赤白肉際凹陷處。' },
-  '至陰': { icon: '🦶', text: '足小趾末節外側，距指甲角0.1寸。' },
-  '大都': { icon: '🦶', text: '足內側緣，足大趾本節（第1跖趾關節）前下方赤白肉際凹陷處。' },
-  '厲兌': { icon: '🦶', text: '足第2趾末節外側，距指甲角0.1寸。' },
-  '解溪': { icon: '🦶', text: '足背與小腿交界處的橫紋中央凹陷處，拇長伸肌腱與趾長伸肌腱之間。' },
-  '行間': { icon: '🦶', text: '足背，第1、2趾間，趾蹼緣後方赤白肉際。' },
-  '湧泉': { icon: '🦶', text: '足底，卷足時足前部凹陷處。' },
-  '商丘': { icon: '🦶', text: '足內踝前下方凹陷中。' },
-  '陰谷': { icon: '🦵', text: '膕窩內側，屈膝時，當半腱肌肌腱與半膜肌肌腱之間。' },
-  '委中': { icon: '🦵', text: '膕橫紋中點。' },
-  '曲泉': { icon: '🦵', text: '膝內側，屈膝，當膝關節內側面橫紋內側端，股骨內側髁的後緣，半腱肌、半膜肌止端的前緣凹陷處。' },
-  '陽輔': { icon: '🦵', text: '小腿外側，外踝尖上4寸，腓骨前緣稍前方。' },
-  '復溜': { icon: '🦵', text: '小腿內側，太溪直上2寸，跟腱的前方。' },
-  '足三里': { icon: '🦵', text: '小腿前外側，外膝眼下3寸，脛骨前緣一橫指。' }
-};
-
-const TANGYE_RULES = {
-  male: {
-    '心火': { '太過': { sedate: { point: '少府', side: 'left', desc: '向心、深刺45度、陰數、逆轉' }, tonify: { point: '前谷', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' } }, '不足': { tonify: { point: '少府', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '前谷', side: 'right', desc: '向心、深刺45度、陰數、逆轉' } } },
-    '肝木': { '太過': { sedate: { point: '大敦', side: 'right', desc: '向心、深刺45度、陰數、逆轉' }, tonify: { point: '足竅陰', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' } }, '不足': { tonify: { point: '大敦', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '足竅陰', side: 'left', desc: '向心、深刺45度、陰數、逆轉' } } },
-    '腎水': { '太過': { sedate: { point: '陰谷', side: 'right', desc: '向心、深刺45度、陰數、逆轉' }, tonify: { point: '委中', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' } }, '不足': { tonify: { point: '陰谷', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '委中', side: 'left', desc: '向心、深刺45度、陰數、逆轉' } } },
-    '肺金': { '太過': { sedate: { point: '經渠', side: 'left', desc: '向心、深刺45度、陰數、逆轉' }, tonify: { point: '陽溪', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' } }, '不足': { tonify: { point: '經渠', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '陽溪', side: 'right', desc: '向心、深刺45度、陰數、逆轉' } } },
-    '脾土': { '太過': { sedate: { point: '太白', side: 'right', desc: '向心、深刺45度、陰數、逆轉' }, tonify: { point: '陷谷', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' } }, '不足': { tonify: { point: '太白', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '陷谷', side: 'left', desc: '向心、深刺45度、陰數、逆轉' } } },
-    '命門': { '太過': { sedate: { point: '勞宮', side: 'left', desc: '向心、深刺45度、陰數、逆轉' }, tonify: { point: '液門', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' } }, '不足': { tonify: { point: '勞宮', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '液門', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' } } }
-  },
-  female: {
-    '心火': { '太過': { sedate: { point: '少府', side: 'right', desc: '向心、深刺45度、陰數、逆轉' }, tonify: { point: '前谷', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' } }, '不足': { tonify: { point: '少府', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '前谷', side: 'left', desc: '向心、深刺45度、陰數、逆轉' } } },
-    '肝木': { '太過': { sedate: { point: '大敦', side: 'left', desc: '向心、深刺45度、陰數、逆轉' }, tonify: { point: '足竅陰', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' } }, '不足': { tonify: { point: '大敦', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '足竅陰', side: 'right', desc: '向心、深刺45度、陰數、逆轉' } } },
-    '腎水': { '太過': { sedate: { point: '陰谷', side: 'left', desc: '向心、深刺45度、陰數、逆轉' }, tonify: { point: '委中', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' } }, '不足': { tonify: { point: '陰谷', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '委中', side: 'right', desc: '向心、深刺45度、陰數、逆轉' } } },
-    '肺金': { '太過': { sedate: { point: '經渠', side: 'right', desc: '向心、深刺45度、陰數、逆轉' }, tonify: { point: '陽溪', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' } }, '不足': { tonify: { point: '經渠', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '陽溪', side: 'left', desc: '向心、深刺45度、陰數、逆轉' } } },
-    '脾土': { '太過': { sedate: { point: '太白', side: 'left', desc: '向心、深刺45度、陰數、逆轉' }, tonify: { point: '陷谷', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' } }, '不足': { tonify: { point: '太白', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '陷谷', side: 'right', desc: '向心、深刺45度、陰數、逆轉' } } },
-    '命門': { '太過': { sedate: { point: '勞宮', side: 'right', desc: '向心、深刺45度、陰數、逆轉' }, tonify: { point: '液門', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' } }, '不足': { tonify: { point: '勞宮', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '液門', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' } } }
-  }
-};
-
-const ZHONGSHI_RULES = {
-  male: {
-    '人迎一盛（補肝瀉膽）': { tonify: { point: '曲泉', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '足臨泣', alias: '陽輔', side: 'left', desc: '向心、深刺45度、陰數、逆轉' } },
-    '人迎二盛（補腎瀉膀胱）': { tonify: { point: '復溜', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '通谷', alias: '束骨', side: 'left', desc: '向心、深刺45度、陰數、逆轉' } },
-    '人迎三盛（補脾瀉胃）': { tonify: { point: '大都', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '足三里', alias: '厲兌', side: 'left', desc: '向心、深刺45度、陰數、逆轉' } },
-    '人迎一盛而躁（補心包瀉三焦）': { tonify: { point: '中衝', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '支溝', alias: '天井', side: 'right', desc: '向心、深刺45度、陰數、逆轉' } },
-    '人迎二盛而躁（補心瀉小腸）': { tonify: { point: '少衝', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '陽谷', alias: '小海', side: 'right', desc: '向心、深刺45度、陰數、逆轉' } },
-    '人迎三盛而躁（補肺瀉大腸）': { tonify: { point: '太淵', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '商陽', alias: '二間', side: 'right', desc: '向心、深刺45度、陰數、逆轉' } },
-    '脈口一盛（補膽瀉肝）': { tonify: { point: '足臨泣', alias: '俠溪', side: 'right', desc: '向心、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '行間', side: 'left', desc: '遠心、深刺45度、吐氣進針、陰數、逆轉' } },
-    '脈口二盛（補膀胱瀉腎）': { tonify: { point: '通谷', alias: '至陰', side: 'right', desc: '向心、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '湧泉', side: 'left', desc: '遠心、深刺45度、吐氣進針、陰數、逆轉' } },
-    '脈口三盛（補胃瀉脾）': { tonify: { point: '足三里', alias: '解溪', side: 'right', desc: '向心、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '商丘', side: 'left', desc: '遠心、深刺45度、吐氣進針、陰數、逆轉' } },
-    '脈口一盛而躁（補三焦瀉心包）': { tonify: { point: '支溝', alias: '中渚', side: 'left', desc: '向心、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '大陵', side: 'right', desc: '遠心、深刺45度、吐氣進針、陰數、逆轉' } },
-    '脈口二盛而躁（補小腸瀉心）': { tonify: { point: '陽谷', alias: '後溪', side: 'left', desc: '向心、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '神門', side: 'right', desc: '遠心、深刺45度、吐氣進針、陰數、逆轉' } },
-    '脈口三盛而躁（補大腸瀉肺）': { tonify: { point: '商陽', alias: '曲池', side: 'left', desc: '向心、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '尺澤', side: 'right', desc: '遠心、深刺45度、吐氣進針、陰數、逆轉' } }
-  },
-  female: {
-    '人迎一盛（補肝瀉膽）': { tonify: { point: '曲泉', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '足臨泣', alias: '陽輔', side: 'right', desc: '向心、深刺45度、陰數、逆轉' } },
-    '人迎二盛（補腎瀉膀胱）': { tonify: { point: '復溜', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '通谷', alias: '束骨', side: 'right', desc: '向心、深刺45度、陰數、逆轉' } },
-    '人迎三盛（補脾瀉胃）': { tonify: { point: '大都', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '足三里', alias: '厲兌', side: 'right', desc: '向心、深刺45度、陰數、逆轉' } },
-    '人迎一盛而躁（補心包瀉三焦）': { tonify: { point: '中衝', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '支溝', alias: '天井', side: 'left', desc: '向心、深刺45度、陰數、逆轉' } },
-    '人迎二盛而躁（補心瀉小腸）': { tonify: { point: '少衝', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '陽谷', alias: '小海', side: 'left', desc: '向心、深刺45度、陰數、逆轉' } },
-    '人迎三盛而躁（補肺瀉大腸）': { tonify: { point: '太淵', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '商陽', alias: '二間', side: 'left', desc: '向心、深刺45度、陰數、逆轉' } },
-    '脈口一盛（補膽瀉肝）': { tonify: { point: '足臨泣', alias: '俠溪', side: 'left', desc: '向心、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '行間', side: 'right', desc: '遠心、深刺45度、吐氣進針、陰數、逆轉' } },
-    '脈口二盛（補膀胱瀉腎）': { tonify: { point: '通谷', alias: '至陰', side: 'left', desc: '向心、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '湧泉', side: 'right', desc: '遠心、深刺45度、吐氣進針、陰數、逆轉' } },
-    '脈口三盛（補胃瀉脾）': { tonify: { point: '足三里', alias: '解溪', side: 'left', desc: '向心、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '商丘', side: 'right', desc: '遠心、深刺45度、吐氣進針、陰數、逆轉' } },
-    '脈口一盛而躁（補三焦瀉心包）': { tonify: { point: '支溝', alias: '中渚', side: 'right', desc: '向心、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '大陵', side: 'left', desc: '遠心、深刺45度、吐氣進針、陰數、逆轉' } },
-    '脈口二盛而躁（補小腸瀉心）': { tonify: { point: '陽谷', alias: '後溪', side: 'right', desc: '向心、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '神門', side: 'left', desc: '遠心、深刺45度、吐氣進針、陰數、逆轉' } },
-    '脈口三盛而躁（補大腸瀉肺）': { tonify: { point: '商陽', alias: '曲池', side: 'right', desc: '向心、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '尺澤', side: 'left', desc: '遠心、深刺45度、吐氣進針、陰數、逆轉' } }
-  }
-};
-
-// ==========================================
-// 2. 智能文字解析 (Direct Query)
-// ==========================================
-function parseDirectQuery(text) {
-  const gender = text.includes('女') ? 'female' : 'male';
-
-  // 嘗試解析「湯液針法」
-  const tangyePulses = ['心火', '肝木', '腎水', '肺金', '脾土', '命門'];
-  const tangyePulse = tangyePulses.find(p => text.includes(p));
-  let tangyeState = null;
-  if (text.includes('太過')) tangyeState = '太過';
-  else if (text.includes('不足')) tangyeState = '不足';
-
-  if (tangyePulse && tangyeState) {
-    // 回傳格式: 性別,系統,脈位,狀態
-    return `${gender},湯液,${tangyePulse},${tangyeState}`;
-  }
-
-  // 嘗試解析「終始針法」
-  let pulse = null;
-  if (text.includes('人迎')) pulse = '人迎';
-  else if (text.includes('脈口')) pulse = '脈口';
-
-  let level = null;
-  if (text.includes('一盛')) level = '一';
-  else if (text.includes('二盛')) level = '二';
-  else if (text.includes('三盛')) level = '三';
-
-  let agitated = 'no'; 
-  const notZaoRegex = /(不|非|無|沒|沒有|不會).{0,3}躁/; 
-  if (notZaoRegex.test(text)) {
-    agitated = 'no';
-  } else if (text.includes('躁')) {
-    agitated = 'yes';
-  }
-
-  if (pulse && level) {
-    let treatment = "";
-    if (pulse === '人迎') {
-      if (agitated === 'no') {
-        if (level === '一') treatment = "人迎一盛（補肝瀉膽）";
-        if (level === '二') treatment = "人迎二盛（補腎瀉膀胱）";
-        if (level === '三') treatment = "人迎三盛（補脾瀉胃）";
-      } else { 
-        if (level === '一') treatment = "人迎一盛而躁（補心包瀉三焦）";
-        if (level === '二') treatment = "人迎二盛而躁（補心瀉小腸）";
-        if (level === '三') treatment = "人迎三盛而躁（補肺瀉大腸）";
-      }
-    } else if (pulse === '脈口') {
-      if (agitated === 'no') {
-        if (level === '一') treatment = "脈口一盛（補膽瀉肝）";
-        if (level === '二') treatment = "脈口二盛（補膀胱瀉腎）";
-        if (level === '三') treatment = "脈口三盛（補胃瀉脾）";
-      } else { 
-        if (level === '一') treatment = "脈口一盛而躁（補三焦瀉心包）";
-        if (level === '二') treatment = "脈口二盛而躁（補小腸瀉心）";
-        if (level === '三') treatment = "脈口三盛而躁（補大腸瀉肺）";
-      }
-    }
-    // 回傳格式: 性別,系統,脈位,躁,治療原則 (長度 5)
-    return `${gender},終始,${pulse},${agitated},${treatment}`;
-  }
-
-  return null;
-}
-
-// ==========================================
-// 3. 動態產生問題選單 (Quick Reply)
-// ==========================================
-function getQuickReplyTemplate(step, previousAnswers = "") {
-  const ansArr = previousAnswers ? previousAnswers.split(',') : [];
-  let text = "";
-  let options = [];
-
-  if (step === 0) {
-    text = "1. 請問病人性別？";
-    options = [{ label: "👨 男", value: "male" }, { label: "👩 女", value: "female" }];
-  } else if (step === 1) {
-    text = "2. 請選擇脈相系統？";
-    options = [{ label: "獨異脈 (湯液)", value: "湯液" }, { label: "陰陽不和 (終始)", value: "終始" }];
-  } else if (step === 2) {
-    if (ansArr[1] === '湯液') {
-      text = "3. 哪個脈位獨異？";
-      options = ['心火', '肝木', '腎水', '肺金', '脾土', '命門'].map(v => ({ label: v, value: v }));
-    } else {
-      text = "3. 請問脈位狀態？";
-      options = [{ label: "人迎", value: "人迎" }, { label: "脈口", value: "脈口" }];
-    }
-  } else if (step === 3) {
-    if (ansArr[1] === '湯液') {
-      text = "4. 該脈位狀態？";
-      options = [{ label: "太過", value: "太過" }, { label: "不足", value: "不足" }];
-    } else {
-      text = "4. 脈象是否為躁？";
-      options = [{ label: "是 (為躁)", value: "yes" }, { label: "否 (非躁)", value: "no" }];
-    }
-  } else if (step === 4 && ansArr[1] === '終始') {
-    text = "5. 治療原則？";
-    const pulse = ansArr[2];
-    const agitated = ansArr[3];
-    if (pulse === '人迎') {
-      if (agitated === 'no') options = ['人迎一盛（補肝瀉膽）', '人迎二盛（補腎瀉膀胱）', '人迎三盛（補脾瀉胃）'].map(v => ({ label: v, value: v }));
-      else options = ['人迎一盛而躁（補心包瀉三焦）', '人迎二盛而躁（補心瀉小腸）', '人迎三盛而躁（補肺瀉大腸）'].map(v => ({ label: v, value: v }));
-    } else {
-      if (agitated === 'no') options = ['脈口一盛（補膽瀉肝）', '脈口二盛（補膀胱瀉腎）', '脈口三盛（補胃瀉脾）'].map(v => ({ label: v, value: v }));
-      else options = ['脈口一盛而躁（補三焦瀉心包）', '脈口二盛而躁（補小腸瀉心）', '脈口三盛而躁（補大腸瀉肺）'].map(v => ({ label: v, value: v }));
-    }
-  }
-
-  const quickReplyItems = options.map(opt => {
-    const newAnswers = previousAnswers ? `${previousAnswers},${opt.value}` : opt.value;
-    return {
-      type: "action",
-      action: {
-        type: "postback",
-        label: opt.label.substring(0, 20),
-        data: `action=survey&q=${step + 1}&ans=${newAnswers}`,
-        displayText: opt.label
-      }
-    };
-  });
-
-  return { type: "text", text: text, quickReply: { items: quickReplyItems } };
-}
-
-// ==========================================
-// 4. 計算結果並組合文字排版 (附帶取穴按鈕)
-// ==========================================
-function calculateTreatmentResult(ansString) {
-  const ansArr = ansString.split(',');
-  const gender = ansArr[0];
-  const system = ansArr[1];
-
-  let rule = null;
-  let title = "";
-  let methodTitle = "";
-
-  if (system === '湯液') {
-    const pulse = ansArr[2];
-    const state = ansArr[3];
-    rule = TANGYE_RULES[gender][pulse][state];
-    title = "湯液針法";
-    methodTitle = `${pulse} ${state}`;
-  } else {
-    const treatment = ansArr[4];
-    rule = ZHONGSHI_RULES[gender][treatment];
-    title = "終始針法";
-    methodTitle = treatment;
-  }
-
-  if (!rule) return { type: 'text', text: '系統查無資料，請重新啟動評估。' };
-
-  const formatPoint = (actionData) => {
-    const sideText = actionData.side === 'left' ? '左' : '右';
-    const pointName = actionData.alias ? `${actionData.point}/${actionData.alias}` : actionData.point;
-    return `${sideText} ${pointName}\n  (${actionData.desc})`;
-  };
-
-  const genderStr = gender === 'female' ? '女' : '男';
-
-  let resultText = `📋 【${title} 處方】\n────────────\n👤 病患：${genderStr}性 | ${methodTitle}\n────────────\n\n`;
-  resultText += `🟢 補法 (Tonify):\n${formatPoint(rule.tonify)}\n\n`;
-  resultText += `🔴 瀉法 (Sedate):\n${formatPoint(rule.sedate)}`;
-
-  // 抓取這次用到的穴位，用於 Quick Reply 捷徑
-  let pointNames = [];
-  [rule.tonify, rule.sedate].forEach(action => {
-     if (action.point) pointNames.push(action.point);
-     if (action.alias) pointNames.push(action.alias);
-  });
-  const pointsStr = pointNames.join(',');
-
-  return { 
-    type: 'text', 
-    text: resultText.trim(),
-    quickReply: {
-      items: [
-        {
-          type: "action",
-          action: {
-            type: "postback",
-            label: "📍 查看取穴位置",
-            data: `action=loc&pts=${pointsStr}`,
-            displayText: "取穴"
-          }
-        }
-      ]
-    }
-  };
-}
-
-// ==========================================
-// 5. Vercel 主程式入口 (Webhook Handler)
-// ==========================================
-export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(200).send('LINE Bot Webhook is running!');
-
-  try {
-    const body = req.body;
-    if (!body || !body.events || body.events.length === 0) return res.status(200).send('OK');
-
-    const lineEvent = body.events[0];
-    const replyToken = lineEvent.replyToken;
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>針灸臨床決策輔助工具</title>
     
-    if (replyToken === '00000000000000000000000000000000' || replyToken === 'ffffffffffffffffffffffffffffffff') {
-        return res.status(200).send('OK');
-    }
+    <!-- 1. 載入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
-    let replyMessages = [];
+    <!-- 2. 改用最穩定的 jsDelivr CDN 載入 React -->
+    <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+    
+    <!-- 3. 改用 jsDelivr 載入 Babel -->
+    <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.23.6/babel.min.js"></script>
 
-    // --- 使用者在群組打字時 ---
-    if (lineEvent.type === 'message' && lineEvent.message.type === 'text') {
-      const userMessage = lineEvent.message.text.trim();
-      
-      if (userMessage.startsWith('取穴') || userMessage.startsWith('位置')) {
-        if (userMessage === '取穴' || userMessage === '位置') {
-            replyMessages = [{
-               type: 'text',
-               text: '💡 提示：為了準確回覆，請在收到處方後，直接點擊下方出現的「📍 查看取穴位置」泡泡按鈕。\n\n您也可以直接加上名稱來查詢，例如：「取穴 曲泉」'
-            }];
-        } else {
-            let foundPoints = [];
-            for (const pt in POINT_LOCATIONS) {
-              if (userMessage.includes(pt)) foundPoints.push(pt);
-            }
-            if (foundPoints.length > 0) {
-                let locText = "📍 【穴位位置指引】\n────────────\n";
-                foundPoints.forEach(pt => { 
-                    locText += `【${pt}】 ${POINT_LOCATIONS[pt].icon}\n${POINT_LOCATIONS[pt].text}\n\n`; 
-                });
-                replyMessages = [{ type: 'text', text: locText.trim() }];
-            } else {
-                replyMessages = [{ type: 'text', text: '系統中目前沒有這個穴位的資料喔。' }];
-            }
-        }
-      } else {
-        // 嘗試「智能解析」長文字 (Direct Query)
-        const directResultStr = parseDirectQuery(userMessage);
+    <style>
+        body { -webkit-user-select: none; user-select: none; }
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+        /* 錯誤訊息面板樣式 */
+        #startup-error { color: #dc2626; font-family: monospace; padding: 20px; white-space: pre-wrap; font-size: 14px; text-align: left; }
+    </style>
+</head>
+<body class="bg-slate-50">
+    
+    <!-- 防白屏機制：預設顯示載入中，若成功會被 React 覆蓋；若失敗則顯示錯誤 -->
+    <div id="root">
+        <div style="padding: 40px; text-align: center; font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #4f46e5; font-size: 24px; font-weight: bold; margin-bottom: 10px;">系統載入中...</h2>
+            <p style="color: #64748b;">如果您長時間看到此畫面，請檢查下方是否有紅色錯誤訊息：</p>
+            <div id="startup-error" style="background: #fee2e2; margin-top: 20px; border-radius: 8px; border: 1px solid #f87171;"></div>
+        </div>
+    </div>
 
-        if (directResultStr) {
-          // 直接拋出解答
-          replyMessages = [calculateTreatmentResult(directResultStr)];
-        } 
-        else if (userMessage.includes('選穴') || userMessage.includes('評估') || userMessage.includes('針灸')) {
-          // 啟動泡泡按鈕流程
-          replyMessages = [getQuickReplyTemplate(0)];
-        }
-      }
-    } 
-    // --- 使用者點選按鈕時 ---
-    else if (lineEvent.type === 'postback') {
-      const postbackData = new URLSearchParams(lineEvent.postback.data);
-      
-      if (postbackData.get('action') === 'survey') {
-        const nextQuestionIndex = parseInt(postbackData.get('q'));
-        const currentAnswers = postbackData.get('ans');
-        const ansArr = currentAnswers.split(',');
-        const system = ansArr[1];
-
-        // 判斷是否已經抵達該系統的終點
-        if ((system === '湯液' && nextQuestionIndex === 4) || (system === '終始' && nextQuestionIndex === 5)) {
-          replyMessages = [calculateTreatmentResult(currentAnswers)];
-        } else {
-          replyMessages = [getQuickReplyTemplate(nextQuestionIndex, currentAnswers)];
-        }
-      } 
-      else if (postbackData.get('action') === 'loc') {
-        // 接收「查看取穴位置」的按鈕事件
-        const pts = postbackData.get('pts').split(',');
-        let locText = "📍 【穴位位置指引】\n────────────\n";
-        pts.forEach(pt => {
-           if (pt && POINT_LOCATIONS[pt]) {
-              locText += `【${pt}】 ${POINT_LOCATIONS[pt].icon}\n${POINT_LOCATIONS[pt].text}\n\n`;
-           }
+    <!-- 捕捉全域錯誤，直接顯示在畫面上 -->
+    <script>
+        window.addEventListener('error', function(e) {
+            var errDiv = document.getElementById('startup-error');
+            if(errDiv) errDiv.innerText += '[網路/腳本錯誤] ' + e.message + '\n';
         });
-        replyMessages = [{ type: 'text', text: locText.trim() }];
-      }
-    }
+        window.addEventListener('unhandledrejection', function(e) {
+            var errDiv = document.getElementById('startup-error');
+            if(errDiv) errDiv.innerText += '[非同步錯誤] ' + e.reason + '\n';
+        });
 
-    // 發送給 LINE
-    if (replyMessages.length > 0) {
-      if (!process.env.LINE_CHANNEL_ACCESS_TOKEN) return res.status(500).send('Missing Access Token');
-      
-      await fetch('https://api.line.me/v2/bot/message/reply', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.LINE_CHANNEL_ACCESS_TOKEN}`
-        },
-        body: JSON.stringify({ replyToken: replyToken, messages: replyMessages })
-      });
-    }
+        // 強制殺死所有舊的 Service Worker (破除快取卡死)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) { registration.unregister(); }
+            });
+        }
+    </script>
 
-    return res.status(200).send('OK');
+    <!-- React 主程式 -->
+    <script type="text/babel">
+        // 確保 React 已經成功載入
+        if (!window.React || !window.ReactDOM) {
+            document.getElementById('startup-error').innerText += '[嚴重錯誤] React 核心檔案下載失敗，請檢查網路是否阻擋了 jsdelivr.net。\n';
+        }
 
-  } catch (error) {
-    console.error('執行錯誤:', error);
-    return res.status(500).send('Internal Server Error');
-  }
-}
+        const { useState, useMemo } = window.React;
+        const { createRoot } = window.ReactDOM;
+
+        // --- 錯誤邊界組件 (Error Boundary)：防止 React 崩潰變成白畫面 ---
+        class ErrorBoundary extends window.React.Component {
+            constructor(props) { super(props); this.state = { hasError: false, error: null, info: null }; }
+            static getDerivedStateFromError(error) { return { hasError: true, error }; }
+            componentDidCatch(error, info) { this.setState({ info }); }
+            render() {
+                if (this.state.hasError) {
+                    return (
+                        <div style={{padding: '30px', color: '#991b1b', background: '#fef2f2', minHeight: '100vh'}}>
+                            <h2 style={{fontSize: '24px', fontWeight: 'bold'}}>發生意外錯誤 (React Crash)</h2>
+                            <p>請將以下錯誤回報給開發者：</p>
+                            <pre style={{marginTop: '20px', background: 'white', padding: '15px', overflowX: 'auto'}}>
+                                {this.state.error && this.state.error.toString()}<br/>
+                                {this.state.info && this.state.info.componentStack}
+                            </pre>
+                        </div>
+                    );
+                }
+                return this.props.children;
+            }
+        }
+
+        // --- 內建圖示組件 ---
+        const Icons = {
+            User: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+            Activity: () => <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>,
+            ArrowRight: ({className}) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>,
+            RotateCcw: ({className}) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>,
+            MapPin: ({className}) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+        };
+
+        const POINT_LOCATIONS = {
+          '少府': { icon: '✋', text: '手掌面，第4、5掌骨之間，握拳時小指尖處。' },
+          '勞宮': { icon: '✋', text: '手掌心，第2、3掌骨之間，握拳時中指尖處。' },
+          '少衝': { icon: '✋', text: '小指末節橈側，距指甲角0.1寸。' },
+          '中衝': { icon: '✋', text: '中指末節尖端中央。' },
+          '前谷': { icon: '✋', text: '手尺側，微握拳，第5指掌關節前尺側，橫紋頭赤白肉際。' },
+          '後溪': { icon: '✋', text: '手尺側，微握拳，第5指掌關節後尺側，橫紋頭赤白肉際。' },
+          '液門': { icon: '✋', text: '手背，第4、5指間，指蹼緣後方赤白肉際。' },
+          '中渚': { icon: '✋', text: '手背，第4、5掌骨間，第4掌指關節後上方凹陷處。' },
+          '商陽': { icon: '✋', text: '食指末節橈側，距指甲角0.1寸。' },
+          '二間': { icon: '✋', text: '食指本節（第2掌指關節）前，橈側凹陷處。' },
+          '經渠': { icon: '💪', text: '前臂掌面橈側，橈骨莖突與橈動脈之間。' },
+          '陽溪': { icon: '💪', text: '腕背橫紋橈側，手拇指向上翹起時，在伸拇短肌腱與伸拇長肌腱之間的凹陷中。' },
+          '支溝': { icon: '💪', text: '前臂背側，陽池穴上3寸，尺骨與橈骨之間。' },
+          '天井': { icon: '💪', text: '臂外側，屈肘時，當肘尖直上1寸凹陷處。' },
+          '陽谷': { icon: '💪', text: '手腕尺側，尺骨莖突與三角骨之間的凹陷處。' },
+          '小海': { icon: '💪', text: '肘內側，尺骨鷹嘴與肱骨內上髁之間凹陷處。' },
+          '太淵': { icon: '💪', text: '腕掌側橫紋橈側，橈動脈搏動處。' },
+          '曲池': { icon: '💪', text: '肘橫紋外側端，屈肘，當尺澤與肱骨外上髁連線中點。' },
+          '尺澤': { icon: '💪', text: '肘橫紋中，肱二頭肌腱橈側凹陷處。' },
+          '神門': { icon: '💪', text: '腕部腕掌橫紋上，尺側腕屈肌腱橈側凹陷處。' },
+          '大陵': { icon: '💪', text: '腕掌橫紋的中點處，當掌長肌腱與橈側腕屈肌腱之間。' },
+          '大敦': { icon: '🦶', text: '足大趾末節外側，距指甲角0.1寸。' },
+          '足竅陰': { icon: '🦶', text: '足第4趾末節外側，距指甲角0.1寸。' },
+          '太白': { icon: '🦶', text: '足內側緣，足大趾本節（第1跖趾關節）後下方赤白肉際凹陷處。' },
+          '陷谷': { icon: '🦶', text: '足背，第2、3跖骨結合部前方凹陷處。' },
+          '足臨泣': { icon: '🦶', text: '足背外側，第4、5跖骨底結合部前方，第5長伸肌腱外側凹陷處。' },
+          '俠溪': { icon: '🦶', text: '足背外側，第4、5趾間，趾蹼緣後方赤白肉際。' },
+          '通谷': { icon: '🦶', text: '足外側，足小趾本節（第5跖趾關節）前下方赤白肉際凹陷處。' },
+          '束骨': { icon: '🦶', text: '足外側，足小趾本節（第5跖趾關節）後下方赤白肉際凹陷處。' },
+          '至陰': { icon: '🦶', text: '足小趾末節外側，距指甲角0.1寸。' },
+          '大都': { icon: '🦶', text: '足內側緣，足大趾本節（第1跖趾關節）前下方赤白肉際凹陷處。' },
+          '厲兌': { icon: '🦶', text: '足第2趾末節外側，距指甲角0.1寸。' },
+          '解溪': { icon: '🦶', text: '足背與小腿交界處的橫紋中央凹陷處，拇長伸肌腱與趾長伸肌腱之間。' },
+          '行間': { icon: '🦶', text: '足背，第1、2趾間，趾蹼緣後方赤白肉際。' },
+          '湧泉': { icon: '🦶', text: '足底，卷足時足前部凹陷處。' },
+          '商丘': { icon: '🦶', text: '足內踝前下方凹陷中。' },
+          '陰谷': { icon: '🦵', text: '膕窩內側，屈膝時，當半腱肌肌腱與半膜肌肌腱之間。' },
+          '委中': { icon: '🦵', text: '膕橫紋中點。' },
+          '曲泉': { icon: '🦵', text: '膝內側，屈膝，當膝關節內側面橫紋內側端，股骨內側髁的後緣，半腱肌、半膜肌止端的前緣凹陷處。' },
+          '陽輔': { icon: '🦵', text: '小腿外側，外踝尖上4寸，腓骨前緣稍前方。' },
+          '復溜': { icon: '🦵', text: '小腿內側，太溪直上2寸，跟腱的前方。' },
+          '足三里': { icon: '🦵', text: '小腿前外側，外膝眼下3寸，脛骨前緣一橫指。' },
+        };
+
+        const TANGYE_RULES = {
+          male: {
+            '心火': {
+              '太過': { sedate: { point: '少府', side: 'left', desc: '向心、深刺45度、陰數、逆轉' }, tonify: { point: '前谷', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' } },
+              '不足': { tonify: { point: '少府', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '前谷', side: 'right', desc: '向心、深刺45度、陰數、逆轉' } }
+            },
+            '肝木': {
+              '太過': { sedate: { point: '大敦', side: 'right', desc: '向心、深刺45度、陰數、逆轉' }, tonify: { point: '足竅陰', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' } },
+              '不足': { tonify: { point: '大敦', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '足竅陰', side: 'left', desc: '向心、深刺45度、陰數、逆轉' } }
+            },
+            '腎水': {
+              '太過': { sedate: { point: '陰谷', side: 'right', desc: '向心、深刺45度、陰數、逆轉' }, tonify: { point: '委中', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' } },
+              '不足': { tonify: { point: '陰谷', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '委中', side: 'left', desc: '向心、深刺45度、陰數、逆轉' } }
+            },
+            '肺金': {
+              '太過': { sedate: { point: '經渠', side: 'left', desc: '向心、深刺45度、陰數、逆轉' }, tonify: { point: '陽溪', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' } },
+              '不足': { tonify: { point: '經渠', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '陽溪', side: 'right', desc: '向心、深刺45度、陰數、逆轉' } }
+            },
+            '脾土': {
+              '太過': { sedate: { point: '太白', side: 'right', desc: '向心、深刺45度、陰數、逆轉' }, tonify: { point: '陷谷', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' } },
+              '不足': { tonify: { point: '太白', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '陷谷', side: 'left', desc: '向心、深刺45度、陰數、逆轉' } }
+            },
+            '命門': {
+              '太過': { sedate: { point: '勞宮', side: 'left', desc: '向心、深刺45度、陰數、逆轉' }, tonify: { point: '液門', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' } },
+              '不足': { tonify: { point: '勞宮', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '液門', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' } }
+            }
+          },
+          female: {
+            '心火': {
+              '太過': { sedate: { point: '少府', side: 'right', desc: '向心、深刺45度、陰數、逆轉' }, tonify: { point: '前谷', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' } },
+              '不足': { tonify: { point: '少府', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '前谷', side: 'left', desc: '向心、深刺45度、陰數、逆轉' } }
+            },
+            '肝木': {
+              '太過': { sedate: { point: '大敦', side: 'left', desc: '向心、深刺45度、陰數、逆轉' }, tonify: { point: '足竅陰', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' } },
+              '不足': { tonify: { point: '大敦', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '足竅陰', side: 'right', desc: '向心、深刺45度、陰數、逆轉' } }
+            },
+            '腎水': {
+              '太過': { sedate: { point: '陰谷', side: 'left', desc: '向心、深刺45度、陰數、逆轉' }, tonify: { point: '委中', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' } },
+              '不足': { tonify: { point: '陰谷', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '委中', side: 'right', desc: '向心、深刺45度、陰數、逆轉' } }
+            },
+            '肺金': {
+              '太過': { sedate: { point: '經渠', side: 'right', desc: '向心、深刺45度、陰數、逆轉' }, tonify: { point: '陽溪', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' } },
+              '不足': { tonify: { point: '經渠', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '陽溪', side: 'left', desc: '向心、深刺45度、陰數、逆轉' } }
+            },
+            '脾土': {
+              '太過': { sedate: { point: '太白', side: 'left', desc: '向心、深刺45度、陰數、逆轉' }, tonify: { point: '陷谷', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' } },
+              '不足': { tonify: { point: '太白', side: 'left', desc: '遠心、淺刺15度、數、順轉' }, sedate: { point: '陷谷', side: 'right', desc: '向心、深刺45度、陰數、逆轉' } }
+            },
+            '命門': {
+              '太過': { sedate: { point: '勞宮', side: 'right', desc: '向心、深刺45度、陰數、逆轉' }, tonify: { point: '液門', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' } },
+              '不足': { tonify: { point: '勞宮', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '液門', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' } }
+            }
+          }
+        };
+
+        const ZHONGSHI_RULES = {
+          male: {
+            '人迎一盛（補肝瀉膽）': { tonify: { point: '曲泉', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '足臨泣', alias: '陽輔', side: 'left', desc: '向心、深刺45度、陰數、逆轉' } },
+            '人迎二盛（補腎瀉膀胱）': { tonify: { point: '復溜', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '通谷', alias: '束骨', side: 'left', desc: '向心、深刺45度、陰數、逆轉' } },
+            '人迎三盛（補脾瀉胃）': { tonify: { point: '大都', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '足三里', alias: '厲兌', side: 'left', desc: '向心、深刺45度、陰數、逆轉' } },
+            '人迎一盛而躁（補心包瀉三焦）': { tonify: { point: '中衝', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '支溝', alias: '天井', side: 'right', desc: '向心、深刺45度、陰數、逆轉' } },
+            '人迎二盛而躁（補心瀉小腸）': { tonify: { point: '少衝', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '陽谷', alias: '小海', side: 'right', desc: '向心、深刺45度、陰數、逆轉' } },
+            '人迎三盛而躁（補肺瀉大腸）': { tonify: { point: '太淵', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '商陽', alias: '二間', side: 'right', desc: '向心、深刺45度、陰數、逆轉' } },
+            '脈口一盛（補膽瀉肝）': { tonify: { point: '足臨泣', alias: '俠溪', side: 'right', desc: '向心、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '行間', side: 'left', desc: '遠心、深刺45度、吐氣進針、陰數、逆轉' } },
+            '脈口二盛（補膀胱瀉腎）': { tonify: { point: '通谷', alias: '至陰', side: 'right', desc: '向心、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '湧泉', side: 'left', desc: '遠心、深刺45度、吐氣進針、陰數、逆轉' } },
+            '脈口三盛（補胃瀉脾）': { tonify: { point: '足三里', alias: '解溪', side: 'right', desc: '向心、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '商丘', side: 'left', desc: '遠心、深刺45度、吐氣進針、陰數、逆轉' } },
+            '脈口一盛而躁（補三焦瀉心包）': { tonify: { point: '支溝', alias: '中渚', side: 'left', desc: '向心、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '大陵', side: 'right', desc: '遠心、深刺45度、吐氣進針、陰數、逆轉' } },
+            '脈口二盛而躁（補小腸瀉心）': { tonify: { point: '陽谷', alias: '後溪', side: 'left', desc: '向心、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '神門', side: 'right', desc: '遠心、深刺45度、吐氣進針、陰數、逆轉' } },
+            '脈口三盛而躁（補大腸瀉肺）': { tonify: { point: '商陽', alias: '曲池', side: 'left', desc: '向心、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '尺澤', side: 'right', desc: '遠心、深刺45度、吐氣進針、陰數、逆轉' } }
+          },
+          female: {
+            '人迎一盛（補肝瀉膽）': { tonify: { point: '曲泉', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '足臨泣', alias: '陽輔', side: 'right', desc: '向心、深刺45度、陰數、逆轉' } },
+            '人迎二盛（補腎瀉膀胱）': { tonify: { point: '復溜', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '通谷', alias: '束骨', side: 'right', desc: '向心、深刺45度、陰數、逆轉' } },
+            '人迎三盛（補脾瀉胃）': { tonify: { point: '大都', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '足三里', alias: '厲兌', side: 'right', desc: '向心、深刺45度、陰數、逆轉' } },
+            '人迎一盛而躁（補心包瀉三焦）': { tonify: { point: '中衝', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '支溝', alias: '天井', side: 'left', desc: '向心、深刺45度、陰數、逆轉' } },
+            '人迎二盛而躁（補心瀉小腸）': { tonify: { point: '少衝', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '陽谷', alias: '小海', side: 'left', desc: '向心、深刺45度、陰數、逆轉' } },
+            '人迎三盛而躁（補肺瀉大腸）': { tonify: { point: '太淵', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '商陽', alias: '二間', side: 'left', desc: '向心、深刺45度、陰數、逆轉' } },
+            '脈口一盛（補膽瀉肝）': { tonify: { point: '足臨泣', alias: '俠溪', side: 'left', desc: '向心、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '行間', side: 'right', desc: '遠心、深刺45度、吐氣進針、陰數、逆轉' } },
+            '脈口二盛（補膀胱瀉腎）': { tonify: { point: '通谷', alias: '至陰', side: 'left', desc: '向心、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '湧泉', side: 'right', desc: '遠心、深刺45度、吐氣進針、陰數、逆轉' } },
+            '脈口三盛（補胃瀉脾）': { tonify: { point: '足三里', alias: '解溪', side: 'left', desc: '向心、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '商丘', side: 'right', desc: '遠心、深刺45度、吐氣進針、陰數、逆轉' } },
+            '脈口一盛而躁（補三焦瀉心包）': { tonify: { point: '支溝', alias: '中渚', side: 'right', desc: '向心、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '大陵', side: 'left', desc: '遠心、深刺45度、吐氣進針、陰數、逆轉' } },
+            '脈口二盛而躁（補小腸瀉心）': { tonify: { point: '陽谷', alias: '後溪', side: 'right', desc: '向心、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '神門', side: 'left', desc: '遠心、深刺45度、吐氣進針、陰數、逆轉' } },
+            '脈口三盛而躁（補大腸瀉肺）': { tonify: { point: '商陽', alias: '曲池', side: 'right', desc: '向心、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '尺澤', side: 'left', desc: '遠心、深刺45度、吐氣進針、陰數、逆轉' } }
+          }
+        };
+
+        function AcupunctureTool() {
+          const [gender, setGender] = useState('male');
+          const [isBalanced, setIsBalanced] = useState(null);
+          const [tangyePulse, setTangyePulse] = useState(null);
+          const [tangyeState, setTangyeState] = useState(null);
+          const [zhongshiPulsePos, setZhongshiPulsePos] = useState(null);
+          const [isAgitated, setIsAgitated] = useState(null);
+          const [zhongshiTreatment, setZhongshiTreatment] = useState(null);
+
+          const zhongshiOptions = useMemo(() => {
+            if (!zhongshiPulsePos || isAgitated === null) return [];
+            if (zhongshiPulsePos === '人迎') {
+              return isAgitated === 'no' 
+                ? ['人迎一盛（補肝瀉膽）', '人迎二盛（補腎瀉膀胱）', '人迎三盛（補脾瀉胃）']
+                : ['人迎一盛而躁（補心包瀉三焦）', '人迎二盛而躁（補心瀉小腸）', '人迎三盛而躁（補肺瀉大腸）'];
+            } else {
+              return isAgitated === 'no'
+                ? ['脈口一盛（補膽瀉肝）', '脈口二盛（補膀胱瀉腎）', '脈口三盛（補胃瀉脾）']
+                : ['脈口一盛而躁（補三焦瀉心包）', '脈口二盛而躁（補小腸瀉心）', '脈口三盛而躁（補大腸瀉肺）'];
+            }
+          }, [zhongshiPulsePos, isAgitated]);
+
+          const result = useMemo(() => {
+            let res = null;
+            if (isBalanced === true && tangyePulse && tangyeState) {
+              const rule = TANGYE_RULES[gender][tangyePulse][tangyeState];
+              if (rule) {
+                res = { title: '湯液針法 處方', method: `${tangyePulse} ${tangyeState}`, tonify: rule.tonify, sedate: rule.sedate };
+              }
+            } else if (isBalanced === false && zhongshiTreatment) {
+               const rule = ZHONGSHI_RULES[gender][zhongshiTreatment];
+               if (rule) {
+                 res = { title: '終始針法 處方', method: zhongshiTreatment, tonify: rule.tonify, sedate: rule.sedate };
+               }
+            }
+            return res;
+          }, [gender, isBalanced, tangyePulse, tangyeState, zhongshiTreatment]);
+
+          const handleBalanceChange = (val) => {
+            setIsBalanced(val);
+            setTangyePulse(null); setTangyeState(null);
+            setZhongshiPulsePos(null); setIsAgitated(null); setZhongshiTreatment(null);
+          };
+          const handlePulsePosChange = (val) => { setZhongshiPulsePos(val); setZhongshiTreatment(null); };
+          const handleAgitatedChange = (val) => { setIsAgitated(val); setZhongshiTreatment(null); };
+          
+          const displayActions = useMemo(() => {
+            if (!result || !result.tonify || !result.sedate) return [];
+            const actions = [{ type: 'tonify', ...result.tonify }, { type: 'sedate', ...result.sedate }];
+            if (isBalanced === true) {
+              actions.sort((a, b) => {
+                const getPart = (item) => {
+                     if (!item || !item.point) return 'upper';
+                     const names = item.point.split('/');
+                     for(let name of names) {
+                         if (POINT_LOCATIONS[name]) {
+                             const icon = POINT_LOCATIONS[name].icon;
+                             if (icon === '✋' || icon === '💪') return 'upper';
+                             if (icon === '🦵' || icon === '🦶') return 'lower';
+                         }
+                     }
+                     return 'upper'; 
+                };
+                const partA = getPart(a);
+                const partB = getPart(b);
+                const getScore = (side, part) => {
+                   if (gender === 'male') {
+                     if ((side === 'left' && part === 'upper') || (side === 'right' && part === 'lower')) return 0;
+                     return 1;
+                   } else {
+                     if ((side === 'right' && part === 'upper') || (side === 'left' && part === 'lower')) return 0;
+                     return 1;
+                   }
+                };
+                return getScore(a.side, partA) - getScore(b.side, partB);
+              });
+            }
+            return actions;
+          }, [result, isBalanced, gender]);
+
+          const locationHints = useMemo(() => {
+            if (!result) return [];
+            const points = new Set();
+            const extract = (item) => {
+               if(!item || !item.point) return;
+               const names = [item.point];
+               if (item.alias) names.push(item.alias);
+               names.forEach(n => n.split('/').forEach(subName => points.add(subName)));
+            };
+            extract(result.tonify); extract(result.sedate);
+            const hints = [];
+            points.forEach(p => { if (POINT_LOCATIONS[p]) hints.push({ name: p, ...POINT_LOCATIONS[p] }); });
+            return hints;
+          }, [result]);
+
+          return (
+            <div className="min-h-screen bg-slate-50 p-4 md:p-8 font-sans text-slate-800 pb-20">
+              <div className="max-w-4xl mx-auto space-y-6">
+                <header className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-indigo-500">
+                  <h1 className="text-2xl font-bold flex items-center gap-2 text-indigo-900">
+                    <Icons.Activity />
+                    針灸臨床決策輔助工具
+                  </h1>
+                  <p className="text-slate-500 mt-2">湯液針法 / 內經終始針法 整合學習系統</p>
+                </header>
+
+                <section className="bg-white p-6 rounded-xl shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    病人性別
+                  </h2>
+                  <div className="flex gap-4">
+                    <button onClick={() => setGender('male')} className={`flex-1 py-3 px-4 rounded-lg border-2 transition-all flex items-center justify-center gap-2 ${gender === 'male' ? 'border-blue-500 bg-blue-50 text-blue-700 font-bold' : 'border-slate-200 hover:border-slate-300'}`}><Icons.User /> 男</button>
+                    <button onClick={() => setGender('female')} className={`flex-1 py-3 px-4 rounded-lg border-2 transition-all flex items-center justify-center gap-2 ${gender === 'female' ? 'border-pink-500 bg-pink-50 text-pink-700 font-bold' : 'border-slate-200 hover:border-slate-300'}`}><Icons.User /> 女</button>
+                  </div>
+                </section>
+
+                <section className="bg-white p-6 rounded-xl shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500 delay-100">
+                  <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    雙手脈相？
+                  </h2>
+                  <div className="flex gap-4">
+                    <button onClick={() => handleBalanceChange(true)} className={`flex-1 py-3 px-4 rounded-lg border-2 transition-all ${isBalanced === true ? 'border-teal-500 bg-teal-50 text-teal-700 font-bold' : 'border-slate-200 hover:border-slate-300'}`}>獨異 (湯液針法)</button>
+                    <button onClick={() => handleBalanceChange(false)} className={`flex-1 py-3 px-4 rounded-lg border-2 transition-all ${isBalanced === false ? 'border-orange-500 bg-orange-50 text-orange-700 font-bold' : 'border-slate-200 hover:border-slate-300'}`}>陰陽不平衡 (終始針法)</button>
+                  </div>
+                </section>
+
+                {isBalanced === true && (
+                  <div className="space-y-6 animate-in zoom-in-95 duration-300">
+                    <section className="bg-white p-6 rounded-xl shadow-sm">
+                      <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">哪個脈位獨異？</h2>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        {['心火', '肝木', '腎水', '肺金', '脾土', '命門'].map(p => (
+                          <button key={p} onClick={() => setTangyePulse(p)} className={`py-2 px-3 rounded-lg border transition-all ${tangyePulse === p ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white border-slate-200 hover:bg-slate-50'}`}>{p}</button>
+                        ))}
+                      </div>
+                    </section>
+                    {tangyePulse && (
+                      <section className="bg-white p-6 rounded-xl shadow-sm animate-in fade-in slide-in-from-bottom-2">
+                        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">該脈位狀態？</h2>
+                        <div className="flex gap-4">
+                          <button onClick={() => setTangyeState('太過')} className={`flex-1 py-3 rounded-lg border-2 transition-all flex items-center justify-center gap-2 ${tangyeState === '太過' ? 'border-red-500 bg-red-50 text-red-700 font-bold' : 'border-slate-200'}`}><Icons.ArrowRight className="w-4 h-4 -rotate-45" /> 太過</button>
+                          <button onClick={() => setTangyeState('不足')} className={`flex-1 py-3 rounded-lg border-2 transition-all flex items-center justify-center gap-2 ${tangyeState === '不足' ? 'border-blue-500 bg-blue-50 text-blue-700 font-bold' : 'border-slate-200'}`}><Icons.ArrowRight className="w-4 h-4 rotate-45" /> 不足</button>
+                        </div>
+                      </section>
+                    )}
+                  </div>
+                )}
+
+                {isBalanced === false && (
+                  <div className="space-y-6 animate-in zoom-in-95 duration-300">
+                    <section className="bg-white p-6 rounded-xl shadow-sm">
+                      <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">脈位狀態？</h2>
+                      <div className="flex gap-4">
+                        {['人迎', '脈口'].map(opt => (
+                          <button key={opt} onClick={() => handlePulsePosChange(opt)} className={`flex-1 py-3 rounded-lg border-2 transition-all ${zhongshiPulsePos === opt ? 'border-purple-500 bg-purple-50 text-purple-700 font-bold' : 'border-slate-200'}`}>{opt}</button>
+                        ))}
+                      </div>
+                    </section>
+                    {zhongshiPulsePos && (
+                      <section className="bg-white p-6 rounded-xl shadow-sm animate-in fade-in slide-in-from-bottom-2">
+                        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">是否為躁？</h2>
+                        <div className="flex gap-4">
+                           <button onClick={() => handleAgitatedChange('yes')} className={`flex-1 py-3 rounded-lg border-2 transition-all ${isAgitated === 'yes' ? 'border-red-500 bg-red-50 text-red-700 font-bold' : 'border-slate-200'}`}>是</button>
+                           <button onClick={() => handleAgitatedChange('no')} className={`flex-1 py-3 rounded-lg border-2 transition-all ${isAgitated === 'no' ? 'border-green-500 bg-green-50 text-green-700 font-bold' : 'border-slate-200'}`}>否</button>
+                        </div>
+                      </section>
+                    )}
+                    {zhongshiPulsePos && isAgitated && (
+                      <section className="bg-white p-6 rounded-xl shadow-sm animate-in fade-in slide-in-from-bottom-2">
+                        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">治療原則</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {zhongshiOptions.map(opt => (
+                            <button key={opt} onClick={() => setZhongshiTreatment(opt)} className={`p-4 rounded-lg border text-left transition-all ${zhongshiTreatment === opt ? 'bg-indigo-600 text-white border-indigo-600 shadow-md' : 'bg-white border-slate-200 hover:bg-slate-50'}`}>{opt}</button>
+                          ))}
+                        </div>
+                      </section>
+                    )}
+                  </div>
+                )}
+
+                {result && (
+                  <div className="mt-8 animate-in slide-in-from-bottom-8 duration-700">
+                    <h3 className="text-2xl font-bold text-slate-800 mb-4 border-b pb-2">針灸處方</h3>
+                    <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+                      <div className="bg-indigo-900 text-white p-4">
+                        <div className="flex justify-between items-center">
+                           <h4 className="text-lg font-bold">{result.method}</h4>
+                           <span className="bg-white/20 px-3 py-1 rounded-full text-sm">{result.title}</span>
+                        </div>
+                      </div>
+                      <div className="p-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                          {displayActions.map((action, idx) => {
+                            const isTonify = action.type === 'tonify';
+                            return (
+                              <div key={idx} className={`${isTonify ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'} border-l-4 p-4 rounded-r-lg`}>
+                                <h5 className={`font-bold ${isTonify ? 'text-green-800' : 'text-red-800'} flex items-center gap-2 mb-2`}>
+                                  {isTonify ? <Icons.ArrowRight className="w-5 h-5" /> : <Icons.RotateCcw className="w-5 h-5" />}
+                                  {isTonify ? '補法 (Tonify)' : '瀉法 (Sedate)'}
+                                </h5>
+                                <div className="text-lg font-bold mb-1">
+                                  {action.side === 'left' ? '左' : '右'}
+                                  {action.alias ? `${action.point}/${action.alias}` : action.point}
+                                </div>
+                                <p className={`${isTonify ? 'text-green-700' : 'text-red-700'} text-sm leading-relaxed`}>{action.desc}</p>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <div className="bg-slate-100 rounded-xl p-6">
+                           <h5 className="flex items-center gap-2 text-slate-700 font-bold mb-4 border-b border-slate-200 pb-2"><Icons.MapPin className="w-5 h-5" /> 穴位定位提示</h5>
+                           <div className="grid grid-cols-1 gap-4">
+                              {locationHints.map((hint, idx) => (
+                                <div key={idx} className="flex gap-3 items-start">
+                                  <span className="text-2xl bg-white w-10 h-10 flex items-center justify-center rounded-lg shadow-sm border border-slate-200 shrink-0">{hint.icon}</span>
+                                  <div>
+                                    <span className="font-bold text-slate-900 block mb-1">{hint.name}</span>
+                                    <span className="text-slate-600 text-sm leading-relaxed">{hint.text}</span>
+                                  </div>
+                                </div>
+                              ))}
+                           </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        }
+
+        const root = createRoot(document.getElementById('root'));
+        
+        // 將主程式包裝在 ErrorBoundary 中，捕捉渲染錯誤
+        root.render(
+            <ErrorBoundary>
+                <AcupunctureTool />
+            </ErrorBoundary>
+        );
+
+    </script>
+</body>
+</html>
