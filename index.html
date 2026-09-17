@@ -115,6 +115,15 @@
           '尺澤': { icon: '💪', text: '肘橫紋中，肱二頭肌腱橈側凹陷處。' },
           '神門': { icon: '💪', text: '腕部腕掌橫紋上，尺側腕屈肌腱橈側凹陷處。' },
           '大陵': { icon: '💪', text: '腕掌橫紋的中點處，當掌長肌腱與橈側腕屈肌腱之間。' },
+          '列缺': { icon: '💪', text: '腕部橈骨莖突後骨縫間，肱橈肌與拇長展肌腱之間。' },
+          '偏歷': { icon: '💪', text: '前臂背面橈側，腕橫紋上3寸處。' },
+          '內關': { icon: '💪', text: '前臂掌側，腕橫紋上2寸，掌長肌腱與橈側腕屈肌腱之間。' },
+          '外關': { icon: '💪', text: '前臂伸側面腕背橫紋後二寸，尺骨與橈骨之間。' },
+          '通里': { icon: '💪', text: '在前臂掌側面，腕橫紋上1寸，尺側屈腕肌肌腱橈側緣凹陷處。' },
+          '支正': { icon: '💪', text: '前臂背面尺側，小海與陽谷的連線上，腕背橫紋上5寸處。' },
+          '合谷': { icon: '✋', text: '手背第1～2掌骨間，第2掌骨橈側的中點處。' },
+          '陽池': { icon: '✋', text: '腕背橫紋中，當指伸肌腱尺側緣凹陷處。' },
+          '腕骨': { icon: '✋', text: '在手掌尺側赤白肉際，第5掌骨基底與鉤骨之間凹陷處。' },
           '大敦': { icon: '🦶', text: '足大趾末節外側，距指甲角0.1寸。' },
           '足竅陰': { icon: '🦶', text: '足第4趾末節外側，距指甲角0.1寸。' },
           '太白': { icon: '🦶', text: '足內側緣，足大趾本節（第1跖趾關節）後下方赤白肉際凹陷處。' },
@@ -130,105 +139,175 @@
           '行間': { icon: '🦶', text: '足背，第1、2趾間，趾蹼緣後方赤白肉際。' },
           '湧泉': { icon: '🦶', text: '足底，卷足時足前部凹陷處。' },
           '商丘': { icon: '🦶', text: '足內踝前下方凹陷中。' },
+          '衝陽': { icon: '🦶', text: '在足背最高處，拇長伸肌腱與趾長伸肌腱之間，足背動脈搏動處。' },
+          '丘墟': { icon: '🦶', text: '足背，外踝前下方，伸趾長肌腱外側，距跟關節間凹陷處。' },
+          '京骨': { icon: '🦶', text: '在足外側部，第5跖骨粗隆下方赤白肉際處，當小趾尖與足跟底後緣連線的中點。' },
+          '太衝': { icon: '🦶', text: '足背第1～2跖骨間隙的後方凹陷處。當行間後二寸。' },
+          '太溪': { icon: '🦶', text: '足內側部，內踝後方，內踝尖與跟腱之間凹陷處。' },
+          '大鍾': { icon: '🦶', text: '在足內側部，內踝後下方，跟腱附著部內側前方凹陷處，當太溪後下5分。' },
           '陰谷': { icon: '🦵', text: '膕窩內側，屈膝時，當半腱肌肌腱與半膜肌肌腱之間。' },
           '委中': { icon: '🦵', text: '膕橫紋中點。' },
           '曲泉': { icon: '🦵', text: '膝內側，屈膝，當膝關節內側面橫紋內側端，股骨內側髁的後緣，半腱肌、半膜肌止端的前緣凹陷處。' },
           '陽輔': { icon: '🦵', text: '小腿外側，外踝尖上4寸，腓骨前緣稍前方。' },
           '復溜': { icon: '🦵', text: '小腿內側，太溪直上2寸，跟腱的前方。' },
           '足三里': { icon: '🦵', text: '小腿前外側，外膝眼下3寸，脛骨前緣一橫指。' },
+          '公孫': { icon: '🦶', text: '在足內側緣，第1跖骨基底前下方凹陷處，當太白後1寸。' },
+          '豐隆': { icon: '🦵', text: '在小腿前外側，外踝尖上8寸，脛骨前緣外二橫指處。' },
+          '蠡溝': { icon: '🦵', text: '小腿內側，內踝尖上五寸，脛骨內側面中。' },
+          '光明': { icon: '🦵', text: '在小腿外側部，外踝尖上五寸，腓骨前緣凹陷處，當趾長伸肌與腓骨短肌之間。' },
+          '飛揚': { icon: '🦵', text: '小腿後面，外踝後（崑崙）直上7寸，當承山外下方1寸凹陷處。' },
         };
 
         const TANGYE_RULES = {
           male: {
             '心火': {
-              '太過': { sedate: { point: '少府', side: 'left', desc: '向心、深刺45度、陰數、逆轉' }, tonify: { point: '前谷', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' } },
-              '不足': { tonify: { point: '少府', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '前谷', side: 'right', desc: '向心、深刺45度、陰數、逆轉' } }
+              '太過': { sedate: { point: '少府', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' }, tonify: { point: '前谷', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' } },
+              '不足': { tonify: { point: '少府', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '前谷', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } }
             },
             '肝木': {
-              '太過': { sedate: { point: '大敦', side: 'right', desc: '向心、深刺45度、陰數、逆轉' }, tonify: { point: '足竅陰', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' } },
-              '不足': { tonify: { point: '大敦', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '足竅陰', side: 'left', desc: '向心、深刺45度、陰數、逆轉' } }
+              '太過': { sedate: { point: '大敦', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' }, tonify: { point: '足竅陰', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' } },
+              '不足': { tonify: { point: '大敦', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '足竅陰', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } }
             },
             '腎水': {
-              '太過': { sedate: { point: '陰谷', side: 'right', desc: '向心、深刺45度、陰數、逆轉' }, tonify: { point: '委中', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' } },
-              '不足': { tonify: { point: '陰谷', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '委中', side: 'left', desc: '向心、深刺45度、陰數、逆轉' } }
+              '太過': { sedate: { point: '陰谷', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' }, tonify: { point: '委中', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' } },
+              '不足': { tonify: { point: '陰谷', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '委中', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } }
             },
             '肺金': {
-              '太過': { sedate: { point: '經渠', side: 'left', desc: '向心、深刺45度、陰數、逆轉' }, tonify: { point: '陽溪', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' } },
-              '不足': { tonify: { point: '經渠', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '陽溪', side: 'right', desc: '向心、深刺45度、陰數、逆轉' } }
+              '太過': { sedate: { point: '經渠', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' }, tonify: { point: '陽溪', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' } },
+              '不足': { tonify: { point: '經渠', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '陽溪', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } }
             },
             '脾土': {
-              '太過': { sedate: { point: '太白', side: 'right', desc: '向心、深刺45度、陰數、逆轉' }, tonify: { point: '陷谷', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' } },
-              '不足': { tonify: { point: '太白', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '陷谷', side: 'left', desc: '向心、深刺45度、陰數、逆轉' } }
+              '太過': { sedate: { point: '太白', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' }, tonify: { point: '陷谷', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' } },
+              '不足': { tonify: { point: '太白', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '陷谷', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } }
             },
             '命門': {
-              '太過': { sedate: { point: '勞宮', side: 'left', desc: '向心、深刺45度、陰數、逆轉' }, tonify: { point: '液門', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' } },
-              '不足': { tonify: { point: '勞宮', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '液門', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' } }
+              '太過': { sedate: { point: '勞宮', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' }, tonify: { point: '液門', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' } },
+              '不足': { tonify: { point: '勞宮', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '液門', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' } }
             }
           },
           female: {
             '心火': {
-              '太過': { sedate: { point: '少府', side: 'right', desc: '向心、深刺45度、陰數、逆轉' }, tonify: { point: '前谷', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' } },
-              '不足': { tonify: { point: '少府', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '前谷', side: 'left', desc: '向心、深刺45度、陰數、逆轉' } }
+              '太過': { sedate: { point: '少府', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' }, tonify: { point: '前谷', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' } },
+              '不足': { tonify: { point: '少府', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '前谷', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } }
             },
             '肝木': {
-              '太過': { sedate: { point: '大敦', side: 'left', desc: '向心、深刺45度、陰數、逆轉' }, tonify: { point: '足竅陰', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' } },
-              '不足': { tonify: { point: '大敦', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '足竅陰', side: 'right', desc: '向心、深刺45度、陰數、逆轉' } }
+              '太過': { sedate: { point: '大敦', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' }, tonify: { point: '足竅陰', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' } },
+              '不足': { tonify: { point: '大敦', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '足竅陰', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } }
             },
             '腎水': {
-              '太過': { sedate: { point: '陰谷', side: 'left', desc: '向心、深刺45度、陰數、逆轉' }, tonify: { point: '委中', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' } },
-              '不足': { tonify: { point: '陰谷', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '委中', side: 'right', desc: '向心、深刺45度、陰數、逆轉' } }
+              '太過': { sedate: { point: '陰谷', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' }, tonify: { point: '委中', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' } },
+              '不足': { tonify: { point: '陰谷', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '委中', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } }
             },
             '肺金': {
-              '太過': { sedate: { point: '經渠', side: 'right', desc: '向心、深刺45度、陰數、逆轉' }, tonify: { point: '陽溪', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' } },
-              '不足': { tonify: { point: '經渠', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '陽溪', side: 'left', desc: '向心、深刺45度、陰數、逆轉' } }
+              '太過': { sedate: { point: '經渠', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' }, tonify: { point: '陽溪', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' } },
+              '不足': { tonify: { point: '經渠', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '陽溪', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } }
             },
             '脾土': {
-              '太過': { sedate: { point: '太白', side: 'left', desc: '向心、深刺45度、陰數、逆轉' }, tonify: { point: '陷谷', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' } },
-              '不足': { tonify: { point: '太白', side: 'left', desc: '遠心、淺刺15度、數、順轉' }, sedate: { point: '陷谷', side: 'right', desc: '向心、深刺45度、陰數、逆轉' } }
+              '太過': { sedate: { point: '太白', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' }, tonify: { point: '陷谷', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' } },
+              '不足': { tonify: { point: '太白', side: 'left', desc: '遠心、吸氣進針、數、順轉' }, sedate: { point: '陷谷', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } }
             },
             '命門': {
-              '太過': { sedate: { point: '勞宮', side: 'right', desc: '向心、深刺45度、陰數、逆轉' }, tonify: { point: '液門', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' } },
-              '不足': { tonify: { point: '勞宮', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '液門', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' } }
+              '太過': { sedate: { point: '勞宮', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' }, tonify: { point: '液門', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' } },
+              '不足': { tonify: { point: '勞宮', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '液門', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' } }
             }
           }
         };
 
         const ZHONGSHI_RULES = {
           male: {
-            '人迎一盛（補肝瀉膽）': { tonify: { point: '曲泉', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '足臨泣', alias: '陽輔', side: 'left', desc: '向心、深刺45度、陰數、逆轉' } },
-            '人迎二盛（補腎瀉膀胱）': { tonify: { point: '復溜', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '通谷', alias: '束骨', side: 'left', desc: '向心、深刺45度、陰數、逆轉' } },
-            '人迎三盛（補脾瀉胃）': { tonify: { point: '大都', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '足三里', alias: '厲兌', side: 'left', desc: '向心、深刺45度、陰數、逆轉' } },
-            '人迎一盛而躁（補心包瀉三焦）': { tonify: { point: '中衝', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '支溝', alias: '天井', side: 'right', desc: '向心、深刺45度、陰數、逆轉' } },
-            '人迎二盛而躁（補心瀉小腸）': { tonify: { point: '少衝', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '陽谷', alias: '小海', side: 'right', desc: '向心、深刺45度、陰數、逆轉' } },
-            '人迎三盛而躁（補肺瀉大腸）': { tonify: { point: '太淵', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '商陽', alias: '二間', side: 'right', desc: '向心、深刺45度、陰數、逆轉' } },
-            '脈口一盛（補膽瀉肝）': { tonify: { point: '足臨泣', alias: '俠溪', side: 'right', desc: '向心、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '行間', side: 'left', desc: '遠心、深刺45度、吐氣進針、陰數、逆轉' } },
-            '脈口二盛（補膀胱瀉腎）': { tonify: { point: '通谷', alias: '至陰', side: 'right', desc: '向心、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '湧泉', side: 'left', desc: '遠心、深刺45度、吐氣進針、陰數、逆轉' } },
-            '脈口三盛（補胃瀉脾）': { tonify: { point: '足三里', alias: '解溪', side: 'right', desc: '向心、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '商丘', side: 'left', desc: '遠心、深刺45度、吐氣進針、陰數、逆轉' } },
-            '脈口一盛而躁（補三焦瀉心包）': { tonify: { point: '支溝', alias: '中渚', side: 'left', desc: '向心、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '大陵', side: 'right', desc: '遠心、深刺45度、吐氣進針、陰數、逆轉' } },
-            '脈口二盛而躁（補小腸瀉心）': { tonify: { point: '陽谷', alias: '後溪', side: 'left', desc: '向心、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '神門', side: 'right', desc: '遠心、深刺45度、吐氣進針、陰數、逆轉' } },
-            '脈口三盛而躁（補大腸瀉肺）': { tonify: { point: '商陽', alias: '曲池', side: 'left', desc: '向心、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '尺澤', side: 'right', desc: '遠心、深刺45度、吐氣進針、陰數、逆轉' } }
+            '人迎一盛（補肝瀉膽）': { tonify: { point: '曲泉', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '足臨泣', alias: '陽輔', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } },
+            '人迎二盛（補腎瀉膀胱）': { tonify: { point: '復溜', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '通谷', alias: '束骨', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } },
+            '人迎三盛（補脾瀉胃）': { tonify: { point: '大都', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '足三里', alias: '厲兌', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } },
+            '人迎一盛而躁（補心包瀉三焦）': { tonify: { point: '中衝', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '支溝', alias: '天井', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } },
+            '人迎二盛而躁（補心瀉小腸）': { tonify: { point: '少衝', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '陽谷', alias: '小海', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } },
+            '人迎三盛而躁（補肺瀉大腸）': { tonify: { point: '太淵', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '商陽', alias: '二間', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } },
+            '脈口一盛（補膽瀉肝）': { tonify: { point: '足臨泣', alias: '俠溪', side: 'right', desc: '向心、吐氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '行間', side: 'left', desc: '遠心、吸氣進針、深刺45度、陰數、逆轉' } },
+            '脈口二盛（補膀胱瀉腎）': { tonify: { point: '通谷', alias: '至陰', side: 'right', desc: '向心、吐氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '湧泉', side: 'left', desc: '遠心、吸氣進針、深刺45度、陰數、逆轉' } },
+            '脈口三盛（補胃瀉脾）': { tonify: { point: '足三里', alias: '解溪', side: 'right', desc: '向心、吐氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '商丘', side: 'left', desc: '遠心、吸氣進針、深刺45度、陰數、逆轉' } },
+            '脈口一盛而躁（補三焦瀉心包）': { tonify: { point: '支溝', alias: '中渚', side: 'left', desc: '向心、吐氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '大陵', side: 'right', desc: '遠心、吸氣進針、深刺45度、陰數、逆轉' } },
+            '脈口二盛而躁（補小腸瀉心）': { tonify: { point: '陽谷', alias: '後溪', side: 'left', desc: '向心、吐氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '神門', side: 'right', desc: '遠心、吸氣進針、深刺45度、陰數、逆轉' } },
+            '脈口三盛而躁（補大腸瀉肺）': { tonify: { point: '商陽', alias: '曲池', side: 'left', desc: '向心、吐氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '尺澤', side: 'right', desc: '遠心、吸氣進針、深刺45度、陰數、逆轉' } }
           },
           female: {
-            '人迎一盛（補肝瀉膽）': { tonify: { point: '曲泉', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '足臨泣', alias: '陽輔', side: 'right', desc: '向心、深刺45度、陰數、逆轉' } },
-            '人迎二盛（補腎瀉膀胱）': { tonify: { point: '復溜', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '通谷', alias: '束骨', side: 'right', desc: '向心、深刺45度、陰數、逆轉' } },
-            '人迎三盛（補脾瀉胃）': { tonify: { point: '大都', side: 'left', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '足三里', alias: '厲兌', side: 'right', desc: '向心、深刺45度、陰數、逆轉' } },
-            '人迎一盛而躁（補心包瀉三焦）': { tonify: { point: '中衝', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '支溝', alias: '天井', side: 'left', desc: '向心、深刺45度、陰數、逆轉' } },
-            '人迎二盛而躁（補心瀉小腸）': { tonify: { point: '少衝', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '陽谷', alias: '小海', side: 'left', desc: '向心、深刺45度、陰數、逆轉' } },
-            '人迎三盛而躁（補肺瀉大腸）': { tonify: { point: '太淵', side: 'right', desc: '遠心、淺刺15度、陽數、順轉' }, sedate: { point: '商陽', alias: '二間', side: 'left', desc: '向心、深刺45度、陰數、逆轉' } },
-            '脈口一盛（補膽瀉肝）': { tonify: { point: '足臨泣', alias: '俠溪', side: 'left', desc: '向心、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '行間', side: 'right', desc: '遠心、深刺45度、吐氣進針、陰數、逆轉' } },
-            '脈口二盛（補膀胱瀉腎）': { tonify: { point: '通谷', alias: '至陰', side: 'left', desc: '向心、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '湧泉', side: 'right', desc: '遠心、深刺45度、吐氣進針、陰數、逆轉' } },
-            '脈口三盛（補胃瀉脾）': { tonify: { point: '足三里', alias: '解溪', side: 'left', desc: '向心、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '商丘', side: 'right', desc: '遠心、深刺45度、吐氣進針、陰數、逆轉' } },
-            '脈口一盛而躁（補三焦瀉心包）': { tonify: { point: '支溝', alias: '中渚', side: 'right', desc: '向心、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '大陵', side: 'left', desc: '遠心、深刺45度、吐氣進針、陰數、逆轉' } },
-            '脈口二盛而躁（補小腸瀉心）': { tonify: { point: '陽谷', alias: '後溪', side: 'right', desc: '向心、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '神門', side: 'left', desc: '遠心、深刺45度、吐氣進針、陰數、逆轉' } },
-            '脈口三盛而躁（補大腸瀉肺）': { tonify: { point: '商陽', alias: '曲池', side: 'right', desc: '向心、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '尺澤', side: 'left', desc: '遠心、深刺45度、吐氣進針、陰數、逆轉' } }
+            '人迎一盛（補肝瀉膽）': { tonify: { point: '曲泉', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '足臨泣', alias: '陽輔', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } },
+            '人迎二盛（補腎瀉膀胱）': { tonify: { point: '復溜', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '通谷', alias: '束骨', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } },
+            '人迎三盛（補脾瀉胃）': { tonify: { point: '大都', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '足三里', alias: '厲兌', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } },
+            '人迎一盛而躁（補心包瀉三焦）': { tonify: { point: '中衝', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '支溝', alias: '天井', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } },
+            '人迎二盛而躁（補心瀉小腸）': { tonify: { point: '少衝', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '陽谷', alias: '小海', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } },
+            '人迎三盛而躁（補肺瀉大腸）': { tonify: { point: '太淵', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '商陽', alias: '二間', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } },
+            '脈口一盛（補膽瀉肝）': { tonify: { point: '足臨泣', alias: '俠溪', side: 'left', desc: '向心、吐氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '行間', side: 'right', desc: '遠心、吸氣進針、深刺45度、陰數、逆轉' } },
+            '脈口二盛（補膀胱瀉腎）': { tonify: { point: '通谷', alias: '至陰', side: 'left', desc: '向心、吐氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '湧泉', side: 'right', desc: '遠心、吸氣進針、深刺45度、陰數、逆轉' } },
+            '脈口三盛（補胃瀉脾）': { tonify: { point: '足三里', alias: '解溪', side: 'left', desc: '向心、吐氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '商丘', side: 'right', desc: '遠心、吸氣進針、深刺45度、陰數、逆轉' } },
+            '脈口一盛而躁（補三焦瀉心包）': { tonify: { point: '支溝', alias: '中渚', side: 'right', desc: '向心、吐氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '大陵', side: 'left', desc: '遠心、吸氣進針、深刺45度、陰數、逆轉' } },
+            '脈口二盛而躁（補小腸瀉心）': { tonify: { point: '陽谷', alias: '後溪', side: 'right', desc: '向心、吐氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '神門', side: 'left', desc: '遠心、吸氣進針、深刺45度、陰數、逆轉' } },
+            '脈口三盛而躁（補大腸瀉肺）': { tonify: { point: '商陽', alias: '曲池', side: 'right', desc: '向心、吐氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '尺澤', side: 'left', desc: '遠心、吸氣進針、深刺45度、陰數、逆轉' } }
+          }
+        };
+
+        const YUAN_LUO_RULES = {
+          male: {
+            '心火': {
+              '太過': { tonify1: { point: '腕骨', side: 'left', desc: '直刺、陽數、順轉' }, tonify2: { point: '通里', side: 'right', desc: '直刺、陽數、順轉' } },
+              '不足': { tonify1: { point: '神門', side: 'left', desc: '直刺、陽數、順轉' }, tonify2: { point: '支正', side: 'right', desc: '直刺、陽數、順轉' } }
+            },
+            '肝木': {
+              '太過': { tonify1: { point: '丘墟', side: 'right', desc: '直刺、陽數、順轉' }, tonify2: { point: '蠡溝', side: 'left', desc: '直刺、陽數、順轉' } },
+              '不足': { tonify1: { point: '太衝', side: 'right', desc: '直刺、陽數、順轉' }, tonify2: { point: '光明', side: 'left', desc: '直刺、陽數、順轉' } }
+            },
+            '腎水': {
+              '太過': { tonify1: { point: '京骨', side: 'right', desc: '直刺、陽數、順轉' }, tonify2: { point: '大鍾', side: 'left', desc: '直刺、陽數、順轉' } },
+              '不足': { tonify1: { point: '太溪', side: 'right', desc: '直刺、陽數、順轉' }, tonify2: { point: '飛揚', side: 'left', desc: '直刺、陽數、順轉' } }
+            },
+            '肺金': {
+              '太過': { tonify1: { point: '合谷', side: 'left', desc: '直刺、陽數、順轉' }, tonify2: { point: '列缺', side: 'right', desc: '直刺、陽數、順轉' } },
+              '不足': { tonify1: { point: '太淵', side: 'left', desc: '直刺、陽數、順轉' }, tonify2: { point: '偏歷', side: 'right', desc: '直刺、陽數、順轉' } }
+            },
+            '脾土': {
+              '太過': { tonify1: { point: '衝陽', side: 'right', desc: '直刺、陽數、順轉' }, tonify2: { point: '公孫', side: 'left', desc: '直刺、陽數、順轉' } },
+              '不足': { tonify1: { point: '太白', side: 'right', desc: '直刺、陽數、順轉' }, tonify2: { point: '豐隆', side: 'left', desc: '直刺、陽數、順轉' } }
+            },
+            '命門': {
+              '太過': { tonify1: { point: '陽池', side: 'left', desc: '直刺、陽數、順轉' }, tonify2: { point: '內關', side: 'right', desc: '直刺、陽數、順轉' } },
+              '不足': { tonify1: { point: '大陵', side: 'left', desc: '直刺、陽數、順轉' }, tonify2: { point: '外關', side: 'right', desc: '直刺、陽數、順轉' } }
+            }
+          },
+          female: {
+            '心火': {
+              '太過': { tonify1: { point: '腕骨', side: 'right', desc: '直刺、陽數、順轉' }, tonify2: { point: '通里', side: 'left', desc: '直刺、陽數、順轉' } },
+              '不足': { tonify1: { point: '神門', side: 'right', desc: '直刺、陽數、順轉' }, tonify2: { point: '支正', side: 'left', desc: '直刺、陽數、順轉' } }
+            },
+            '肝木': {
+              '太過': { tonify1: { point: '丘墟', side: 'left', desc: '直刺、陽數、順轉' }, tonify2: { point: '蠡溝', side: 'right', desc: '直刺、陽數、順轉' } },
+              '不足': { tonify1: { point: '太衝', side: 'left', desc: '直刺、陽數、順轉' }, tonify2: { point: '光明', side: 'right', desc: '直刺、陽數、順轉' } }
+            },
+            '腎水': {
+              '太過': { tonify1: { point: '京骨', side: 'left', desc: '直刺、陽數、順轉' }, tonify2: { point: '大鍾', side: 'right', desc: '直刺、陽數、順轉' } },
+              '不足': { tonify1: { point: '太溪', side: 'left', desc: '直刺、陽數、順轉' }, tonify2: { point: '飛揚', side: 'right', desc: '直刺、陽數、順轉' } }
+            },
+            '肺金': {
+              '太過': { tonify1: { point: '合谷', side: 'right', desc: '直刺、陽數、順轉' }, tonify2: { point: '列缺', side: 'left', desc: '直刺、陽數、順轉' } },
+              '不足': { tonify1: { point: '太淵', side: 'right', desc: '直刺、陽數、順轉' }, tonify2: { point: '偏歷', side: 'left', desc: '直刺、陽數、順轉' } }
+            },
+            '脾土': {
+              '太過': { tonify1: { point: '衝陽', side: 'left', desc: '直刺、陽數、順轉' }, tonify2: { point: '公孫', side: 'right', desc: '直刺、陽數、順轉' } },
+              '不足': { tonify1: { point: '太白', side: 'left', desc: '直刺、陽數、順轉' }, tonify2: { point: '豐隆', side: 'right', desc: '直刺、陽數、順轉' } }
+            },
+            '命門': {
+              '太過': { tonify1: { point: '陽池', side: 'right', desc: '直刺、陽數、順轉' }, tonify2: { point: '內關', side: 'left', desc: '直刺、陽數、順轉' } },
+              '不足': { tonify1: { point: '大陵', side: 'right', desc: '直刺、陽數、順轉' }, tonify2: { point: '外關', side: 'left', desc: '直刺、陽數、順轉' } }
+            }
           }
         };
 
         function AcupunctureTool() {
           const [gender, setGender] = useState('male');
-          const [isBalanced, setIsBalanced] = useState(null);
-          const [tangyePulse, setTangyePulse] = useState(null);
-          const [tangyeState, setTangyeState] = useState(null);
+          const [systemChoice, setSystemChoice] = useState(null); // 'tangye', 'zhongshi', 'yuanluo'
+          
+          // States for Tangye & YuanLuo
+          const [pulse, setPulse] = useState(null);
+          const [pulseState, setPulseState] = useState(null);
+
+          // States for Zhongshi
           const [zhongshiPulsePos, setZhongshiPulsePos] = useState(null);
           const [isAgitated, setIsAgitated] = useState(null);
           const [zhongshiTreatment, setZhongshiTreatment] = useState(null);
@@ -248,32 +327,38 @@
 
           const result = useMemo(() => {
             let res = null;
-            if (isBalanced === true && tangyePulse && tangyeState) {
-              const rule = TANGYE_RULES[gender][tangyePulse][tangyeState];
+            if (systemChoice === 'tangye' && pulse && pulseState) {
+              const rule = TANGYE_RULES[gender][pulse][pulseState];
               if (rule) {
-                res = { title: '湯液針法 處方', method: `${tangyePulse} ${tangyeState}`, tonify: rule.tonify, sedate: rule.sedate };
+                res = { title: '湯液針法 處方', method: `${pulse} ${pulseState}`, actions: [{ type: 'tonify', ...rule.tonify }, { type: 'sedate', ...rule.sedate }] };
               }
-            } else if (isBalanced === false && zhongshiTreatment) {
+            } else if (systemChoice === 'zhongshi' && zhongshiTreatment) {
                const rule = ZHONGSHI_RULES[gender][zhongshiTreatment];
                if (rule) {
-                 res = { title: '終始針法 處方', method: zhongshiTreatment, tonify: rule.tonify, sedate: rule.sedate };
+                 res = { title: '終始針法 處方', method: zhongshiTreatment, actions: [{ type: 'tonify', ...rule.tonify }, { type: 'sedate', ...rule.sedate }] };
+               }
+            } else if (systemChoice === 'yuanluo' && pulse && pulseState) {
+               const rule = YUAN_LUO_RULES[gender][pulse][pulseState];
+               if (rule) {
+                 res = { title: '原絡針法 處方', method: `${pulse} ${pulseState}`, actions: [{ type: 'tonify', ...rule.tonify1 }, { type: 'tonify', ...rule.tonify2 }] };
                }
             }
             return res;
-          }, [gender, isBalanced, tangyePulse, tangyeState, zhongshiTreatment]);
+          }, [gender, systemChoice, pulse, pulseState, zhongshiTreatment]);
 
-          const handleBalanceChange = (val) => {
-            setIsBalanced(val);
-            setTangyePulse(null); setTangyeState(null);
+          const handleSystemChange = (val) => {
+            setSystemChoice(val);
+            setPulse(null); setPulseState(null);
             setZhongshiPulsePos(null); setIsAgitated(null); setZhongshiTreatment(null);
           };
-          const handlePulsePosChange = (val) => { setZhongshiPulsePos(val); setZhongshiTreatment(null); };
+          const handleZhongshiPulsePosChange = (val) => { setZhongshiPulsePos(val); setZhongshiTreatment(null); };
           const handleAgitatedChange = (val) => { setIsAgitated(val); setZhongshiTreatment(null); };
           
           const displayActions = useMemo(() => {
-            if (!result || !result.tonify || !result.sedate) return [];
-            const actions = [{ type: 'tonify', ...result.tonify }, { type: 'sedate', ...result.sedate }];
-            if (isBalanced === true) {
+            if (!result || !result.actions) return [];
+            let actions = [...result.actions];
+            
+            if (systemChoice === 'tangye') {
               actions.sort((a, b) => {
                 const getPart = (item) => {
                      if (!item || !item.point) return 'upper';
@@ -300,9 +385,20 @@
                 };
                 return getScore(a.side, partA) - getScore(b.side, partB);
               });
+            } else if (systemChoice === 'yuanluo') {
+                actions.sort((a, b) => {
+                    const getScore = (side) => {
+                        if (gender === 'male') {
+                            return side === 'left' ? 0 : 1;
+                        } else {
+                            return side === 'right' ? 0 : 1;
+                        }
+                    }
+                    return getScore(a.side) - getScore(b.side);
+                });
             }
             return actions;
-          }, [result, isBalanced, gender]);
+          }, [result, systemChoice, gender]);
 
           const locationHints = useMemo(() => {
             if (!result) return [];
@@ -313,7 +409,7 @@
                if (item.alias) names.push(item.alias);
                names.forEach(n => n.split('/').forEach(subName => points.add(subName)));
             };
-            extract(result.tonify); extract(result.sedate);
+            result.actions.forEach(action => extract(action));
             const hints = [];
             points.forEach(p => { if (POINT_LOCATIONS[p]) hints.push({ name: p, ...POINT_LOCATIONS[p] }); });
             return hints;
@@ -323,11 +419,18 @@
             <div className="min-h-screen bg-slate-50 p-4 md:p-8 font-sans text-slate-800 pb-20">
               <div className="max-w-4xl mx-auto space-y-6">
                 <header className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-indigo-500">
-                  <h1 className="text-2xl font-bold flex items-center gap-2 text-indigo-900">
-                    <Icons.Activity />
-                    針灸臨床決策輔助工具
-                  </h1>
-                  <p className="text-slate-500 mt-2">湯液針法 / 內經終始針法 整合學習系統</p>
+                  <div className="flex justify-between items-start">
+                      <div>
+                          <h1 className="text-2xl font-bold flex items-center gap-2 text-indigo-900">
+                            <Icons.Activity />
+                            針灸臨床決策輔助工具
+                          </h1>
+                          <p className="text-slate-500 mt-2">Janna珍娜-湯液針法/終始針法/原絡針法 整合學習系統</p>
+                      </div>
+                      <div className="text-sm text-slate-400 mt-2 text-right">
+                          劉可炫、小奈共同製作
+                      </div>
+                  </div>
                 </header>
 
                 <section className="bg-white p-6 rounded-xl shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -342,43 +445,44 @@
 
                 <section className="bg-white p-6 rounded-xl shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500 delay-100">
                   <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    雙手脈相？
+                    針法系統
                   </h2>
-                  <div className="flex gap-4">
-                    <button onClick={() => handleBalanceChange(true)} className={`flex-1 py-3 px-4 rounded-lg border-2 transition-all ${isBalanced === true ? 'border-teal-500 bg-teal-50 text-teal-700 font-bold' : 'border-slate-200 hover:border-slate-300'}`}>獨異 (湯液針法)</button>
-                    <button onClick={() => handleBalanceChange(false)} className={`flex-1 py-3 px-4 rounded-lg border-2 transition-all ${isBalanced === false ? 'border-orange-500 bg-orange-50 text-orange-700 font-bold' : 'border-slate-200 hover:border-slate-300'}`}>陰陽不平衡 (終始針法)</button>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <button onClick={() => handleSystemChange('tangye')} className={`py-3 px-4 rounded-lg border-2 transition-all ${systemChoice === 'tangye' ? 'border-teal-500 bg-teal-50 text-teal-700 font-bold' : 'border-slate-200 hover:border-slate-300'}`}>獨異 (湯液針法)</button>
+                    <button onClick={() => handleSystemChange('zhongshi')} className={`py-3 px-4 rounded-lg border-2 transition-all ${systemChoice === 'zhongshi' ? 'border-orange-500 bg-orange-50 text-orange-700 font-bold' : 'border-slate-200 hover:border-slate-300'}`}>陰陽不平衡 (終始針法)</button>
+                    <button onClick={() => handleSystemChange('yuanluo')} className={`py-3 px-4 rounded-lg border-2 transition-all ${systemChoice === 'yuanluo' ? 'border-indigo-500 bg-indigo-50 text-indigo-700 font-bold' : 'border-slate-200 hover:border-slate-300'}`}>原絡針法</button>
                   </div>
                 </section>
 
-                {isBalanced === true && (
+                {(systemChoice === 'tangye' || systemChoice === 'yuanluo') && (
                   <div className="space-y-6 animate-in zoom-in-95 duration-300">
                     <section className="bg-white p-6 rounded-xl shadow-sm">
                       <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">哪個脈位獨異？</h2>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                         {['心火', '肝木', '腎水', '肺金', '脾土', '命門'].map(p => (
-                          <button key={p} onClick={() => setTangyePulse(p)} className={`py-2 px-3 rounded-lg border transition-all ${tangyePulse === p ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white border-slate-200 hover:bg-slate-50'}`}>{p}</button>
+                          <button key={p} onClick={() => setPulse(p)} className={`py-2 px-3 rounded-lg border transition-all ${pulse === p ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white border-slate-200 hover:bg-slate-50'}`}>{p}</button>
                         ))}
                       </div>
                     </section>
-                    {tangyePulse && (
+                    {pulse && (
                       <section className="bg-white p-6 rounded-xl shadow-sm animate-in fade-in slide-in-from-bottom-2">
                         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">該脈位狀態？</h2>
                         <div className="flex gap-4">
-                          <button onClick={() => setTangyeState('太過')} className={`flex-1 py-3 rounded-lg border-2 transition-all flex items-center justify-center gap-2 ${tangyeState === '太過' ? 'border-red-500 bg-red-50 text-red-700 font-bold' : 'border-slate-200'}`}><Icons.ArrowRight className="w-4 h-4 -rotate-45" /> 太過</button>
-                          <button onClick={() => setTangyeState('不足')} className={`flex-1 py-3 rounded-lg border-2 transition-all flex items-center justify-center gap-2 ${tangyeState === '不足' ? 'border-blue-500 bg-blue-50 text-blue-700 font-bold' : 'border-slate-200'}`}><Icons.ArrowRight className="w-4 h-4 rotate-45" /> 不足</button>
+                          <button onClick={() => setPulseState('太過')} className={`flex-1 py-3 rounded-lg border-2 transition-all flex items-center justify-center gap-2 ${pulseState === '太過' ? 'border-red-500 bg-red-50 text-red-700 font-bold' : 'border-slate-200'}`}><Icons.ArrowRight className="w-4 h-4 -rotate-45" /> 太過</button>
+                          <button onClick={() => setPulseState('不足')} className={`flex-1 py-3 rounded-lg border-2 transition-all flex items-center justify-center gap-2 ${pulseState === '不足' ? 'border-blue-500 bg-blue-50 text-blue-700 font-bold' : 'border-slate-200'}`}><Icons.ArrowRight className="w-4 h-4 rotate-45" /> 不足</button>
                         </div>
                       </section>
                     )}
                   </div>
                 )}
 
-                {isBalanced === false && (
+                {systemChoice === 'zhongshi' && (
                   <div className="space-y-6 animate-in zoom-in-95 duration-300">
                     <section className="bg-white p-6 rounded-xl shadow-sm">
                       <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">脈位狀態？</h2>
                       <div className="flex gap-4">
                         {['人迎', '脈口'].map(opt => (
-                          <button key={opt} onClick={() => handlePulsePosChange(opt)} className={`flex-1 py-3 rounded-lg border-2 transition-all ${zhongshiPulsePos === opt ? 'border-purple-500 bg-purple-50 text-purple-700 font-bold' : 'border-slate-200'}`}>{opt}</button>
+                          <button key={opt} onClick={() => handleZhongshiPulsePosChange(opt)} className={`flex-1 py-3 rounded-lg border-2 transition-all ${zhongshiPulsePos === opt ? 'border-purple-500 bg-purple-50 text-purple-700 font-bold' : 'border-slate-200'}`}>{opt}</button>
                         ))}
                       </div>
                     </section>
@@ -447,6 +551,23 @@
                               ))}
                            </div>
                         </div>
+
+                        {systemChoice === 'tangye' && (
+                          <div className="mt-6 bg-slate-100/60 p-5 rounded-xl border border-slate-200 text-slate-500 text-sm leading-relaxed">
+                            <h5 className="font-bold mb-3 text-slate-600">針刺操作詳細版：</h5>
+                            <div className="space-y-3">
+                              <div>
+                                <span className="mr-1">➡️</span><span className="font-bold">進針：</span>
+                                <p className="mt-1 pl-6">輕咳進針，在天地人三部，各針三次，共九次。過程配合病人以口呼吸：吸氣進針，吐氣停止。</p>
+                              </div>
+                              <div>
+                                <span className="mr-1">🔄</span><span className="font-bold">行針：</span>
+                                <p className="mt-1 pl-6">針上肢時，病人以鼻呼吸；針下肢時，病人以口呼吸。<br/>針尖向心方向，配合吐氣動針，吸氣停止；針尖遠心方向，配合吸氣動針，吐氣停止。</p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
                       </div>
                     </div>
                   </div>
