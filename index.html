@@ -15,7 +15,7 @@
     <!-- 載入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- 改用 Cloudflare CDN 載入 React，確保穩定性 -->
+    <!-- 載入 React 核心與 Babel -->
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.6/babel.min.js"></script>
@@ -259,7 +259,6 @@
           }
         };
 
-        // --- 快速按鈕的脈位映射 ---
         const QUICK_PULSE_MAPPING = {
             male: {
                 '0-0': '命門', '1-0': '脾土', '2-0': '肺金',  // 左排(右手)
@@ -271,95 +270,97 @@
             }
         };
 
-        // 共用的解答卡片元件
+        const QUICK_ZHONGSHI_MAPPING = {
+            male: {
+                '0-0': '脈口二盛', '1-0': '脈口三盛', '2-0': '脈口一盛',
+                '0-1': '人迎二盛', '1-1': '人迎三盛', '2-1': '人迎一盛'
+            },
+            female: {
+                '0-0': '人迎二盛', '1-0': '人迎三盛', '2-0': '人迎一盛',
+                '0-1': '脈口二盛', '1-1': '脈口三盛', '2-1': '脈口一盛'
+            }
+        };
+
         const ResultCard = ({ result, displayActions, locationHints, handleCopy, isCopied, systemChoice }) => {
             if (!result) return null;
             return (
                 <div className="mt-8 animate-in slide-in-from-bottom-8 duration-700">
-                  <h3 className="text-2xl font-bold text-slate-800 mb-4 border-b pb-2">針灸處方</h3>
-                  <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
-                    <div className="bg-indigo-900 text-white p-4">
-                      <div className="flex justify-between items-center">
-                         <h4 className="text-xl font-bold">{result.method}</h4>
-                         <span className="bg-white/20 px-3 py-1 rounded-full text-sm">{result.title}</span>
-                      </div>
-                    </div>
-                    <div className="p-6">
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                        {displayActions.map((action, idx) => {
-                          const isTonify = action.type === 'tonify';
-                          return (
-                            <div key={idx} className={`${isTonify ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'} border-l-4 p-4 rounded-r-lg`}>
-                              <h5 className={`font-bold ${isTonify ? 'text-green-800' : 'text-red-800'} flex items-center gap-2 mb-2`}>
-                                {isTonify ? <Icons.ArrowRight className="w-5 h-5" /> : <Icons.RotateCcw className="w-5 h-5" />}
-                                {isTonify ? '補法 (Tonify)' : '瀉法 (Sedate)'}
-                              </h5>
-                              <div className="text-lg font-bold mb-1">
-                                {action.side === 'left' ? '左' : '右'}
-                                {action.alias ? `${action.point}/${action.alias}` : action.point}
-                              </div>
-                              <p className={`${isTonify ? 'text-green-700' : 'text-red-700'} text-sm leading-relaxed`}>{action.desc}</p>
-                            </div>
-                          );
-                        })}
-                      </div>
-                      
-                      <div className="bg-slate-100 rounded-xl p-6 mb-6">
-                         <h5 className="flex items-center gap-2 text-slate-700 font-bold mb-4 border-b border-slate-200 pb-2"><Icons.MapPin className="w-5 h-5" /> 穴位定位提示</h5>
-                         <div className="grid grid-cols-1 gap-4">
-                            {locationHints.map((hint, idx) => (
-                              <div key={idx} className="flex gap-3 items-start">
-                                <span className="text-2xl bg-white w-10 h-10 flex items-center justify-center rounded-lg shadow-sm border border-slate-200 shrink-0">{hint.icon}</span>
-                                <div>
-                                  <span className="font-bold text-slate-900 block mb-1">{hint.name}</span>
-                                  <span className="text-slate-600 text-sm leading-relaxed">{hint.text}</span>
-                                </div>
-                              </div>
-                            ))}
-                         </div>
-                      </div>
-
-                      {systemChoice === 'tangye' && (
-                        <div className="bg-slate-100/60 p-5 rounded-xl border border-slate-200 text-slate-500 text-sm leading-relaxed">
-                          <h5 className="font-bold mb-3 text-slate-600">針刺操作詳細版：</h5>
-                          <div className="space-y-3">
-                            <div>
-                              <span className="mr-1">➡️</span><span className="font-bold">進針：</span>
-                              <p className="mt-1 pl-6">輕咳進針，在天地人三部，各針三次，共九次。過程配合病人以口呼吸：吸氣進針，吐氣停止。</p>
-                            </div>
-                            <div>
-                              <span className="mr-1">🔄</span><span className="font-bold">行針：</span>
-                              <p className="mt-1 pl-6">針上肢時，病人以鼻呼吸；針下肢時，病人以口呼吸。<br/>針尖向心方向，配合吐氣動針，吸氣停止；針尖遠心方向，配合吸氣動針，吐氣停止。</p>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="mt-8 flex justify-center">
-                        <button 
-                          onClick={handleCopy}
-                          className={`flex items-center gap-2 px-8 py-3 rounded-full font-bold transition-all shadow-md active:scale-95 ${
-                              isCopied 
-                              ? 'bg-green-500 hover:bg-green-600 text-white' 
-                              : 'bg-indigo-600 hover:bg-indigo-700 text-white'
-                          }`}
-                        >
-                          {isCopied ? <Icons.Check className="w-5 h-5" /> : <Icons.Copy className="w-5 h-5" />}
-                          {isCopied ? '已複製到剪貼簿！' : '一鍵複製解答'}
+                    <div className="flex justify-between items-center mb-4 border-b pb-2">
+                        <h3 className="text-2xl font-bold text-slate-800">針灸處方</h3>
+                        <button onClick={handleCopy} className="flex items-center gap-2 px-4 py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg font-bold transition-colors">
+                            {isCopied ? <><Icons.Check className="w-5 h-5"/> 已複製</> : <><Icons.Copy className="w-5 h-5"/> 複製</>}
                         </button>
-                      </div>
-
                     </div>
-                  </div>
+                    
+                    <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+                        <div className="bg-indigo-900 text-white p-4">
+                        <div className="flex justify-between items-center">
+                            <h4 className="text-xl font-bold">{result.method}</h4>
+                            <span className="bg-white/20 px-3 py-1 rounded-full text-sm">{result.title}</span>
+                        </div>
+                        </div>
+
+                        <div className="p-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                            {displayActions.map((action, idx) => {
+                            const isTonify = action.type === 'tonify';
+                            return (
+                                <div key={idx} className={`${isTonify ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'} border-l-4 p-4 rounded-r-lg`}>
+                                <h5 className={`font-bold ${isTonify ? 'text-green-800' : 'text-red-800'} flex items-center gap-2 mb-2`}>
+                                    {isTonify ? <Icons.ArrowRight className="w-5 h-5" /> : <Icons.RotateCcw className="w-5 h-5" />}
+                                    {isTonify ? '補法 (Tonify)' : '瀉法 (Sedate)'}
+                                </h5>
+                                <div className="text-lg font-bold mb-1">
+                                    {action.side === 'left' ? '左' : '右'}
+                                    {action.alias ? `${action.point}/${action.alias}` : action.point}
+                                </div>
+                                <p className={`${isTonify ? 'text-green-700' : 'text-red-700'} text-sm leading-relaxed`}>{action.desc}</p>
+                                </div>
+                            );
+                            })}
+                        </div>
+                        <div className="bg-slate-100 rounded-xl p-6">
+                            <h5 className="flex items-center gap-2 text-slate-700 font-bold mb-4 border-b border-slate-200 pb-2"><Icons.MapPin className="w-5 h-5" /> 穴位定位提示</h5>
+                            <div className="grid grid-cols-1 gap-4">
+                                {locationHints.map((hint, idx) => (
+                                <div key={idx} className="flex gap-3 items-start">
+                                    <span className="text-2xl bg-white w-10 h-10 flex items-center justify-center rounded-lg shadow-sm border border-slate-200 shrink-0">{hint.icon}</span>
+                                    <div>
+                                    <span className="font-bold text-slate-900 block mb-1">{hint.name}</span>
+                                    <span className="text-slate-600 text-sm leading-relaxed">{hint.text}</span>
+                                    </div>
+                                </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {systemChoice === 'tangye' && (
+                            <div className="mt-6 bg-slate-100/60 p-5 rounded-xl border border-slate-200 text-slate-500 text-sm leading-relaxed">
+                            <h5 className="font-bold mb-3 text-slate-600">針刺操作詳細版：</h5>
+                            <div className="space-y-3">
+                                <div>
+                                <span className="mr-1">➡️</span><span className="font-bold">進針：</span>
+                                <p className="mt-1 pl-6">輕咳進針，在天地人三部，各針三次，共九次。過程配合病人以口呼吸：吸氣進針，吐氣停止。</p>
+                                </div>
+                                <div>
+                                <span className="mr-1">🔄</span><span className="font-bold">行針：</span>
+                                <p className="mt-1 pl-6">針上肢時，病人以鼻呼吸；針下肢時，病人以口呼吸。<br/>針尖向心方向，配合吐氣動針，吸氣停止；針尖遠心方向，配合吸氣動針，吐氣停止。</p>
+                                </div>
+                            </div>
+                            </div>
+                        )}
+                        </div>
+                    </div>
                 </div>
             );
         };
 
         function AcupunctureTool() {
-          const [view, setView] = useState('calculator'); // 'calculator' 或 'quick'
           const [isMenuOpen, setIsMenuOpen] = useState(false);
+          const [view, setView] = useState('calculator'); // 'calculator' 或 'quick'
+          const [isCopied, setIsCopied] = useState(false);
 
-          // === 計算機模式的 State ===
+          // Calculator View State
           const [gender, setGender] = useState('male');
           const [systemChoice, setSystemChoice] = useState(null); 
           const [pulse, setPulse] = useState(null);
@@ -367,17 +368,14 @@
           const [zhongshiPulsePos, setZhongshiPulsePos] = useState(null);
           const [isAgitated, setIsAgitated] = useState(null);
           const [zhongshiTreatment, setZhongshiTreatment] = useState(null);
-          const [isCopied, setIsCopied] = useState(false);
 
-          // === 快速按鈕模式的 State ===
+          // Quick View State
           const [quickGender, setQuickGender] = useState('male');
+          const [quickSystem, setQuickSystem] = useState('tangye'); 
           const [quickActiveBox, setQuickActiveBox] = useState(null);
-          const [quickBoxState, setQuickBoxState] = useState(null); // '太過' 或 '不足'
-
-          // 用於手勢判斷
+          const [quickBoxState, setQuickBoxState] = useState(null);
           const [pointerStartY, setPointerStartY] = useState(0);
 
-          // 計算機模式的選項
           const zhongshiOptions = useMemo(() => {
             if (!zhongshiPulsePos || isAgitated === null) return [];
             if (zhongshiPulsePos === '人迎') {
@@ -391,19 +389,37 @@
             }
           }, [zhongshiPulsePos, isAgitated]);
 
-          // 計算目前視圖的解答 (Result)
           const result = useMemo(() => {
             if (view === 'quick') {
                 if (!quickActiveBox || !quickBoxState) return null;
-                const pulseName = QUICK_PULSE_MAPPING[quickGender][quickActiveBox];
-                const rule = TANGYE_RULES[quickGender][pulseName][quickBoxState];
-                if(rule) {
-                    return { title: '湯液針法 處方', method: `${pulseName} ${quickBoxState}`, actions: [{ type: 'tonify', ...rule.tonify }, { type: 'sedate', ...rule.sedate }] };
+                
+                if (quickSystem === 'tangye' || quickSystem === 'yuanluo') {
+                    const pulseName = QUICK_PULSE_MAPPING[quickGender][quickActiveBox];
+                    if (quickSystem === 'tangye') {
+                        const rule = TANGYE_RULES[quickGender][pulseName][quickBoxState];
+                        if(rule) {
+                            return { title: '湯液針法 處方', method: `${pulseName} ${quickBoxState}`, actions: [{ type: 'tonify', ...rule.tonify }, { type: 'sedate', ...rule.sedate }] };
+                        }
+                    } else {
+                        const rule = YUAN_LUO_RULES[quickGender][pulseName][quickBoxState];
+                        if(rule) {
+                            return { title: '原絡針法 處方', method: `${pulseName} ${quickBoxState}`, actions: [{ type: 'tonify', ...rule.tonify1 }, { type: 'tonify', ...rule.tonify2 }] }; 
+                        }
+                    }
+                } else if (quickSystem === 'zhongshi') {
+                    const pulseName = QUICK_ZHONGSHI_MAPPING[quickGender][quickActiveBox];
+                    const exactStart = quickBoxState === '躁' ? `${pulseName}而躁（` : `${pulseName}（`;
+                    const rulesObj = ZHONGSHI_RULES[quickGender];
+                    for (let key in rulesObj) {
+                        if (key.startsWith(exactStart)) {
+                            const rule = rulesObj[key];
+                            return { title: '終始針法 處方', method: key, actions: [{ type: 'tonify', ...rule.tonify }, { type: 'sedate', ...rule.sedate }] };
+                        }
+                    }
                 }
                 return null;
             }
 
-            // view === 'calculator'
             let res = null;
             if (systemChoice === 'tangye' && pulse && pulseState) {
               const rule = TANGYE_RULES[gender][pulse][pulseState];
@@ -422,14 +438,67 @@
                }
             }
             return res;
-          }, [view, quickGender, quickActiveBox, quickBoxState, gender, systemChoice, pulse, pulseState, zhongshiTreatment]);
+          }, [view, quickGender, quickSystem, quickActiveBox, quickBoxState, gender, systemChoice, pulse, pulseState, zhongshiTreatment]);
 
           const handleSystemChange = (val) => {
             setSystemChoice(val);
             setPulse(null); setPulseState(null);
             setZhongshiPulsePos(null); setIsAgitated(null); setZhongshiTreatment(null);
           };
+          const handlePulsePosChange = (val) => { setZhongshiPulsePos(val); setZhongshiTreatment(null); };
+          const handleAgitatedChange = (val) => { setIsAgitated(val); setZhongshiTreatment(null); };
           
+          const displayActions = useMemo(() => {
+            if (!result || !result.actions) return [];
+            let actions = [...result.actions];
+            const activeSystem = view === 'quick' ? quickSystem : systemChoice;
+
+            if (activeSystem === 'tangye') {
+              actions.sort((a, b) => {
+                const getPart = (item) => {
+                     if (!item || !item.point) return 'upper';
+                     const names = item.point.split('/');
+                     for(let name of names) {
+                         if (POINT_LOCATIONS[name]) {
+                             const icon = POINT_LOCATIONS[name].icon;
+                             if (icon === '✋' || icon === '💪') return 'upper';
+                             if (icon === '🦵' || icon === '🦶') return 'lower';
+                         }
+                     }
+                     return 'upper'; 
+                };
+                const partA = getPart(a);
+                const partB = getPart(b);
+                const getScore = (side, part) => {
+                   const activeGender = view === 'quick' ? quickGender : gender;
+                   if (activeGender === 'male') {
+                     if ((side === 'left' && part === 'upper') || (side === 'right' && part === 'lower')) return 0;
+                     return 1;
+                   } else {
+                     if ((side === 'right' && part === 'upper') || (side === 'left' && part === 'lower')) return 0;
+                     return 1;
+                   }
+                };
+                return getScore(a.side, partA) - getScore(b.side, partB);
+              });
+            }
+            return actions;
+          }, [result, view, quickSystem, systemChoice, gender, quickGender]);
+
+          const locationHints = useMemo(() => {
+            if (!result || !result.actions) return [];
+            const points = new Set();
+            result.actions.forEach(item => {
+               if(!item || !item.point) return;
+               const names = [item.point];
+               if (item.alias) names.push(item.alias);
+               names.forEach(n => n.split('/').forEach(subName => points.add(subName)));
+            });
+            const hints = [];
+            points.forEach(p => { if (POINT_LOCATIONS[p]) hints.push({ name: p, ...POINT_LOCATIONS[p] }); });
+            return hints;
+          }, [result]);
+
           const handleCopy = () => {
             if (!result || !displayActions) return;
             const currentGender = view === 'quick' ? (quickGender === 'male' ? '男' : '女') : (gender === 'male' ? '男' : '女');
@@ -455,70 +524,9 @@
             document.body.removeChild(textArea);
           };
 
-          const displayActions = useMemo(() => {
-            if (!result || !result.actions) return [];
-            let actions = [...result.actions];
-            const activeGender = view === 'quick' ? quickGender : gender;
-            const activeSystem = view === 'quick' ? 'tangye' : systemChoice;
-            
-            if (activeSystem === 'tangye') {
-              actions.sort((a, b) => {
-                const getPart = (item) => {
-                     if (!item || !item.point) return 'upper';
-                     const names = item.point.split('/');
-                     for(let name of names) {
-                         if (POINT_LOCATIONS[name]) {
-                             const icon = POINT_LOCATIONS[name].icon;
-                             if (icon === '✋' || icon === '💪') return 'upper';
-                             if (icon === '🦵' || icon === '🦶') return 'lower';
-                         }
-                     }
-                     return 'upper'; 
-                };
-                const partA = getPart(a);
-                const partB = getPart(b);
-                const getScore = (side, part) => {
-                   if (activeGender === 'male') {
-                     if ((side === 'left' && part === 'upper') || (side === 'right' && part === 'lower')) return 0;
-                     return 1;
-                   } else {
-                     if ((side === 'right' && part === 'upper') || (side === 'left' && part === 'lower')) return 0;
-                     return 1;
-                   }
-                };
-                return getScore(a.side, partA) - getScore(b.side, partB);
-              });
-            } else if (activeSystem === 'yuanluo') {
-                actions.sort((a, b) => {
-                    const getScore = (side) => {
-                        if (activeGender === 'male') { return side === 'left' ? 0 : 1; } 
-                        else { return side === 'right' ? 0 : 1; }
-                    }
-                    return getScore(a.side) - getScore(b.side);
-                });
-            }
-            return actions;
-          }, [result, view, systemChoice, gender, quickGender]);
-
-          const locationHints = useMemo(() => {
-            if (!result) return [];
-            const points = new Set();
-            result.actions.forEach(item => {
-               if(!item || !item.point) return;
-               const names = [item.point];
-               if (item.alias) names.push(item.alias);
-               names.forEach(n => n.split('/').forEach(subName => points.add(subName)));
-            });
-            const hints = [];
-            points.forEach(p => { if (POINT_LOCATIONS[p]) hints.push({ name: p, ...POINT_LOCATIONS[p] }); });
-            return hints;
-          }, [result]);
-
-          // === 渲染畫面 ===
           return (
             <div className="min-h-screen bg-slate-50 font-sans text-slate-800 pb-20">
               
-              {/* 漢堡選單遮罩與 Drawer */}
               {isMenuOpen && (
                  <div className="fixed inset-0 bg-black/50 z-40 transition-opacity" onClick={() => setIsMenuOpen(false)}>
                     <div className="w-72 h-full bg-white shadow-xl z-50 transform transition-transform duration-300 flex flex-col" onClick={e=>e.stopPropagation()}>
@@ -531,7 +539,7 @@
                                脈法計算機
                            </button>
                            <button onClick={() => {setView('quick'); setIsMenuOpen(false);}} className={`w-full text-left px-4 py-4 rounded-xl transition-all ${view === 'quick' ? 'bg-indigo-50 text-indigo-700 font-bold border border-indigo-100' : 'text-slate-600 hover:bg-slate-50'}`}>
-                               湯液針法快速按鈕輔助
+                               快速按鈕輔助 (湯液/終始/原絡)
                            </button>
                        </div>
                     </div>
@@ -539,7 +547,6 @@
               )}
 
               <div className="max-w-4xl mx-auto space-y-6 p-4 md:p-8">
-                {/* Header (全視圖共用) */}
                 <header className="bg-white p-5 md:p-6 rounded-xl shadow-sm border-l-4 border-indigo-500 flex items-start gap-4">
                   <button onClick={() => setIsMenuOpen(true)} className="mt-1 text-slate-500 hover:text-indigo-600 transition-colors">
                      <Icons.Menu />
@@ -558,7 +565,7 @@
                   </div>
                 </header>
 
-                {/* ================= 脈法計算機 視圖 ================= */}
+                { }
                 {view === 'calculator' && (
                   <div className="space-y-6 animate-in fade-in duration-500">
                     <section className="bg-white p-6 rounded-xl shadow-sm">
@@ -606,7 +613,7 @@
                           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">脈位狀態？</h2>
                           <div className="flex gap-4">
                             {['人迎', '脈口'].map(opt => (
-                              <button key={opt} onClick={() => {setZhongshiPulsePos(opt); setZhongshiTreatment(null);}} className={`flex-1 py-3 rounded-lg border-2 transition-all ${zhongshiPulsePos === opt ? 'border-purple-500 bg-purple-50 text-purple-700 font-bold' : 'border-slate-200'}`}>{opt}</button>
+                              <button key={opt} onClick={() => handlePulsePosChange(opt)} className={`flex-1 py-3 rounded-lg border-2 transition-all ${zhongshiPulsePos === opt ? 'border-purple-500 bg-purple-50 text-purple-700 font-bold' : 'border-slate-200'}`}>{opt}</button>
                             ))}
                           </div>
                         </section>
@@ -614,8 +621,8 @@
                           <section className="bg-white p-6 rounded-xl shadow-sm animate-in fade-in slide-in-from-bottom-2">
                             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">是否為躁？</h2>
                             <div className="flex gap-4">
-                               <button onClick={() => {setIsAgitated('yes'); setZhongshiTreatment(null);}} className={`flex-1 py-3 rounded-lg border-2 transition-all ${isAgitated === 'yes' ? 'border-red-500 bg-red-50 text-red-700 font-bold' : 'border-slate-200'}`}>是</button>
-                               <button onClick={() => {setIsAgitated('no'); setZhongshiTreatment(null);}} className={`flex-1 py-3 rounded-lg border-2 transition-all ${isAgitated === 'no' ? 'border-green-500 bg-green-50 text-green-700 font-bold' : 'border-slate-200'}`}>否</button>
+                               <button onClick={() => handleAgitatedChange('yes')} className={`flex-1 py-3 rounded-lg border-2 transition-all ${isAgitated === 'yes' ? 'border-red-500 bg-red-50 text-red-700 font-bold' : 'border-slate-200'}`}>是</button>
+                               <button onClick={() => handleAgitatedChange('no')} className={`flex-1 py-3 rounded-lg border-2 transition-all ${isAgitated === 'no' ? 'border-green-500 bg-green-50 text-green-700 font-bold' : 'border-slate-200'}`}>否</button>
                             </div>
                           </section>
                         )}
@@ -631,93 +638,77 @@
                         )}
                       </div>
                     )}
-                    
-                    {/* 共用解答卡片 */}
+
                     <ResultCard result={result} displayActions={displayActions} locationHints={locationHints} handleCopy={handleCopy} isCopied={isCopied} systemChoice={systemChoice} />
                   </div>
                 )}
 
-                {/* ================= 湯液針法快速按鈕輔助 視圖 ================= */}
+                {}
                 {view === 'quick' && (
                   <div className="space-y-6 animate-in fade-in duration-500">
                     <section className="bg-white p-6 rounded-xl shadow-sm flex flex-col items-center">
-                        <div className="text-sm text-slate-500 mb-4 font-bold tracking-widest uppercase">選擇性別</div>
+                        <div className="text-sm text-slate-500 mb-4 font-bold tracking-widest uppercase">選擇性別與針法</div>
                         
-                        {/* 男女切換開關 (廁所門鎖感) */}
                         <div className="relative w-64 h-14 bg-slate-200 rounded-full flex items-center p-1 cursor-pointer overflow-hidden shadow-inner" onClick={() => { setQuickGender(g => g === 'male' ? 'female' : 'male'); setQuickActiveBox(null); setQuickBoxState(null); }}>
                             <div className={`absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-full transition-transform duration-300 shadow-md ${quickGender === 'male' ? 'translate-x-0 bg-blue-500' : 'translate-x-[calc(100%+4px)] bg-pink-500'}`}></div>
                             <div className={`flex-1 text-center z-10 font-bold transition-colors ${quickGender === 'male' ? 'text-white' : 'text-slate-500'}`}>男性</div>
                             <div className={`flex-1 text-center z-10 font-bold transition-colors ${quickGender === 'female' ? 'text-white' : 'text-slate-500'}`}>女性</div>
                         </div>
 
+                        <div className="grid grid-cols-3 gap-3 sm:gap-4 mt-6 w-full max-w-sm">
+                            <button onClick={() => { setQuickSystem('tangye'); setQuickActiveBox(null); setQuickBoxState(null); }} className={`py-3 px-2 sm:px-4 rounded-lg border-2 transition-all text-sm sm:text-base ${quickSystem === 'tangye' ? 'border-teal-500 bg-teal-50 text-teal-700 font-bold shadow-sm' : 'border-slate-200 hover:border-slate-300'}`}>湯液</button>
+                            <button onClick={() => { setQuickSystem('zhongshi'); setQuickActiveBox(null); setQuickBoxState(null); }} className={`py-3 px-2 sm:px-4 rounded-lg border-2 transition-all text-sm sm:text-base ${quickSystem === 'zhongshi' ? 'border-orange-500 bg-orange-50 text-orange-700 font-bold shadow-sm' : 'border-slate-200 hover:border-slate-300'}`}>終始</button>
+                            <button onClick={() => { setQuickSystem('yuanluo'); setQuickActiveBox(null); setQuickBoxState(null); }} className={`py-3 px-2 sm:px-4 rounded-lg border-2 transition-all text-sm sm:text-base ${quickSystem === 'yuanluo' ? 'border-indigo-500 bg-indigo-50 text-indigo-700 font-bold shadow-sm' : 'border-slate-200 hover:border-slate-300'}`}>原絡</button>
+                        </div>
+
                         <div className="mt-6 text-sm text-slate-500 text-center">
-                            提示：請在下方脈位方塊上<br/> <span className="font-bold text-slate-700">向上滑動(太過)</span> 或 <span className="font-bold text-slate-700">向下滑動(不足)</span>
+                            提示：請在下方脈位方塊上<br/> 
+                            <span className="font-bold text-slate-700">向上滑動({quickSystem === 'zhongshi' ? '躁' : '太過'})</span> 或 <span className="font-bold text-slate-700">向下滑動({quickSystem === 'zhongshi' ? '無躁' : '不足'})</span>
                         </div>
                     </section>
 
-                    <section className="bg-white p-6 rounded-xl shadow-sm overflow-hidden">
-                        <div className="flex flex-col items-center max-w-sm mx-auto">
-                            
-                            {/* Grid 佈局 */}
-                            <div className="grid grid-cols-[40px_1fr_1fr] gap-4 w-full justify-items-center items-center">
-                                {/* 第一列: 尺 */}
-                                <div className="text-xl font-bold text-slate-400 select-none">尺</div>
-                                {[0, 1].map(col => {
-                                    const boxId = `0-${col}`;
-                                    const isActive = quickActiveBox === boxId;
-                                    const bgColorClass = isActive ? (quickGender === 'male' ? 'bg-blue-100 border-blue-400' : 'bg-pink-100 border-pink-400') : 'bg-white border-slate-100';
-                                    return (
-                                        <div key={boxId} 
-                                             onPointerDown={(e) => { e.target.setPointerCapture(e.pointerId); setPointerStartY(e.clientY); setQuickActiveBox(boxId); setQuickBoxState(null); }}
-                                             onPointerUp={(e) => { e.target.releasePointerCapture(e.pointerId); const diff = e.clientY - pointerStartY; if (diff < -20) setQuickBoxState('太過'); else if (diff > 20) setQuickBoxState('不足'); }}
-                                             className={`touch-none w-24 h-24 sm:w-28 sm:h-28 rounded-2xl border-2 flex items-center justify-center cursor-pointer transition-all box-neumorphism select-none ${bgColorClass}`}>
-                                             {isActive && quickBoxState && <span className="text-slate-400/80 text-3xl sm:text-4xl font-black pointer-events-none">{quickBoxState}</span>}
-                                        </div>
-                                    )
-                                })}
-
-                                {/* 第二列: 關 */}
-                                <div className="text-xl font-bold text-slate-400 select-none">關</div>
-                                {[0, 1].map(col => {
-                                    const boxId = `1-${col}`;
-                                    const isActive = quickActiveBox === boxId;
-                                    const bgColorClass = isActive ? (quickGender === 'male' ? 'bg-blue-100 border-blue-400' : 'bg-pink-100 border-pink-400') : 'bg-white border-slate-100';
-                                    return (
-                                        <div key={boxId} 
-                                             onPointerDown={(e) => { e.target.setPointerCapture(e.pointerId); setPointerStartY(e.clientY); setQuickActiveBox(boxId); setQuickBoxState(null); }}
-                                             onPointerUp={(e) => { e.target.releasePointerCapture(e.pointerId); const diff = e.clientY - pointerStartY; if (diff < -20) setQuickBoxState('太過'); else if (diff > 20) setQuickBoxState('不足'); }}
-                                             className={`touch-none w-24 h-24 sm:w-28 sm:h-28 rounded-2xl border-2 flex items-center justify-center cursor-pointer transition-all box-neumorphism select-none ${bgColorClass}`}>
-                                             {isActive && quickBoxState && <span className="text-slate-400/80 text-3xl sm:text-4xl font-black pointer-events-none">{quickBoxState}</span>}
-                                        </div>
-                                    )
-                                })}
-
-                                {/* 第三列: 寸 */}
-                                <div className="text-xl font-bold text-slate-400 select-none">寸</div>
-                                {[0, 1].map(col => {
-                                    const boxId = `2-${col}`;
-                                    const isActive = quickActiveBox === boxId;
-                                    const bgColorClass = isActive ? (quickGender === 'male' ? 'bg-blue-100 border-blue-400' : 'bg-pink-100 border-pink-400') : 'bg-white border-slate-100';
-                                    return (
-                                        <div key={boxId} 
-                                             onPointerDown={(e) => { e.target.setPointerCapture(e.pointerId); setPointerStartY(e.clientY); setQuickActiveBox(boxId); setQuickBoxState(null); }}
-                                             onPointerUp={(e) => { e.target.releasePointerCapture(e.pointerId); const diff = e.clientY - pointerStartY; if (diff < -20) setQuickBoxState('太過'); else if (diff > 20) setQuickBoxState('不足'); }}
-                                             className={`touch-none w-24 h-24 sm:w-28 sm:h-28 rounded-2xl border-2 flex items-center justify-center cursor-pointer transition-all box-neumorphism select-none ${bgColorClass}`}>
-                                             {isActive && quickBoxState && <span className="text-slate-400/80 text-3xl sm:text-4xl font-black pointer-events-none">{quickBoxState}</span>}
-                                        </div>
-                                    )
-                                })}
+                    <section className="bg-white p-4 sm:p-6 rounded-xl shadow-sm overflow-hidden">
+                        <div className="flex flex-col items-center max-w-lg mx-auto">
+                            <div className="grid grid-cols-[24px_1fr_1fr_24px] sm:grid-cols-[36px_1fr_1fr_36px] gap-2 sm:gap-4 w-full justify-items-center items-center">
                                 
-                                {/* 底部標籤: 右手/左手 */}
+                                {['尺', '關', '寸'].map((label, rowIndex) => (
+                                    <React.Fragment key={rowIndex}>
+                                        <div className="text-sm sm:text-lg font-bold text-slate-400 select-none">{label}</div>
+                                        
+                                        {[0, 1].map(col => {
+                                            const boxId = `${rowIndex}-${col}`;
+                                            const isActive = quickActiveBox === boxId;
+                                            const bgColorClass = isActive ? (quickGender === 'male' ? 'bg-blue-100 border-blue-400' : 'bg-pink-100 border-pink-400') : 'bg-white border-slate-100';
+                                            return (
+                                                <div key={boxId} 
+                                                     onPointerDown={(e) => { e.target.setPointerCapture(e.pointerId); setPointerStartY(e.clientY); setQuickActiveBox(boxId); setQuickBoxState(null); }}
+                                                     onPointerUp={(e) => { 
+                                                         e.target.releasePointerCapture(e.pointerId); 
+                                                         const diff = e.clientY - pointerStartY; 
+                                                         const upText = quickSystem === 'zhongshi' ? '躁' : '太過';
+                                                         const downText = quickSystem === 'zhongshi' ? '無躁' : '不足';
+                                                         if (diff < -20) setQuickBoxState(upText); 
+                                                         else if (diff > 20) setQuickBoxState(downText); 
+                                                     }}
+                                                     className={`touch-none w-28 h-28 sm:w-36 sm:h-36 rounded-3xl border-2 flex items-center justify-center cursor-pointer transition-all box-neumorphism select-none ${bgColorClass}`}>
+                                                     {isActive && quickBoxState && <span className="text-slate-500/80 text-3xl sm:text-4xl font-black pointer-events-none">{quickBoxState}</span>}
+                                                </div>
+                                            )
+                                        })}
+
+                                        <div className="text-sm sm:text-lg font-bold text-slate-400 select-none">{label}</div>
+                                    </React.Fragment>
+                                ))}
+                                
                                 <div></div>
-                                <div className="text-xl font-bold text-slate-700 mt-4 select-none">右手</div>
-                                <div className="text-xl font-bold text-slate-700 mt-4 select-none">左手</div>
+                                <div className="text-lg sm:text-xl font-bold text-slate-700 mt-4 select-none">右手</div>
+                                <div className="text-lg sm:text-xl font-bold text-slate-700 mt-4 select-none">左手</div>
+                                <div></div>
                             </div>
                         </div>
                     </section>
 
-                    {/* 共用解答卡片 (在快速視圖中強制視為 tangye) */}
-                    <ResultCard result={result} displayActions={displayActions} locationHints={locationHints} handleCopy={handleCopy} isCopied={isCopied} systemChoice={'tangye'} />
+                    <ResultCard result={result} displayActions={displayActions} locationHints={locationHints} handleCopy={handleCopy} isCopied={isCopied} systemChoice={quickSystem} />
                   </div>
                 )}
               </div>
