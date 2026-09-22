@@ -334,6 +334,25 @@
                             </div>
                         </div>
 
+                        {/* --- 新增：穴位圖示區域 --- */}
+                        {(locationHints.some(h => h.icon === '🦵' || h.icon === '🦶') || locationHints.some(h => h.icon === '✋' || h.icon === '💪')) && (
+                            <div className="mt-6 flex flex-col gap-4">
+                                {locationHints.some(h => h.icon === '✋' || h.icon === '💪') && (
+                                    <>
+                                        <img src="hand1.jpg" alt="手部穴位圖 1" className="w-full rounded-xl border border-slate-200 shadow-sm" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/600x400/e2e8f0/475569?text=Hand+Image+1'; }} />
+                                        <img src="hand2.jpg" alt="手部穴位圖 2" className="w-full rounded-xl border border-slate-200 shadow-sm" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/600x400/e2e8f0/475569?text=Hand+Image+2'; }} />
+                                        <img src="hand3.jpg" alt="手部穴位圖 3" className="w-full rounded-xl border border-slate-200 shadow-sm" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/600x400/e2e8f0/475569?text=Hand+Image+3'; }} />
+                                    </>
+                                )}
+                                {locationHints.some(h => h.icon === '🦵' || h.icon === '🦶') && (
+                                    <>
+                                        <img src="foot1.jpg" alt="腿足穴位圖 1" className="w-full rounded-xl border border-slate-200 shadow-sm" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/600x400/e2e8f0/475569?text=Foot+Image+1'; }} />
+                                        <img src="foot2.jpg" alt="腿足穴位圖 2" className="w-full rounded-xl border border-slate-200 shadow-sm" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/600x400/e2e8f0/475569?text=Foot+Image+2'; }} />
+                                    </>
+                                )}
+                            </div>
+                        )}
+
                         {systemChoice === 'tangye' && (
                             <div className="mt-6 bg-slate-100/60 p-5 rounded-xl border border-slate-200 text-slate-500 text-sm leading-relaxed">
                             <h5 className="font-bold mb-3 text-slate-600">針刺操作詳細版：</h5>
