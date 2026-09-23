@@ -15,42 +15,38 @@
     <!-- 載入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- 載入 React 核心與 Babel -->
+    <!-- 載入 React & ReactDOM (UMD 穩定版) -->
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    
+    <!-- 載入 Babel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.6/babel.min.js"></script>
 
     <style>
         body { -webkit-user-select: none; user-select: none; }
         ::-webkit-scrollbar { width: 0px; background: transparent; }
-        
-        /* 快速按鈕 3D 浮雕陰影效果 */
-        .box-neumorphism {
-            box-shadow: 4px 4px 10px rgba(0,0,0,0.1), -4px -4px 10px rgba(255,255,255,0.8);
-        }
-        .box-neumorphism:active {
-            box-shadow: inset 4px 4px 10px rgba(0,0,0,0.1), inset -4px -4px 10px rgba(255,255,255,0.8);
-        }
+        .swipe-box { touch-action: none; } /* 防止滑動時觸發網頁捲動 */
     </style>
 </head>
 <body class="bg-slate-50">
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useMemo } = React;
+        const { useState, useMemo, useEffect, useRef } = React;
         const { createRoot } = ReactDOM;
 
         // --- 內建圖示組件 ---
         const Icons = {
-            Menu: () => <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>,
-            X: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>,
+            Menu: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>,
+            X: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>,
             User: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
             Activity: () => <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>,
             ArrowRight: ({className}) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>,
             RotateCcw: ({className}) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>,
             MapPin: ({className}) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>,
-            Copy: ({className}) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>,
-            Check: ({className}) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="20 6 9 17 4 12"/></svg>
+            Copy: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>,
+            Check: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>,
+            Pill: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>
         };
 
         const POINT_LOCATIONS = {
@@ -75,15 +71,6 @@
           '尺澤': { icon: '💪', text: '肘橫紋中，肱二頭肌腱橈側凹陷處。' },
           '神門': { icon: '💪', text: '腕部腕掌橫紋上，尺側腕屈肌腱橈側凹陷處。' },
           '大陵': { icon: '💪', text: '腕掌橫紋的中點處，當掌長肌腱與橈側腕屈肌腱之間。' },
-          '列缺': { icon: '💪', text: '腕部橈骨莖突後骨縫間，肱橈肌與拇長展肌腱之間。' },
-          '偏歷': { icon: '💪', text: '前臂背面橈側，腕橫紋上3寸處。' },
-          '內關': { icon: '💪', text: '前臂掌側，腕橫紋上2寸，掌長肌腱與橈側腕屈肌腱之間。' },
-          '外關': { icon: '💪', text: '前臂伸側面腕背橫紋後二寸，尺骨與橈骨之間。' },
-          '通里': { icon: '💪', text: '在前臂掌側面，腕橫紋上1寸，尺側屈腕肌肌腱橈側緣凹陷處。' },
-          '支正': { icon: '💪', text: '前臂背面尺側，小海與陽谷的連線上，腕背橫紋上5寸處。' },
-          '合谷': { icon: '✋', text: '手背第1～2掌骨間，第2掌骨橈側的中點處。' },
-          '陽池': { icon: '✋', text: '腕背橫紋中，當指伸肌腱尺側緣凹陷處。' },
-          '腕骨': { icon: '✋', text: '在手掌尺側赤白肉際，第5掌骨基底與鉤骨之間凹陷處。' },
           '大敦': { icon: '🦶', text: '足大趾末節外側，距指甲角0.1寸。' },
           '足竅陰': { icon: '🦶', text: '足第4趾末節外側，距指甲角0.1寸。' },
           '太白': { icon: '🦶', text: '足內側緣，足大趾本節（第1跖趾關節）後下方赤白肉際凹陷處。' },
@@ -99,23 +86,33 @@
           '行間': { icon: '🦶', text: '足背，第1、2趾間，趾蹼緣後方赤白肉際。' },
           '湧泉': { icon: '🦶', text: '足底，卷足時足前部凹陷處。' },
           '商丘': { icon: '🦶', text: '足內踝前下方凹陷中。' },
-          '衝陽': { icon: '🦶', text: '在足背最高處，拇長伸肌腱與趾長伸肌腱之間，足背動脈搏動處。' },
-          '丘墟': { icon: '🦶', text: '足背，外踝前下方，伸趾長肌腱外側，距跟關節間凹陷處。' },
-          '京骨': { icon: '🦶', text: '在足外側部，第5跖骨粗隆下方赤白肉際處，當小趾尖與足跟底後緣連線的中點。' },
-          '太衝': { icon: '🦶', text: '足背第1～2跖骨間隙的後方凹陷處。當行間後二寸。' },
-          '太溪': { icon: '🦶', text: '足內側部，內踝後方，內踝尖與跟腱之間凹陷處。' },
-          '大鍾': { icon: '🦶', text: '在足內側部，內踝後下方，跟腱附著部內側前方凹陷處，當太溪後下5分。' },
           '陰谷': { icon: '🦵', text: '膕窩內側，屈膝時，當半腱肌肌腱與半膜肌肌腱之間。' },
           '委中': { icon: '🦵', text: '膕橫紋中點。' },
           '曲泉': { icon: '🦵', text: '膝內側，屈膝，當膝關節內側面橫紋內側端，股骨內側髁的後緣，半腱肌、半膜肌止端的前緣凹陷處。' },
           '陽輔': { icon: '🦵', text: '小腿外側，外踝尖上4寸，腓骨前緣稍前方。' },
           '復溜': { icon: '🦵', text: '小腿內側，太溪直上2寸，跟腱的前方。' },
           '足三里': { icon: '🦵', text: '小腿前外側，外膝眼下3寸，脛骨前緣一橫指。' },
-          '公孫': { icon: '🦶', text: '在足內側緣，第1跖骨基底前下方凹陷處，當太白後1寸。' },
-          '豐隆': { icon: '🦵', text: '在小腿前外側，外踝尖上8寸，脛骨前緣外二橫指處。' },
+          // 新增穴位
+          '列缺': { icon: '💪', text: '腕部橈骨莖突後骨縫間，肱橈肌與拇長展肌腱之間' },
+          '偏歷': { icon: '💪', text: '前臂背面橈側，腕橫紋上3寸處' },
+          '內關': { icon: '💪', text: '前臂掌側，腕橫紋上2寸，掌長肌腱與橈側腕屈肌腱之間' },
+          '外關': { icon: '💪', text: '前臂伸側面腕背橫紋後二寸，尺骨與橈骨之間' },
+          '通里': { icon: '💪', text: '在前臂掌側面，腕橫紋上1寸，尺側屈腕肌肌腱橈側緣凹陷處' },
+          '支正': { icon: '💪', text: '前臂背面尺側，小海與陽谷的連線上，腕背橫紋上5寸處。' },
+          '公孫': { icon: '🦶', text: '在足內側緣，第1跖骨基底前下方凹陷處，當太白後1寸' },
+          '豐隆': { icon: '🦵', text: '在小腿前外側，外踝尖上8寸，脛骨前緣外二橫指處' },
           '蠡溝': { icon: '🦵', text: '小腿內側，內踝尖上五寸，脛骨內側面中。' },
           '光明': { icon: '🦵', text: '在小腿外側部，外踝尖上五寸，腓骨前緣凹陷處，當趾長伸肌與腓骨短肌之間。' },
+          '大鍾': { icon: '🦶', text: '在足內側部，內踝後下方，跟腱附著部內側前方凹陷處，當太溪後下5分。' },
           '飛揚': { icon: '🦵', text: '小腿後面，外踝後（崑崙）直上7寸，當承山外下方1寸凹陷處。' },
+          '合谷': { icon: '✋', text: '手背第1～2掌骨間，第2掌骨橈側的中點處。' },
+          '陽池': { icon: '✋', text: '腕背橫紋中，當指伸肌腱尺側緣凹陷處。' },
+          '腕骨': { icon: '✋', text: '在手掌尺側赤白肉際，第5掌骨基底與鉤骨之間凹陷處' },
+          '衝陽': { icon: '🦶', text: '在足背最高處，拇長伸肌腱與趾長伸肌腱之間，足背動脈搏動處。' },
+          '丘墟': { icon: '🦶', text: '足背，外踝前下方，伸趾長肌腱外側，距跟關節間凹陷處。' },
+          '京骨': { icon: '🦶', text: '在足外側部，第5跖骨粗隆下方赤白肉際處，當小趾尖與足跟底後緣連線的中點。' },
+          '太衝': { icon: '🦶', text: '足背第1～2跖骨間隙的後方凹陷處。當行間後二寸。' },
+          '太溪': { icon: '🦶', text: '足內側部，內踝後方，內踝尖與跟腱之間凹陷處。' },
         };
 
         const TANGYE_RULES = {
@@ -181,12 +178,12 @@
             '人迎一盛而躁（補心包瀉三焦）': { tonify: { point: '中衝', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '支溝', alias: '天井', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } },
             '人迎二盛而躁（補心瀉小腸）': { tonify: { point: '少衝', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '陽谷', alias: '小海', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } },
             '人迎三盛而躁（補肺瀉大腸）': { tonify: { point: '太淵', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '商陽', alias: '二間', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } },
-            '脈口一盛（補膽瀉肝）': { tonify: { point: '足臨泣', alias: '俠溪', side: 'right', desc: '向心、吐氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '行間', side: 'left', desc: '遠心、吸氣進針、深刺45度、陰數、逆轉' } },
-            '脈口二盛（補膀胱瀉腎）': { tonify: { point: '通谷', alias: '至陰', side: 'right', desc: '向心、吐氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '湧泉', side: 'left', desc: '遠心、吸氣進針、深刺45度、陰數、逆轉' } },
-            '脈口三盛（補胃瀉脾）': { tonify: { point: '足三里', alias: '解溪', side: 'right', desc: '向心、吐氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '商丘', side: 'left', desc: '遠心、吸氣進針、深刺45度、陰數、逆轉' } },
-            '脈口一盛而躁（補三焦瀉心包）': { tonify: { point: '支溝', alias: '中渚', side: 'left', desc: '向心、吐氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '大陵', side: 'right', desc: '遠心、吸氣進針、深刺45度、陰數、逆轉' } },
-            '脈口二盛而躁（補小腸瀉心）': { tonify: { point: '陽谷', alias: '後溪', side: 'left', desc: '向心、吐氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '神門', side: 'right', desc: '遠心、吸氣進針、深刺45度、陰數、逆轉' } },
-            '脈口三盛而躁（補大腸瀉肺）': { tonify: { point: '商陽', alias: '曲池', side: 'left', desc: '向心、吐氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '尺澤', side: 'right', desc: '遠心、吸氣進針、深刺45度、陰數、逆轉' } }
+            '脈口一盛（補膽瀉肝）': { tonify: { point: '足臨泣', alias: '俠溪', side: 'right', desc: '向心、吐氣進針、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '行間', side: 'left', desc: '遠心、吸氣進針、深刺45度、吐氣進針、陰數、逆轉' } },
+            '脈口二盛（補膀胱瀉腎）': { tonify: { point: '通谷', alias: '至陰', side: 'right', desc: '向心、吐氣進針、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '湧泉', side: 'left', desc: '遠心、吸氣進針、深刺45度、吐氣進針、陰數、逆轉' } },
+            '脈口三盛（補胃瀉脾）': { tonify: { point: '足三里', alias: '解溪', side: 'right', desc: '向心、吐氣進針、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '商丘', side: 'left', desc: '遠心、吸氣進針、深刺45度、吐氣進針、陰數、逆轉' } },
+            '脈口一盛而躁（補三焦瀉心包）': { tonify: { point: '支溝', alias: '中渚', side: 'left', desc: '向心、吐氣進針、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '大陵', side: 'right', desc: '遠心、吸氣進針、深刺45度、吐氣進針、陰數、逆轉' } },
+            '脈口二盛而躁（補小腸瀉心）': { tonify: { point: '陽谷', alias: '後溪', side: 'left', desc: '向心、吐氣進針、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '神門', side: 'right', desc: '遠心、吸氣進針、深刺45度、吐氣進針、陰數、逆轉' } },
+            '脈口三盛而躁（補大腸瀉肺）': { tonify: { point: '商陽', alias: '曲池', side: 'left', desc: '向心、吐氣進針、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '尺澤', side: 'right', desc: '遠心、吸氣進針、深刺45度、吐氣進針、陰數、逆轉' } }
           },
           female: {
             '人迎一盛（補肝瀉膽）': { tonify: { point: '曲泉', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '足臨泣', alias: '陽輔', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } },
@@ -195,205 +192,420 @@
             '人迎一盛而躁（補心包瀉三焦）': { tonify: { point: '中衝', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '支溝', alias: '天井', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } },
             '人迎二盛而躁（補心瀉小腸）': { tonify: { point: '少衝', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '陽谷', alias: '小海', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } },
             '人迎三盛而躁（補肺瀉大腸）': { tonify: { point: '太淵', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '商陽', alias: '二間', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } },
-            '脈口一盛（補膽瀉肝）': { tonify: { point: '足臨泣', alias: '俠溪', side: 'left', desc: '向心、吐氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '行間', side: 'right', desc: '遠心、吸氣進針、深刺45度、陰數、逆轉' } },
-            '脈口二盛（補膀胱瀉腎）': { tonify: { point: '通谷', alias: '至陰', side: 'left', desc: '向心、吐氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '湧泉', side: 'right', desc: '遠心、吸氣進針、深刺45度、陰數、逆轉' } },
-            '脈口三盛（補胃瀉脾）': { tonify: { point: '足三里', alias: '解溪', side: 'left', desc: '向心、吐氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '商丘', side: 'right', desc: '遠心、吸氣進針、深刺45度、陰數、逆轉' } },
-            '脈口一盛而躁（補三焦瀉心包）': { tonify: { point: '支溝', alias: '中渚', side: 'right', desc: '向心、吐氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '大陵', side: 'left', desc: '遠心、吸氣進針、深刺45度、陰數、逆轉' } },
-            '脈口二盛而躁（補小腸瀉心）': { tonify: { point: '陽谷', alias: '後溪', side: 'right', desc: '向心、吐氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '神門', side: 'left', desc: '遠心、吸氣進針、深刺45度、陰數、逆轉' } },
-            '脈口三盛而躁（補大腸瀉肺）': { tonify: { point: '商陽', alias: '曲池', side: 'right', desc: '向心、吐氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '尺澤', side: 'left', desc: '遠心、吸氣進針、深刺45度、陰數、逆轉' } }
+            '脈口一盛（補膽瀉肝）': { tonify: { point: '足臨泣', alias: '俠溪', side: 'left', desc: '向心、吐氣進針、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '行間', side: 'right', desc: '遠心、吸氣進針、深刺45度、吐氣進針、陰數、逆轉' } },
+            '脈口二盛（補膀胱瀉腎）': { tonify: { point: '通谷', alias: '至陰', side: 'left', desc: '向心、吐氣進針、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '湧泉', side: 'right', desc: '遠心、吸氣進針、深刺45度、吐氣進針、陰數、逆轉' } },
+            '脈口三盛（補胃瀉脾）': { tonify: { point: '足三里', alias: '解溪', side: 'left', desc: '向心、吐氣進針、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '商丘', side: 'right', desc: '遠心、吸氣進針、深刺45度、吐氣進針、陰數、逆轉' } },
+            '脈口一盛而躁（補三焦瀉心包）': { tonify: { point: '支溝', alias: '中渚', side: 'right', desc: '向心、吐氣進針、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '大陵', side: 'left', desc: '遠心、吸氣進針、深刺45度、吐氣進針、陰數、逆轉' } },
+            '脈口二盛而躁（補小腸瀉心）': { tonify: { point: '陽谷', alias: '後溪', side: 'right', desc: '向心、吐氣進針、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '神門', side: 'left', desc: '遠心、吸氣進針、深刺45度、吐氣進針、陰數、逆轉' } },
+            '脈口三盛而躁（補大腸瀉肺）': { tonify: { point: '商陽', alias: '曲池', side: 'right', desc: '向心、吐氣進針、淺刺15度、吐氣進針、陽數、順轉' }, sedate: { point: '尺澤', side: 'left', desc: '遠心、吸氣進針、深刺45度、吐氣進針、陰數、逆轉' } }
           }
         };
 
-        const YUAN_LUO_RULES = {
-          male: {
-            '心火': {
-              '太過': { tonify1: { point: '腕骨', side: 'left', desc: '直刺、陽數、順轉' }, tonify2: { point: '通里', side: 'right', desc: '直刺、陽數、順轉' } },
-              '不足': { tonify1: { point: '神門', side: 'left', desc: '直刺、陽數、順轉' }, tonify2: { point: '支正', side: 'right', desc: '直刺、陽數、順轉' } }
-            },
-            '肝木': {
-              '太過': { tonify1: { point: '丘墟', side: 'right', desc: '直刺、陽數、順轉' }, tonify2: { point: '蠡溝', side: 'left', desc: '直刺、陽數、順轉' } },
-              '不足': { tonify1: { point: '太衝', side: 'right', desc: '直刺、陽數、順轉' }, tonify2: { point: '光明', side: 'left', desc: '直刺、陽數、順轉' } }
-            },
-            '腎水': {
-              '太過': { tonify1: { point: '京骨', side: 'right', desc: '直刺、陽數、順轉' }, tonify2: { point: '大鍾', side: 'left', desc: '直刺、陽數、順轉' } },
-              '不足': { tonify1: { point: '太溪', side: 'right', desc: '直刺、陽數、順轉' }, tonify2: { point: '飛揚', side: 'left', desc: '直刺、陽數、順轉' } }
-            },
-            '肺金': {
-              '太過': { tonify1: { point: '合谷', side: 'left', desc: '直刺、陽數、順轉' }, tonify2: { point: '列缺', side: 'right', desc: '直刺、陽數、順轉' } },
-              '不足': { tonify1: { point: '太淵', side: 'left', desc: '直刺、陽數、順轉' }, tonify2: { point: '偏歷', side: 'right', desc: '直刺、陽數、順轉' } }
-            },
-            '脾土': {
-              '太過': { tonify1: { point: '衝陽', side: 'right', desc: '直刺、陽數、順轉' }, tonify2: { point: '公孫', side: 'left', desc: '直刺、陽數、順轉' } },
-              '不足': { tonify1: { point: '太白', side: 'right', desc: '直刺、陽數、順轉' }, tonify2: { point: '豐隆', side: 'left', desc: '直刺、陽數、順轉' } }
-            },
-            '命門': {
-              '太過': { tonify1: { point: '陽池', side: 'left', desc: '直刺、陽數、順轉' }, tonify2: { point: '內關', side: 'right', desc: '直刺、陽數、順轉' } },
-              '不足': { tonify1: { point: '大陵', side: 'left', desc: '直刺、陽數、順轉' }, tonify2: { point: '外關', side: 'right', desc: '直刺、陽數、順轉' } }
-            }
-          },
-          female: {
-            '心火': {
-              '太過': { tonify1: { point: '腕骨', side: 'right', desc: '直刺、陽數、順轉' }, tonify2: { point: '通里', side: 'left', desc: '直刺、陽數、順轉' } },
-              '不足': { tonify1: { point: '神門', side: 'right', desc: '直刺、陽數、順轉' }, tonify2: { point: '支正', side: 'left', desc: '直刺、陽數、順轉' } }
-            },
-            '肝木': {
-              '太過': { tonify1: { point: '丘墟', side: 'left', desc: '直刺、陽數、順轉' }, tonify2: { point: '蠡溝', side: 'right', desc: '直刺、陽數、順轉' } },
-              '不足': { tonify1: { point: '太衝', side: 'left', desc: '直刺、陽數、順轉' }, tonify2: { point: '光明', side: 'right', desc: '直刺、陽數、順轉' } }
-            },
-            '腎水': {
-              '太過': { tonify1: { point: '京骨', side: 'left', desc: '直刺、陽數、順轉' }, tonify2: { point: '大鍾', side: 'right', desc: '直刺、陽數、順轉' } },
-              '不足': { tonify1: { point: '太溪', side: 'left', desc: '直刺、陽數、順轉' }, tonify2: { point: '飛揚', side: 'right', desc: '直刺、陽數、順轉' } }
-            },
-            '肺金': {
-              '太過': { tonify1: { point: '合谷', side: 'right', desc: '直刺、陽數、順轉' }, tonify2: { point: '列缺', side: 'left', desc: '直刺、陽數、順轉' } },
-              '不足': { tonify1: { point: '太淵', side: 'right', desc: '直刺、陽數、順轉' }, tonify2: { point: '偏歷', side: 'left', desc: '直刺、陽數、順轉' } }
-            },
-            '脾土': {
-              '太過': { tonify1: { point: '衝陽', side: 'left', desc: '直刺、陽數、順轉' }, tonify2: { point: '公孫', side: 'right', desc: '直刺、陽數、順轉' } },
-              '不足': { tonify1: { point: '太白', side: 'left', desc: '直刺、陽數、順轉' }, tonify2: { point: '豐隆', side: 'right', desc: '直刺、陽數、順轉' } }
-            },
-            '命門': {
-              '太過': { tonify1: { point: '陽池', side: 'right', desc: '直刺、陽數、順轉' }, tonify2: { point: '內關', side: 'left', desc: '直刺、陽數、順轉' } },
-              '不足': { tonify1: { point: '大陵', side: 'right', desc: '直刺、陽數、順轉' }, tonify2: { point: '外關', side: 'left', desc: '直刺、陽數、順轉' } }
-            }
-          }
-        };
-
-        const QUICK_PULSE_MAPPING = {
+        const YUANLUO_RULES = {
             male: {
-                '0-0': '命門', '1-0': '脾土', '2-0': '肺金',  // 左排(右手)
-                '0-1': '腎水', '1-1': '肝木', '2-1': '心火'   // 右排(左手)
+                '心火': {
+                    '太過': { tonify: { point: '腕骨', side: 'left', desc: '直刺、陽數、順轉' }, sedate: { point: '通里', side: 'left', desc: '直刺、陽數、順轉' } },
+                    '不足': { tonify: { point: '神門', side: 'left', desc: '直刺、陽數、順轉' }, sedate: { point: '支正', side: 'left', desc: '直刺、陽數、順轉' } }
+                },
+                '肝木': {
+                    '太過': { tonify: { point: '丘墟', side: 'right', desc: '直刺、陽數、順轉' }, sedate: { point: '蠡溝', side: 'right', desc: '直刺、陽數、順轉' } },
+                    '不足': { tonify: { point: '太衝', side: 'right', desc: '直刺、陽數、順轉' }, sedate: { point: '光明', side: 'right', desc: '直刺、陽數、順轉' } }
+                },
+                '腎水': {
+                    '太過': { tonify: { point: '京骨', side: 'right', desc: '直刺、陽數、順轉' }, sedate: { point: '大鍾', side: 'right', desc: '直刺、陽數、順轉' } },
+                    '不足': { tonify: { point: '太溪', side: 'right', desc: '直刺、陽數、順轉' }, sedate: { point: '飛揚', side: 'right', desc: '直刺、陽數、順轉' } }
+                },
+                '肺金': {
+                    '太過': { tonify: { point: '合谷', side: 'left', desc: '直刺、陽數、順轉' }, sedate: { point: '列缺', side: 'left', desc: '直刺、陽數、順轉' } },
+                    '不足': { tonify: { point: '太淵', side: 'left', desc: '直刺、陽數、順轉' }, sedate: { point: '偏歷', side: 'left', desc: '直刺、陽數、順轉' } }
+                },
+                '脾土': {
+                    '太過': { tonify: { point: '衝陽', side: 'right', desc: '直刺、陽數、順轉' }, sedate: { point: '公孫', side: 'right', desc: '直刺、陽數、順轉' } },
+                    '不足': { tonify: { point: '太白', side: 'right', desc: '直刺、陽數、順轉' }, sedate: { point: '豐隆', side: 'right', desc: '直刺、陽數、順轉' } }
+                },
+                '命門': {
+                    '太過': { tonify: { point: '陽池', side: 'left', desc: '直刺、陽數、順轉' }, sedate: { point: '內關', side: 'left', desc: '直刺、陽數、順轉' } },
+                    '不足': { tonify: { point: '大陵', side: 'left', desc: '直刺、陽數、順轉' }, sedate: { point: '外關', side: 'left', desc: '直刺、陽數、順轉' } }
+                }
             },
             female: {
-                '0-0': '腎水', '1-0': '肝木', '2-0': '心火',  // 左排(右手)
-                '0-1': '命門', '1-1': '脾土', '2-1': '肺金'   // 右排(左手)
+                '心火': {
+                    '太過': { tonify: { point: '腕骨', side: 'right', desc: '直刺、陽數、順轉' }, sedate: { point: '通里', side: 'right', desc: '直刺、陽數、順轉' } },
+                    '不足': { tonify: { point: '神門', side: 'right', desc: '直刺、陽數、順轉' }, sedate: { point: '支正', side: 'right', desc: '直刺、陽數、順轉' } }
+                },
+                '肝木': {
+                    '太過': { tonify: { point: '丘墟', side: 'left', desc: '直刺、陽數、順轉' }, sedate: { point: '蠡溝', side: 'left', desc: '直刺、陽數、順轉' } },
+                    '不足': { tonify: { point: '太衝', side: 'left', desc: '直刺、陽數、順轉' }, sedate: { point: '光明', side: 'left', desc: '直刺、陽數、順轉' } }
+                },
+                '腎水': {
+                    '太過': { tonify: { point: '京骨', side: 'left', desc: '直刺、陽數、順轉' }, sedate: { point: '大鍾', side: 'left', desc: '直刺、陽數、順轉' } },
+                    '不足': { tonify: { point: '太溪', side: 'left', desc: '直刺、陽數、順轉' }, sedate: { point: '飛揚', side: 'left', desc: '直刺、陽數、順轉' } }
+                },
+                '肺金': {
+                    '太過': { tonify: { point: '合谷', side: 'right', desc: '直刺、陽數、順轉' }, sedate: { point: '列缺', side: 'right', desc: '直刺、陽數、順轉' } },
+                    '不足': { tonify: { point: '太淵', side: 'right', desc: '直刺、陽數、順轉' }, sedate: { point: '偏歷', side: 'right', desc: '直刺、陽數、順轉' } }
+                },
+                '脾土': {
+                    '太過': { tonify: { point: '衝陽', side: 'left', desc: '直刺、陽數、順轉' }, sedate: { point: '公孫', side: 'left', desc: '直刺、陽數、順轉' } },
+                    '不足': { tonify: { point: '太白', side: 'left', desc: '直刺、陽數、順轉' }, sedate: { point: '豐隆', side: 'left', desc: '直刺、陽數、順轉' } }
+                },
+                '命門': {
+                    '太過': { tonify: { point: '陽池', side: 'right', desc: '直刺、陽數、順轉' }, sedate: { point: '內關', side: 'right', desc: '直刺、陽數、順轉' } },
+                    '不足': { tonify: { point: '大陵', side: 'right', desc: '直刺、陽數、順轉' }, sedate: { point: '外關', side: 'right', desc: '直刺、陽數、順轉' } }
+                }
             }
         };
 
-        const QUICK_ZHONGSHI_MAPPING = {
-            male: {
-                '0-0': '脈口二盛', '1-0': '脈口三盛', '2-0': '脈口一盛',
-                '0-1': '人迎二盛', '1-1': '人迎三盛', '2-1': '人迎一盛'
+        const MEDICINE_SYSTEMS = [
+            {
+                id: 'weiwang', title: '味王之補瀉系統', icon: '🧑‍🍳', leftAction: '補', rightAction: '瀉',
+                data: {
+                    '心火': { pos: { x: 30, y: 20 }, element: '心火', left: '旋覆花', right: '黃連', color: 'bg-red-100 text-red-800 border-red-200' },
+                    '脾土': { pos: { x: 70, y: 20 }, element: '脾土', left: '人參', right: '薑', color: 'bg-orange-100 text-orange-800 border-orange-200' },
+                    '肺金': { pos: { x: 82, y: 58 }, element: '肺金', left: '五味子', right: '細辛', color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
+                    '腎水': { pos: { x: 50, y: 85 }, element: '腎水', left: '地黃', right: '茯苓', color: 'bg-blue-100 text-blue-800 border-blue-200' },
+                    '肝木': { pos: { x: 18, y: 58 }, element: '肝木', left: '桂枝', right: '枳實', color: 'bg-green-100 text-green-800 border-green-200' },
+                    '命門': { pos: { x: 50, y: 50 }, element: '命門', left: '乾薑2熟地7', right: '黃柏6肉桂1', color: 'bg-slate-100 text-slate-800 border-slate-200' }
+                }
             },
-            female: {
-                '0-0': '人迎二盛', '1-0': '人迎三盛', '2-0': '人迎一盛',
-                '0-1': '脈口二盛', '1-1': '脈口三盛', '2-1': '脈口一盛'
+            {
+                id: 'wensheng', title: '溫升涼降系統', icon: '🔥', leftAction: '升', rightAction: '降',
+                data: {
+                    '心火': { pos: { x: 30, y: 20 }, element: '心火', left: '薤白', right: '黃連', color: 'bg-red-100 text-red-800 border-red-200' },
+                    '脾土': { pos: { x: 70, y: 20 }, element: '脾土', left: '乾薑', right: '大黃', color: 'bg-orange-100 text-orange-800 border-orange-200' },
+                    '肺金': { pos: { x: 82, y: 58 }, element: '肺金', left: '黃耆', right: '石膏', color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
+                    '腎水': { pos: { x: 50, y: 85 }, element: '腎水', left: '補骨脂', right: '豬苓', color: 'bg-blue-100 text-blue-800 border-blue-200' },
+                    '肝木': { pos: { x: 18, y: 58 }, element: '肝木', left: '桂枝', right: '黃芩', color: 'bg-green-100 text-green-800 border-green-200' },
+                    '命門': { pos: { x: 50, y: 50 }, element: '命門', left: '暫無資料', right: '暫無資料', color: 'bg-slate-100 text-slate-500 border-slate-200' }
+                }
+            },
+            {
+                id: 'liangsheng', title: '涼升溫降系統', icon: '🌪️', leftAction: '升', rightAction: '降',
+                data: {
+                    '心火': { pos: { x: 30, y: 20 }, element: '心火', left: '小麥', right: '肉桂', color: 'bg-red-100 text-red-800 border-red-200' },
+                    '脾土': { pos: { x: 70, y: 20 }, element: '脾土', left: '升麻', right: '厚朴', color: 'bg-orange-100 text-orange-800 border-orange-200' },
+                    '肺金': { pos: { x: 82, y: 58 }, element: '肺金', left: '薄荷', right: '杏仁', color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
+                    '腎水': { pos: { x: 50, y: 85 }, element: '腎水', left: '旱蓮草', right: '桂枝', color: 'bg-blue-100 text-blue-800 border-blue-200' },
+                    '肝木': { pos: { x: 18, y: 58 }, element: '肝木', left: '柴胡', right: '吳茱萸', color: 'bg-green-100 text-green-800 border-green-200' },
+                    '命門': { pos: { x: 50, y: 50 }, element: '命門', left: '暫無資料', right: '暫無資料', color: 'bg-slate-100 text-slate-500 border-slate-200' }
+                }
             }
-        };
+        ];
 
-        const ResultCard = ({ result, displayActions, locationHints, handleCopy, isCopied, systemChoice }) => {
-            if (!result) return null;
+        const MedicineView = () => {
             return (
-                <div className="mt-8 animate-in slide-in-from-bottom-8 duration-700">
-                    <div className="flex justify-between items-center mb-4 border-b pb-2">
-                        <h3 className="text-2xl font-bold text-slate-800">針灸處方</h3>
-                        <button onClick={handleCopy} className="flex items-center gap-2 px-4 py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg font-bold transition-colors">
-                            {isCopied ? <><Icons.Check className="w-5 h-5"/> 已複製</> : <><Icons.Copy className="w-5 h-5"/> 複製</>}
-                        </button>
-                    </div>
-                    
-                    <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
-                        <div className="bg-indigo-900 text-white p-4">
-                        <div className="flex justify-between items-center">
-                            <h4 className="text-xl font-bold">{result.method}</h4>
-                            <span className="bg-white/20 px-3 py-1 rounded-full text-sm">{result.title}</span>
-                        </div>
-                        </div>
+                <div className="space-y-6 animate-in fade-in duration-500 pb-20">
+                    <header className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-indigo-500 mb-6">
+                        <h1 className="text-2xl font-bold flex items-center gap-2 text-indigo-900">
+                            <Icons.Pill /> 藥物輔助資訊
+                        </h1>
+                    </header>
+                    {MEDICINE_SYSTEMS.map(system => (
+                        <div key={system.id} className="bg-white p-4 sm:p-6 rounded-xl shadow-sm overflow-hidden">
+                            <h2 className="text-lg sm:text-xl font-bold flex items-center gap-2 mb-4 sm:mb-6 text-slate-800 border-b pb-3">
+                                <span className="text-2xl">{system.icon}</span> {system.title}
+                            </h2>
+                            
+                            <div className="relative w-full aspect-[4/3] sm:aspect-[5/4] max-w-lg mx-auto bg-slate-50/50 rounded-xl mt-2 border border-slate-100">
+                                {/* SVG Pentagon Background */}
+                                <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full overflow-visible" preserveAspectRatio="none">
+                                    <polygon 
+                                        points="50,5 90,38 75,95 25,95 10,38"
+                                        fill="none"
+                                        stroke="#cbd5e1" 
+                                        strokeWidth="0.5"
+                                        strokeDasharray="2 2"
+                                    />
+                                </svg>
 
-                        <div className="p-6">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                            {displayActions.map((action, idx) => {
-                            const isTonify = action.type === 'tonify';
-                            return (
-                                <div key={idx} className={`${isTonify ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'} border-l-4 p-4 rounded-r-lg`}>
-                                <h5 className={`font-bold ${isTonify ? 'text-green-800' : 'text-red-800'} flex items-center gap-2 mb-2`}>
-                                    {isTonify ? <Icons.ArrowRight className="w-5 h-5" /> : <Icons.RotateCcw className="w-5 h-5" />}
-                                    {isTonify ? '補法 (Tonify)' : '瀉法 (Sedate)'}
-                                </h5>
-                                <div className="text-lg font-bold mb-1">
-                                    {action.side === 'left' ? '左' : '右'}
-                                    {action.alias ? `${action.point}/${action.alias}` : action.point}
-                                </div>
-                                <p className={`${isTonify ? 'text-green-700' : 'text-red-700'} text-sm leading-relaxed`}>{action.desc}</p>
-                                </div>
-                            );
-                            })}
-                        </div>
-                        <div className="bg-slate-100 rounded-xl p-6">
-                            <h5 className="flex items-center gap-2 text-slate-700 font-bold mb-4 border-b border-slate-200 pb-2"><Icons.MapPin className="w-5 h-5" /> 穴位定位提示</h5>
-                            <div className="grid grid-cols-1 gap-4">
-                                {locationHints.map((hint, idx) => (
-                                <div key={idx} className="flex gap-3 items-start">
-                                    <span className="text-2xl bg-white w-10 h-10 flex items-center justify-center rounded-lg shadow-sm border border-slate-200 shrink-0">{hint.icon}</span>
-                                    <div>
-                                    <span className="font-bold text-slate-900 block mb-1">{hint.name}</span>
-                                    <span className="text-slate-600 text-sm leading-relaxed">{hint.text}</span>
+                                {/* Element Nodes */}
+                                {Object.values(system.data).map((info, idx) => (
+                                    <div 
+                                        key={idx}
+                                        className="absolute transform -translate-x-1/2 -translate-y-1/2 flex items-center gap-1 sm:gap-2 shadow-sm rounded-lg bg-white/95 p-1 sm:p-1.5 border border-slate-200 z-10 hover:shadow-md transition-shadow"
+                                        style={{ left: `${info.pos.x}%`, top: `${info.pos.y}%` }}
+                                    >
+                                        <div className="flex flex-col items-center min-w-[24px] sm:min-w-[32px]">
+                                            <span className="text-[10px] sm:text-xs text-slate-400 font-medium leading-none mb-1">{system.leftAction}</span>
+                                            <span className="text-xs sm:text-sm font-bold text-slate-700 leading-none whitespace-nowrap">{info.left}</span>
+                                        </div>
+
+                                        <div className={`px-1.5 py-1 sm:px-2 sm:py-1 rounded border font-bold text-[12px] sm:text-sm whitespace-nowrap ${info.color}`}>
+                                            {info.element}
+                                        </div>
+
+                                        <div className="flex flex-col items-center min-w-[24px] sm:min-w-[32px]">
+                                            <span className="text-[10px] sm:text-xs text-slate-400 font-medium leading-none mb-1">{system.rightAction}</span>
+                                            <span className="text-xs sm:text-sm font-bold text-slate-700 leading-none whitespace-nowrap">{info.right}</span>
+                                        </div>
                                     </div>
-                                </div>
                                 ))}
                             </div>
                         </div>
+                    ))}
+                </div>
+            );
+        };
 
-                        {/* --- 新增：穴位圖示區域 --- */}
-                        {(locationHints.some(h => h.icon === '🦵' || h.icon === '🦶') || locationHints.some(h => h.icon === '✋' || h.icon === '💪')) && (
-                            <div className="mt-6 flex flex-col gap-4">
-                                {locationHints.some(h => h.icon === '✋' || h.icon === '💪') && (
-                                    <>
-                                        <img src="hand1.jpg" alt="手部穴位圖 1" className="w-full rounded-xl border border-slate-200 shadow-sm" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/600x400/e2e8f0/475569?text=Hand+Image+1'; }} />
-                                        <img src="hand2.jpg" alt="手部穴位圖 2" className="w-full rounded-xl border border-slate-200 shadow-sm" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/600x400/e2e8f0/475569?text=Hand+Image+2'; }} />
-                                        <img src="hand3.jpg" alt="手部穴位圖 3" className="w-full rounded-xl border border-slate-200 shadow-sm" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/600x400/e2e8f0/475569?text=Hand+Image+3'; }} />
-                                    </>
-                                )}
-                                {locationHints.some(h => h.icon === '🦵' || h.icon === '🦶') && (
-                                    <>
-                                        <img src="foot1.jpg" alt="腿足穴位圖 1" className="w-full rounded-xl border border-slate-200 shadow-sm" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/600x400/e2e8f0/475569?text=Foot+Image+1'; }} />
-                                        <img src="foot2.jpg" alt="腿足穴位圖 2" className="w-full rounded-xl border border-slate-200 shadow-sm" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/600x400/e2e8f0/475569?text=Foot+Image+2'; }} />
-                                    </>
-                                )}
-                            </div>
-                        )}
+        const ResultCard = ({ result, gender, systemType }) => {
+            const [copied, setCopied] = useState(false);
+            const [viewMode, setViewMode] = useState('acupuncture'); // 'acupuncture' | 'medicine'
 
-                        {systemChoice === 'tangye' && (
-                            <div className="mt-6 bg-slate-100/60 p-5 rounded-xl border border-slate-200 text-slate-500 text-sm leading-relaxed">
-                            <h5 className="font-bold mb-3 text-slate-600">針刺操作詳細版：</h5>
-                            <div className="space-y-3">
-                                <div>
-                                <span className="mr-1">➡️</span><span className="font-bold">進針：</span>
-                                <p className="mt-1 pl-6">輕咳進針，在天地人三部，各針三次，共九次。過程配合病人以口呼吸：吸氣進針，吐氣停止。</p>
-                                </div>
-                                <div>
-                                <span className="mr-1">🔄</span><span className="font-bold">行針：</span>
-                                <p className="mt-1 pl-6">針上肢時，病人以鼻呼吸；針下肢時，病人以口呼吸。<br/>針尖向心方向，配合吐氣動針，吸氣停止；針尖遠心方向，配合吸氣動針，吐氣停止。</p>
-                                </div>
+            const displayActions = useMemo(() => {
+                if (!result) return [];
+                const actions = [{ type: 'tonify', ...result.tonify }, { type: 'sedate', ...result.sedate }];
+                
+                // Sort for Tangye and Yuanluo
+                if (systemType !== 'zhongshi') {
+                    actions.sort((a, b) => {
+                        const getPart = (item) => {
+                            if (!item || !item.point) return 'upper';
+                            const names = item.point.split('/');
+                            for(let name of names) {
+                                if (POINT_LOCATIONS[name]) {
+                                    const icon = POINT_LOCATIONS[name].icon;
+                                    if (icon === '✋' || icon === '💪') return 'upper';
+                                    if (icon === '🦵' || icon === '🦶') return 'lower';
+                                }
+                            }
+                            return 'upper'; 
+                        };
+                        const partA = getPart(a);
+                        const partB = getPart(b);
+                        const getScore = (side, part) => {
+                            if (gender === 'male') {
+                                if ((side === 'left' && part === 'upper') || (side === 'right' && part === 'lower')) return 0;
+                                return 1;
+                            } else {
+                                if ((side === 'right' && part === 'upper') || (side === 'left' && part === 'lower')) return 0;
+                                return 1;
+                            }
+                        };
+                        return getScore(a.side, partA) - getScore(b.side, partB);
+                    });
+                }
+                return actions;
+            }, [result, gender, systemType]);
+
+            const locationHints = useMemo(() => {
+                if (!result) return [];
+                const points = new Set();
+                const extract = (item) => {
+                    if(!item || !item.point) return;
+                    const names = [item.point];
+                    if (item.alias) names.push(item.alias);
+                    names.forEach(n => n.split('/').forEach(subName => points.add(subName)));
+                };
+                extract(result.tonify); extract(result.sedate);
+                const hints = [];
+                points.forEach(p => { if (POINT_LOCATIONS[p]) hints.push({ name: p, ...POINT_LOCATIONS[p] }); });
+                return hints;
+            }, [result]);
+
+            const handleCopy = () => {
+                if (!result) return;
+                const lines = [
+                    `【${result.title}】 ${result.method} (${gender === 'male' ? '男' : '女'})`
+                ];
+                displayActions.forEach(action => {
+                    const isTonify = action.type === 'tonify';
+                    const sideText = action.side === 'left' ? '左' : '右';
+                    const pointText = action.alias ? `${action.point}/${action.alias}` : action.point;
+                    lines.push(`${isTonify ? '補' : '瀉'} ${sideText}${pointText} (${action.desc})`);
+                });
+                
+                // Fallback copy mechanism
+                const textArea = document.createElement("textarea");
+                textArea.value = lines.join('\n');
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                } catch (err) {
+                    console.error('Failed to copy', err);
+                }
+                document.body.removeChild(textArea);
+            };
+
+            const medicineElement = useMemo(() => {
+                if (!result) return null;
+                if (systemType === 'tangye' || systemType === 'yuanluo') {
+                    return result.method.split(' ')[0]; // e.g., "心火"
+                } else if (systemType === 'zhongshi') {
+                    if (result.method.includes('一盛而躁')) return '命門';
+                    if (result.method.includes('二盛而躁')) return '心火';
+                    if (result.method.includes('三盛而躁')) return '肺金';
+                    if (result.method.includes('一盛')) return '肝木';
+                    if (result.method.includes('二盛')) return '腎水';
+                    if (result.method.includes('三盛')) return '脾土';
+                }
+                return null;
+            }, [result, systemType]);
+
+            if (!result) return null;
+
+            return (
+                <div className="mt-8 animate-in slide-in-from-bottom-8 duration-700">
+                    <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+                        <div className="bg-indigo-900 text-white p-4">
+                            <div className="flex justify-between items-center">
+                                <h4 className="text-lg font-bold">{result.method}</h4>
+                                <span className="bg-white/20 px-3 py-1 rounded-full text-sm">{result.title}</span>
                             </div>
-                            </div>
-                        )}
                         </div>
+                        
+                        {viewMode === 'acupuncture' ? (
+                            <div className="p-6">
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                                    {displayActions.map((action, idx) => {
+                                        const isTonify = action.type === 'tonify';
+                                        return (
+                                            <div key={idx} className={`${isTonify ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'} border-l-4 p-4 rounded-r-lg`}>
+                                                <h5 className={`font-bold ${isTonify ? 'text-green-800' : 'text-red-800'} flex items-center gap-2 mb-2`}>
+                                                    {isTonify ? <Icons.ArrowRight className="w-5 h-5" /> : <Icons.RotateCcw className="w-5 h-5" />}
+                                                    {isTonify ? '補法 (Tonify)' : '瀉法 (Sedate)'}
+                                                </h5>
+                                                <div className="text-lg font-bold mb-1">
+                                                    {action.side === 'left' ? '左' : '右'}
+                                                    {action.alias ? `${action.point}/${action.alias}` : action.point}
+                                                </div>
+                                                <p className={`${isTonify ? 'text-green-700' : 'text-red-700'} text-sm leading-relaxed`}>{action.desc}</p>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                
+                                {/* 複製與切換按鈕區塊 */}
+                                <div className="flex gap-3 mb-6">
+                                    <button 
+                                        onClick={handleCopy}
+                                        className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center gap-2 font-bold transition-all ${copied ? 'bg-green-100 text-green-700 border-2 border-green-500' : 'bg-purple-100 text-purple-700 border-2 border-purple-200 hover:border-purple-300'}`}
+                                    >
+                                        {copied ? <Icons.Check /> : <Icons.Copy />}
+                                        {copied ? '已複製到剪貼簿！' : '一鍵複製解答'}
+                                    </button>
+                                    <button 
+                                        onClick={() => setViewMode('medicine')}
+                                        className="flex-1 py-3 px-4 rounded-lg bg-indigo-100 text-indigo-700 border-2 border-indigo-200 hover:border-indigo-300 font-bold flex items-center justify-center gap-2 transition-all"
+                                    >
+                                        <Icons.Pill /> 顯示藥物處方
+                                    </button>
+                                </div>
+
+                                {systemType === 'tangye' && (
+                                    <div className="bg-slate-100/60 border border-slate-200 rounded-xl p-5 mb-6">
+                                        <p className="text-sm text-slate-500 leading-relaxed pl-6 -indent-6 mb-2">
+                                            ➡️ 進針：輕咳進針，在天地人三部，各針三次，共九次。過程配合病人以口呼吸：吸氣進針，吐氣停止。
+                                        </p>
+                                        <p className="text-sm text-slate-500 leading-relaxed pl-6 -indent-6">
+                                            🔄 行針：針上肢時，病人以鼻呼吸；針下肢時，病人以口呼吸。<br/>
+                                            針尖向心方向，配合吐氣動針，吸氣停止；針尖遠心方向，配合吸氣動針，吐氣停止。
+                                        </p>
+                                    </div>
+                                )}
+
+                                <div className="bg-slate-100 rounded-xl p-6 mb-6">
+                                    <h5 className="flex items-center gap-2 text-slate-700 font-bold mb-4 border-b border-slate-200 pb-2"><Icons.MapPin className="w-5 h-5" /> 穴位定位提示</h5>
+                                    <div className="grid grid-cols-1 gap-4">
+                                        {locationHints.map((hint, idx) => (
+                                            <div key={idx} className="flex gap-3 items-start">
+                                                <span className="text-2xl bg-white w-10 h-10 flex items-center justify-center rounded-lg shadow-sm border border-slate-200 shrink-0">{hint.icon}</span>
+                                                <div>
+                                                    <span className="font-bold text-slate-900 block mb-1">{hint.name}</span>
+                                                    <span className="text-slate-600 text-sm leading-relaxed">{hint.text}</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* 圖片區塊 */}
+                                <div className="space-y-4">
+                                    {locationHints.some(h => h.icon === '✋' || h.icon === '💪') && (
+                                        <>
+                                            <img src="hand1.jpg" alt="Hand 1" className="w-full rounded-xl shadow-sm" onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling.style.display = 'flex'; }} />
+                                            <div className="hidden w-full h-32 bg-slate-200 rounded-xl flex items-center justify-center text-slate-400 font-medium">hand1.jpg 預留區</div>
+                                            
+                                            <img src="hand2.jpg" alt="Hand 2" className="w-full rounded-xl shadow-sm" onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling.style.display = 'flex'; }} />
+                                            <div className="hidden w-full h-32 bg-slate-200 rounded-xl flex items-center justify-center text-slate-400 font-medium">hand2.jpg 預留區</div>
+                                            
+                                            <img src="hand3.jpg" alt="Hand 3" className="w-full rounded-xl shadow-sm" onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling.style.display = 'flex'; }} />
+                                            <div className="hidden w-full h-32 bg-slate-200 rounded-xl flex items-center justify-center text-slate-400 font-medium">hand3.jpg 預留區</div>
+                                        </>
+                                    )}
+                                    {locationHints.some(h => h.icon === '🦵' || h.icon === '🦶') && (
+                                        <>
+                                            <img src="foot1.jpg" alt="Foot 1" className="w-full rounded-xl shadow-sm" onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling.style.display = 'flex'; }} />
+                                            <div className="hidden w-full h-32 bg-slate-200 rounded-xl flex items-center justify-center text-slate-400 font-medium">foot1.jpg 預留區</div>
+                                            
+                                            <img src="foot2.jpg" alt="Foot 2" className="w-full rounded-xl shadow-sm" onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling.style.display = 'flex'; }} />
+                                            <div className="hidden w-full h-32 bg-slate-200 rounded-xl flex items-center justify-center text-slate-400 font-medium">foot2.jpg 預留區</div>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="p-6 animate-in fade-in">
+                                <div className="mb-6 flex items-center justify-between border-b pb-4">
+                                    <h5 className="font-bold text-slate-800 text-lg flex items-center gap-2">
+                                        <Icons.Pill /> 藥物輔助組合 ({medicineElement})
+                                    </h5>
+                                    <button 
+                                        onClick={() => setViewMode('acupuncture')}
+                                        className="py-2 px-4 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-200 hover:bg-indigo-100 font-bold transition-all text-sm"
+                                    >
+                                        返回針灸處方
+                                    </button>
+                                </div>
+                                <div className="space-y-4">
+                                    {MEDICINE_SYSTEMS.map(sys => {
+                                        const elementData = sys.data[medicineElement];
+                                        if (!elementData) return null;
+                                        return (
+                                            <div key={sys.id} className="bg-slate-50 border border-slate-200 p-4 rounded-lg">
+                                                <div className="font-bold text-slate-700 mb-2 flex items-center gap-2">
+                                                    <span>{sys.icon}</span> {sys.title}
+                                                </div>
+                                                <div className="flex gap-4">
+                                                    <div className="flex-1 bg-white p-3 rounded shadow-sm border border-slate-100 text-center">
+                                                        <div className="text-xs text-slate-400 mb-1">{sys.leftAction}</div>
+                                                        <div className="font-bold text-slate-800">{elementData.left}</div>
+                                                    </div>
+                                                    <div className="flex-1 bg-white p-3 rounded shadow-sm border border-slate-100 text-center">
+                                                        <div className="text-xs text-slate-400 mb-1">{sys.rightAction}</div>
+                                                        <div className="font-bold text-slate-800">{elementData.right}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             );
         };
 
-        function AcupunctureTool() {
-          const [isMenuOpen, setIsMenuOpen] = useState(false);
-          const [view, setView] = useState('calculator'); // 'calculator' 或 'quick'
-          const [isCopied, setIsCopied] = useState(false);
-
-          // Calculator View State
+        const CalculatorPage = () => {
           const [gender, setGender] = useState('male');
-          const [systemChoice, setSystemChoice] = useState(null); 
-          const [pulse, setPulse] = useState(null);
-          const [pulseState, setPulseState] = useState(null);
+          const [systemType, setSystemType] = useState(null); // 'tangye', 'zhongshi', 'yuanluo'
+          const [tangyePulse, setTangyePulse] = useState(null);
+          const [tangyeState, setTangyeState] = useState(null);
           const [zhongshiPulsePos, setZhongshiPulsePos] = useState(null);
           const [isAgitated, setIsAgitated] = useState(null);
           const [zhongshiTreatment, setZhongshiTreatment] = useState(null);
 
-          // Quick View State
-          const [quickGender, setQuickGender] = useState('male');
-          const [quickSystem, setQuickSystem] = useState('tangye'); 
-          const [quickActiveBox, setQuickActiveBox] = useState(null);
-          const [quickBoxState, setQuickBoxState] = useState(null);
-          const [pointerStartY, setPointerStartY] = useState(0);
+          const handleSystemChange = (val) => {
+            setSystemType(val);
+            setTangyePulse(null); setTangyeState(null);
+            setZhongshiPulsePos(null); setIsAgitated(null); setZhongshiTreatment(null);
+          };
+
+          const handlePulsePosChange = (val) => { setZhongshiPulsePos(val); setZhongshiTreatment(null); };
+          const handleAgitatedChange = (val) => { setIsAgitated(val); setZhongshiTreatment(null); };
 
           const zhongshiOptions = useMemo(() => {
             if (!zhongshiPulsePos || isAgitated === null) return [];
@@ -409,335 +621,296 @@
           }, [zhongshiPulsePos, isAgitated]);
 
           const result = useMemo(() => {
-            if (view === 'quick') {
-                if (!quickActiveBox || !quickBoxState) return null;
-                
-                if (quickSystem === 'tangye' || quickSystem === 'yuanluo') {
-                    const pulseName = QUICK_PULSE_MAPPING[quickGender][quickActiveBox];
-                    if (quickSystem === 'tangye') {
-                        const rule = TANGYE_RULES[quickGender][pulseName][quickBoxState];
-                        if(rule) {
-                            return { title: '湯液針法 處方', method: `${pulseName} ${quickBoxState}`, actions: [{ type: 'tonify', ...rule.tonify }, { type: 'sedate', ...rule.sedate }] };
-                        }
-                    } else {
-                        const rule = YUAN_LUO_RULES[quickGender][pulseName][quickBoxState];
-                        if(rule) {
-                            return { title: '原絡針法 處方', method: `${pulseName} ${quickBoxState}`, actions: [{ type: 'tonify', ...rule.tonify1 }, { type: 'tonify', ...rule.tonify2 }] }; 
-                        }
-                    }
-                } else if (quickSystem === 'zhongshi') {
-                    const pulseName = QUICK_ZHONGSHI_MAPPING[quickGender][quickActiveBox];
-                    const exactStart = quickBoxState === '躁' ? `${pulseName}而躁（` : `${pulseName}（`;
-                    const rulesObj = ZHONGSHI_RULES[quickGender];
-                    for (let key in rulesObj) {
-                        if (key.startsWith(exactStart)) {
-                            const rule = rulesObj[key];
-                            return { title: '終始針法 處方', method: key, actions: [{ type: 'tonify', ...rule.tonify }, { type: 'sedate', ...rule.sedate }] };
-                        }
-                    }
-                }
-                return null;
-            }
-
             let res = null;
-            if (systemChoice === 'tangye' && pulse && pulseState) {
-              const rule = TANGYE_RULES[gender][pulse][pulseState];
-              if (rule) {
-                res = { title: '湯液針法 處方', method: `${pulse} ${pulseState}`, actions: [{ type: 'tonify', ...rule.tonify }, { type: 'sedate', ...rule.sedate }] };
-              }
-            } else if (systemChoice === 'zhongshi' && zhongshiTreatment) {
+            if (systemType === 'tangye' && tangyePulse && tangyeState) {
+              const rule = TANGYE_RULES[gender][tangyePulse][tangyeState];
+              if (rule) res = { title: '湯液針法 處方', method: `${tangyePulse} ${tangyeState}`, tonify: rule.tonify, sedate: rule.sedate };
+            } else if (systemType === 'zhongshi' && zhongshiTreatment) {
                const rule = ZHONGSHI_RULES[gender][zhongshiTreatment];
-               if (rule) {
-                 res = { title: '終始針法 處方', method: zhongshiTreatment, actions: [{ type: 'tonify', ...rule.tonify }, { type: 'sedate', ...rule.sedate }] };
-               }
-            } else if (systemChoice === 'yuanluo' && pulse && pulseState) {
-               const rule = YUAN_LUO_RULES[gender][pulse][pulseState];
-               if (rule) {
-                 res = { title: '原絡針法 處方', method: `${pulse} ${pulseState}`, actions: [{ type: 'tonify', ...rule.tonify1 }, { type: 'tonify', ...rule.tonify2 }] };
-               }
+               if (rule) res = { title: '終始針法 處方', method: zhongshiTreatment, tonify: rule.tonify, sedate: rule.sedate };
+            } else if (systemType === 'yuanluo' && tangyePulse && tangyeState) {
+                const rule = YUANLUO_RULES[gender][tangyePulse][tangyeState];
+                if (rule) res = { title: '原絡針法 處方', method: `${tangyePulse} ${tangyeState}`, tonify: rule.tonify, sedate: rule.sedate };
             }
             return res;
-          }, [view, quickGender, quickSystem, quickActiveBox, quickBoxState, gender, systemChoice, pulse, pulseState, zhongshiTreatment]);
-
-          const handleSystemChange = (val) => {
-            setSystemChoice(val);
-            setPulse(null); setPulseState(null);
-            setZhongshiPulsePos(null); setIsAgitated(null); setZhongshiTreatment(null);
-          };
-          const handlePulsePosChange = (val) => { setZhongshiPulsePos(val); setZhongshiTreatment(null); };
-          const handleAgitatedChange = (val) => { setIsAgitated(val); setZhongshiTreatment(null); };
-          
-          const displayActions = useMemo(() => {
-            if (!result || !result.actions) return [];
-            let actions = [...result.actions];
-            const activeSystem = view === 'quick' ? quickSystem : systemChoice;
-
-            if (activeSystem === 'tangye') {
-              actions.sort((a, b) => {
-                const getPart = (item) => {
-                     if (!item || !item.point) return 'upper';
-                     const names = item.point.split('/');
-                     for(let name of names) {
-                         if (POINT_LOCATIONS[name]) {
-                             const icon = POINT_LOCATIONS[name].icon;
-                             if (icon === '✋' || icon === '💪') return 'upper';
-                             if (icon === '🦵' || icon === '🦶') return 'lower';
-                         }
-                     }
-                     return 'upper'; 
-                };
-                const partA = getPart(a);
-                const partB = getPart(b);
-                const getScore = (side, part) => {
-                   const activeGender = view === 'quick' ? quickGender : gender;
-                   if (activeGender === 'male') {
-                     if ((side === 'left' && part === 'upper') || (side === 'right' && part === 'lower')) return 0;
-                     return 1;
-                   } else {
-                     if ((side === 'right' && part === 'upper') || (side === 'left' && part === 'lower')) return 0;
-                     return 1;
-                   }
-                };
-                return getScore(a.side, partA) - getScore(b.side, partB);
-              });
-            }
-            return actions;
-          }, [result, view, quickSystem, systemChoice, gender, quickGender]);
-
-          const locationHints = useMemo(() => {
-            if (!result || !result.actions) return [];
-            const points = new Set();
-            result.actions.forEach(item => {
-               if(!item || !item.point) return;
-               const names = [item.point];
-               if (item.alias) names.push(item.alias);
-               names.forEach(n => n.split('/').forEach(subName => points.add(subName)));
-            });
-            const hints = [];
-            points.forEach(p => { if (POINT_LOCATIONS[p]) hints.push({ name: p, ...POINT_LOCATIONS[p] }); });
-            return hints;
-          }, [result]);
-
-          const handleCopy = () => {
-            if (!result || !displayActions) return;
-            const currentGender = view === 'quick' ? (quickGender === 'male' ? '男' : '女') : (gender === 'male' ? '男' : '女');
-            let copyText = `【${result.title}】 ${result.method} (${currentGender})\n`;
-            displayActions.forEach(action => {
-              const typeText = action.type === 'tonify' ? '補法' : '瀉法';
-              const sideText = action.side === 'left' ? '左' : '右';
-              const pointText = action.alias ? `${action.point}/${action.alias}` : action.point;
-              copyText += `${typeText}：${sideText} ${pointText} (${action.desc})\n`;
-            });
-            const textArea = document.createElement("textarea");
-            textArea.value = copyText;
-            textArea.style.position = "fixed";
-            textArea.style.opacity = "0";
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            try {
-              document.execCommand('copy');
-              setIsCopied(true);
-              setTimeout(() => setIsCopied(false), 2000);
-            } catch (err) { console.error('複製失敗', err); }
-            document.body.removeChild(textArea);
-          };
+          }, [gender, systemType, tangyePulse, tangyeState, zhongshiTreatment]);
 
           return (
-            <div className="min-h-screen bg-slate-50 font-sans text-slate-800 pb-20">
-              
-              {isMenuOpen && (
-                 <div className="fixed inset-0 bg-black/50 z-40 transition-opacity" onClick={() => setIsMenuOpen(false)}>
-                    <div className="w-72 h-full bg-white shadow-xl z-50 transform transition-transform duration-300 flex flex-col" onClick={e=>e.stopPropagation()}>
-                       <div className="p-5 flex justify-between items-center border-b border-slate-100">
-                          <h2 className="text-xl font-bold text-indigo-900">功能選單</h2>
-                          <button onClick={() => setIsMenuOpen(false)} className="text-slate-400 hover:text-slate-600"><Icons.X /></button>
-                       </div>
-                       <div className="p-4 space-y-2">
-                           <button onClick={() => {setView('calculator'); setIsMenuOpen(false);}} className={`w-full text-left px-4 py-4 rounded-xl transition-all ${view === 'calculator' ? 'bg-indigo-50 text-indigo-700 font-bold border border-indigo-100' : 'text-slate-600 hover:bg-slate-50'}`}>
-                               脈法計算機
-                           </button>
-                           <button onClick={() => {setView('quick'); setIsMenuOpen(false);}} className={`w-full text-left px-4 py-4 rounded-xl transition-all ${view === 'quick' ? 'bg-indigo-50 text-indigo-700 font-bold border border-indigo-100' : 'text-slate-600 hover:bg-slate-50'}`}>
-                               快速按鈕輔助 (湯液/終始/原絡)
-                           </button>
-                       </div>
-                    </div>
-                 </div>
-              )}
-
-              <div className="max-w-4xl mx-auto space-y-6 p-4 md:p-8">
-                <header className="bg-white p-5 md:p-6 rounded-xl shadow-sm border-l-4 border-indigo-500 flex items-start gap-4">
-                  <button onClick={() => setIsMenuOpen(true)} className="mt-1 text-slate-500 hover:text-indigo-600 transition-colors">
-                     <Icons.Menu />
-                  </button>
-                  <div className="flex-1 flex flex-col md:flex-row md:justify-between md:items-start">
-                      <div>
-                          <h1 className="text-xl md:text-2xl font-bold flex items-center gap-2 text-indigo-900 leading-tight">
-                            <Icons.Activity />
-                            針灸臨床決策輔助工具
-                          </h1>
-                          <p className="text-slate-500 mt-2 text-sm md:text-base">Janna珍娜-湯液針法/終始針法/原絡針法 整合學習系統</p>
-                      </div>
-                      <div className="text-xs md:text-sm text-slate-400 mt-3 md:mt-2 text-left md:text-right">
-                          劉可炫、小奈共同製作
-                      </div>
-                  </div>
+            <div className="space-y-6 pb-20">
+                <header className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-indigo-500">
+                  <h1 className="text-2xl font-bold flex items-center gap-2 text-indigo-900">
+                    <Icons.Activity /> 脈法計算機
+                  </h1>
+                  <p className="text-slate-500 mt-2">Janna珍娜-湯液針法/終始針法/原絡針法 整合學習系統</p>
+                  <p className="text-slate-400 text-sm mt-1 text-right">劉可炫、小奈共同製作</p>
                 </header>
 
-                { }
-                {view === 'calculator' && (
-                  <div className="space-y-6 animate-in fade-in duration-500">
+                <section className="bg-white p-6 rounded-xl shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">病人性別</h2>
+                  <div className="flex gap-4">
+                    <button onClick={() => setGender('male')} className={`flex-1 py-3 px-4 rounded-lg border-2 transition-all flex items-center justify-center gap-2 ${gender === 'male' ? 'border-blue-500 bg-blue-50 text-blue-700 font-bold' : 'border-slate-200 hover:border-slate-300'}`}><Icons.User /> 男</button>
+                    <button onClick={() => setGender('female')} className={`flex-1 py-3 px-4 rounded-lg border-2 transition-all flex items-center justify-center gap-2 ${gender === 'female' ? 'border-pink-500 bg-pink-50 text-pink-700 font-bold' : 'border-slate-200 hover:border-slate-300'}`}><Icons.User /> 女</button>
+                  </div>
+                </section>
+
+                <section className="bg-white p-6 rounded-xl shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500 delay-100">
+                  <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">針法系統</h2>
+                  <div className="flex flex-col gap-3">
+                    <button onClick={() => handleSystemChange('tangye')} className={`py-3 px-4 rounded-lg border-2 transition-all ${systemType === 'tangye' ? 'border-teal-500 bg-teal-50 text-teal-700 font-bold' : 'border-slate-200 hover:border-slate-300'}`}>獨異 (湯液針法)</button>
+                    <button onClick={() => handleSystemChange('zhongshi')} className={`py-3 px-4 rounded-lg border-2 transition-all ${systemType === 'zhongshi' ? 'border-orange-500 bg-orange-50 text-orange-700 font-bold' : 'border-slate-200 hover:border-slate-300'}`}>陰陽不平衡 (終始針法)</button>
+                    <button onClick={() => handleSystemChange('yuanluo')} className={`py-3 px-4 rounded-lg border-2 transition-all ${systemType === 'yuanluo' ? 'border-blue-500 bg-blue-50 text-blue-700 font-bold' : 'border-slate-200 hover:border-slate-300'}`}>原絡針法</button>
+                  </div>
+                </section>
+
+                {(systemType === 'tangye' || systemType === 'yuanluo') && (
+                  <div className="space-y-6 animate-in zoom-in-95 duration-300">
                     <section className="bg-white p-6 rounded-xl shadow-sm">
-                      <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">病人性別</h2>
+                      <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">哪個脈位獨異？</h2>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        {['心火', '肝木', '腎水', '肺金', '脾土', '命門'].map(p => (
+                          <button key={p} onClick={() => setTangyePulse(p)} className={`py-2 px-3 rounded-lg border transition-all ${tangyePulse === p ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white border-slate-200 hover:bg-slate-50'}`}>{p}</button>
+                        ))}
+                      </div>
+                    </section>
+                    {tangyePulse && (
+                      <section className="bg-white p-6 rounded-xl shadow-sm animate-in fade-in slide-in-from-bottom-2">
+                        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">該脈位狀態？</h2>
+                        <div className="flex gap-4">
+                          <button onClick={() => setTangyeState('太過')} className={`flex-1 py-3 rounded-lg border-2 transition-all flex items-center justify-center gap-2 ${tangyeState === '太過' ? 'border-red-500 bg-red-50 text-red-700 font-bold' : 'border-slate-200'}`}><Icons.ArrowRight className="w-4 h-4 -rotate-45" /> 太過</button>
+                          <button onClick={() => setTangyeState('不足')} className={`flex-1 py-3 rounded-lg border-2 transition-all flex items-center justify-center gap-2 ${tangyeState === '不足' ? 'border-blue-500 bg-blue-50 text-blue-700 font-bold' : 'border-slate-200'}`}><Icons.ArrowRight className="w-4 h-4 rotate-45" /> 不足</button>
+                        </div>
+                      </section>
+                    )}
+                  </div>
+                )}
+
+                {systemType === 'zhongshi' && (
+                  <div className="space-y-6 animate-in zoom-in-95 duration-300">
+                    <section className="bg-white p-6 rounded-xl shadow-sm">
+                      <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">脈位狀態？</h2>
                       <div className="flex gap-4">
-                        <button onClick={() => setGender('male')} className={`flex-1 py-3 px-4 rounded-lg border-2 transition-all flex items-center justify-center gap-2 ${gender === 'male' ? 'border-blue-500 bg-blue-50 text-blue-700 font-bold' : 'border-slate-200 hover:border-slate-300'}`}><Icons.User /> 男</button>
-                        <button onClick={() => setGender('female')} className={`flex-1 py-3 px-4 rounded-lg border-2 transition-all flex items-center justify-center gap-2 ${gender === 'female' ? 'border-pink-500 bg-pink-50 text-pink-700 font-bold' : 'border-slate-200 hover:border-slate-300'}`}><Icons.User /> 女</button>
+                        {['人迎', '脈口'].map(opt => (
+                          <button key={opt} onClick={() => handlePulsePosChange(opt)} className={`flex-1 py-3 rounded-lg border-2 transition-all ${zhongshiPulsePos === opt ? 'border-purple-500 bg-purple-50 text-purple-700 font-bold' : 'border-slate-200'}`}>{opt}</button>
+                        ))}
                       </div>
                     </section>
-
-                    <section className="bg-white p-6 rounded-xl shadow-sm">
-                      <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">針法系統</h2>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <button onClick={() => handleSystemChange('tangye')} className={`py-3 px-4 rounded-lg border-2 transition-all ${systemChoice === 'tangye' ? 'border-teal-500 bg-teal-50 text-teal-700 font-bold' : 'border-slate-200 hover:border-slate-300'}`}>獨異 (湯液針法)</button>
-                        <button onClick={() => handleSystemChange('zhongshi')} className={`py-3 px-4 rounded-lg border-2 transition-all ${systemChoice === 'zhongshi' ? 'border-orange-500 bg-orange-50 text-orange-700 font-bold' : 'border-slate-200 hover:border-slate-300'}`}>陰陽不平衡 (終始針法)</button>
-                        <button onClick={() => handleSystemChange('yuanluo')} className={`py-3 px-4 rounded-lg border-2 transition-all ${systemChoice === 'yuanluo' ? 'border-indigo-500 bg-indigo-50 text-indigo-700 font-bold' : 'border-slate-200 hover:border-slate-300'}`}>原絡針法</button>
-                      </div>
-                    </section>
-
-                    {(systemChoice === 'tangye' || systemChoice === 'yuanluo') && (
-                      <div className="space-y-6 animate-in zoom-in-95 duration-300">
-                        <section className="bg-white p-6 rounded-xl shadow-sm">
-                          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">哪個脈位獨異？</h2>
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                            {['心火', '肝木', '腎水', '肺金', '脾土', '命門'].map(p => (
-                              <button key={p} onClick={() => setPulse(p)} className={`py-2 px-3 rounded-lg border transition-all ${pulse === p ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white border-slate-200 hover:bg-slate-50'}`}>{p}</button>
-                            ))}
-                          </div>
-                        </section>
-                        {pulse && (
-                          <section className="bg-white p-6 rounded-xl shadow-sm animate-in fade-in slide-in-from-bottom-2">
-                            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">該脈位狀態？</h2>
-                            <div className="flex gap-4">
-                              <button onClick={() => setPulseState('太過')} className={`flex-1 py-3 rounded-lg border-2 transition-all flex items-center justify-center gap-2 ${pulseState === '太過' ? 'border-red-500 bg-red-50 text-red-700 font-bold' : 'border-slate-200'}`}><Icons.ArrowRight className="w-4 h-4 -rotate-45" /> 太過</button>
-                              <button onClick={() => setPulseState('不足')} className={`flex-1 py-3 rounded-lg border-2 transition-all flex items-center justify-center gap-2 ${pulseState === '不足' ? 'border-blue-500 bg-blue-50 text-blue-700 font-bold' : 'border-slate-200'}`}><Icons.ArrowRight className="w-4 h-4 rotate-45" /> 不足</button>
-                            </div>
-                          </section>
-                        )}
-                      </div>
+                    {zhongshiPulsePos && (
+                      <section className="bg-white p-6 rounded-xl shadow-sm animate-in fade-in slide-in-from-bottom-2">
+                        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">是否為躁？</h2>
+                        <div className="flex gap-4">
+                           <button onClick={() => handleAgitatedChange('yes')} className={`flex-1 py-3 rounded-lg border-2 transition-all ${isAgitated === 'yes' ? 'border-red-500 bg-red-50 text-red-700 font-bold' : 'border-slate-200'}`}>是</button>
+                           <button onClick={() => handleAgitatedChange('no')} className={`flex-1 py-3 rounded-lg border-2 transition-all ${isAgitated === 'no' ? 'border-green-500 bg-green-50 text-green-700 font-bold' : 'border-slate-200'}`}>否</button>
+                        </div>
+                      </section>
                     )}
-
-                    {systemChoice === 'zhongshi' && (
-                      <div className="space-y-6 animate-in zoom-in-95 duration-300">
-                        <section className="bg-white p-6 rounded-xl shadow-sm">
-                          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">脈位狀態？</h2>
-                          <div className="flex gap-4">
-                            {['人迎', '脈口'].map(opt => (
-                              <button key={opt} onClick={() => handlePulsePosChange(opt)} className={`flex-1 py-3 rounded-lg border-2 transition-all ${zhongshiPulsePos === opt ? 'border-purple-500 bg-purple-50 text-purple-700 font-bold' : 'border-slate-200'}`}>{opt}</button>
-                            ))}
-                          </div>
-                        </section>
-                        {zhongshiPulsePos && (
-                          <section className="bg-white p-6 rounded-xl shadow-sm animate-in fade-in slide-in-from-bottom-2">
-                            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">是否為躁？</h2>
-                            <div className="flex gap-4">
-                               <button onClick={() => handleAgitatedChange('yes')} className={`flex-1 py-3 rounded-lg border-2 transition-all ${isAgitated === 'yes' ? 'border-red-500 bg-red-50 text-red-700 font-bold' : 'border-slate-200'}`}>是</button>
-                               <button onClick={() => handleAgitatedChange('no')} className={`flex-1 py-3 rounded-lg border-2 transition-all ${isAgitated === 'no' ? 'border-green-500 bg-green-50 text-green-700 font-bold' : 'border-slate-200'}`}>否</button>
-                            </div>
-                          </section>
-                        )}
-                        {zhongshiPulsePos && isAgitated && (
-                          <section className="bg-white p-6 rounded-xl shadow-sm animate-in fade-in slide-in-from-bottom-2">
-                            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">治療原則</h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                              {zhongshiOptions.map(opt => (
-                                <button key={opt} onClick={() => setZhongshiTreatment(opt)} className={`p-4 rounded-lg border text-left transition-all ${zhongshiTreatment === opt ? 'bg-indigo-600 text-white border-indigo-600 shadow-md' : 'bg-white border-slate-200 hover:bg-slate-50'}`}>{opt}</button>
-                              ))}
-                            </div>
-                          </section>
-                        )}
-                      </div>
+                    {zhongshiPulsePos && isAgitated && (
+                      <section className="bg-white p-6 rounded-xl shadow-sm animate-in fade-in slide-in-from-bottom-2">
+                        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">治療原則</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {zhongshiOptions.map(opt => (
+                            <button key={opt} onClick={() => setZhongshiTreatment(opt)} className={`p-4 rounded-lg border text-left transition-all ${zhongshiTreatment === opt ? 'bg-indigo-600 text-white border-indigo-600 shadow-md' : 'bg-white border-slate-200 hover:bg-slate-50'}`}>{opt}</button>
+                          ))}
+                        </div>
+                      </section>
                     )}
-
-                    <ResultCard result={result} displayActions={displayActions} locationHints={locationHints} handleCopy={handleCopy} isCopied={isCopied} systemChoice={systemChoice} />
                   </div>
                 )}
 
-                {}
-                {view === 'quick' && (
-                  <div className="space-y-6 animate-in fade-in duration-500">
-                    <section className="bg-white p-6 rounded-xl shadow-sm flex flex-col items-center">
-                        <div className="text-sm text-slate-500 mb-4 font-bold tracking-widest uppercase">選擇性別與針法</div>
-                        
-                        <div className="relative w-64 h-14 bg-slate-200 rounded-full flex items-center p-1 cursor-pointer overflow-hidden shadow-inner" onClick={() => { setQuickGender(g => g === 'male' ? 'female' : 'male'); setQuickActiveBox(null); setQuickBoxState(null); }}>
-                            <div className={`absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-full transition-transform duration-300 shadow-md ${quickGender === 'male' ? 'translate-x-0 bg-blue-500' : 'translate-x-[calc(100%+4px)] bg-pink-500'}`}></div>
-                            <div className={`flex-1 text-center z-10 font-bold transition-colors ${quickGender === 'male' ? 'text-white' : 'text-slate-500'}`}>男性</div>
-                            <div className={`flex-1 text-center z-10 font-bold transition-colors ${quickGender === 'female' ? 'text-white' : 'text-slate-500'}`}>女性</div>
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-3 sm:gap-4 mt-6 w-full max-w-sm">
-                            <button onClick={() => { setQuickSystem('tangye'); setQuickActiveBox(null); setQuickBoxState(null); }} className={`py-3 px-2 sm:px-4 rounded-lg border-2 transition-all text-sm sm:text-base ${quickSystem === 'tangye' ? 'border-teal-500 bg-teal-50 text-teal-700 font-bold shadow-sm' : 'border-slate-200 hover:border-slate-300'}`}>湯液</button>
-                            <button onClick={() => { setQuickSystem('zhongshi'); setQuickActiveBox(null); setQuickBoxState(null); }} className={`py-3 px-2 sm:px-4 rounded-lg border-2 transition-all text-sm sm:text-base ${quickSystem === 'zhongshi' ? 'border-orange-500 bg-orange-50 text-orange-700 font-bold shadow-sm' : 'border-slate-200 hover:border-slate-300'}`}>終始</button>
-                            <button onClick={() => { setQuickSystem('yuanluo'); setQuickActiveBox(null); setQuickBoxState(null); }} className={`py-3 px-2 sm:px-4 rounded-lg border-2 transition-all text-sm sm:text-base ${quickSystem === 'yuanluo' ? 'border-indigo-500 bg-indigo-50 text-indigo-700 font-bold shadow-sm' : 'border-slate-200 hover:border-slate-300'}`}>原絡</button>
-                        </div>
-
-                        <div className="mt-6 text-sm text-slate-500 text-center">
-                            提示：請在下方脈位方塊上<br/> 
-                            <span className="font-bold text-slate-700">向上滑動({quickSystem === 'zhongshi' ? '躁' : '太過'})</span> 或 <span className="font-bold text-slate-700">向下滑動({quickSystem === 'zhongshi' ? '無躁' : '不足'})</span>
-                        </div>
-                    </section>
-
-                    <section className="bg-white p-4 sm:p-6 rounded-xl shadow-sm overflow-hidden">
-                        <div className="flex flex-col items-center max-w-lg mx-auto">
-                            <div className="grid grid-cols-[24px_1fr_1fr_24px] sm:grid-cols-[36px_1fr_1fr_36px] gap-2 sm:gap-4 w-full justify-items-center items-center">
-                                
-                                {['尺', '關', '寸'].map((label, rowIndex) => (
-                                    <React.Fragment key={rowIndex}>
-                                        <div className="text-sm sm:text-lg font-bold text-slate-400 select-none">{label}</div>
-                                        
-                                        {[0, 1].map(col => {
-                                            const boxId = `${rowIndex}-${col}`;
-                                            const isActive = quickActiveBox === boxId;
-                                            const bgColorClass = isActive ? (quickGender === 'male' ? 'bg-blue-100 border-blue-400' : 'bg-pink-100 border-pink-400') : 'bg-white border-slate-100';
-                                            return (
-                                                <div key={boxId} 
-                                                     onPointerDown={(e) => { e.target.setPointerCapture(e.pointerId); setPointerStartY(e.clientY); setQuickActiveBox(boxId); setQuickBoxState(null); }}
-                                                     onPointerUp={(e) => { 
-                                                         e.target.releasePointerCapture(e.pointerId); 
-                                                         const diff = e.clientY - pointerStartY; 
-                                                         const upText = quickSystem === 'zhongshi' ? '躁' : '太過';
-                                                         const downText = quickSystem === 'zhongshi' ? '無躁' : '不足';
-                                                         if (diff < -20) setQuickBoxState(upText); 
-                                                         else if (diff > 20) setQuickBoxState(downText); 
-                                                     }}
-                                                     className={`touch-none w-28 h-28 sm:w-36 sm:h-36 rounded-3xl border-2 flex items-center justify-center cursor-pointer transition-all box-neumorphism select-none ${bgColorClass}`}>
-                                                     {isActive && quickBoxState && <span className="text-slate-500/80 text-3xl sm:text-4xl font-black pointer-events-none">{quickBoxState}</span>}
-                                                </div>
-                                            )
-                                        })}
-
-                                        <div className="text-sm sm:text-lg font-bold text-slate-400 select-none">{label}</div>
-                                    </React.Fragment>
-                                ))}
-                                
-                                <div></div>
-                                <div className="text-lg sm:text-xl font-bold text-slate-700 mt-4 select-none">右手</div>
-                                <div className="text-lg sm:text-xl font-bold text-slate-700 mt-4 select-none">左手</div>
-                                <div></div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <ResultCard result={result} displayActions={displayActions} locationHints={locationHints} handleCopy={handleCopy} isCopied={isCopied} systemChoice={quickSystem} />
-                  </div>
-                )}
-              </div>
+                <ResultCard result={result} gender={gender} systemType={systemType} />
             </div>
           );
-        }
+        };
+
+        const QuickButtonPage = () => {
+            const [gender, setGender] = useState('male');
+            const [system, setSystem] = useState('tangye'); // tangye, zhongshi, yuanluo
+            const [swipeState, setSwipeState] = useState({ box: null, dir: null });
+
+            const POSITIONS = ['right-chi', 'right-guan', 'right-chun', 'left-chi', 'left-guan', 'left-chun'];
+            
+            // Maps physical box to Element/Zhongshi label based on Gender
+            const getBoxElement = (boxId) => {
+                const isMale = gender === 'male';
+                const mapMale = {
+                    'right-chun': { element: '肺金', zs: '脈口一盛' },
+                    'right-guan': { element: '脾土', zs: '脈口三盛' },
+                    'right-chi':  { element: '命門', zs: '脈口二盛' },
+                    'left-chun':  { element: '心火', zs: '人迎一盛' },
+                    'left-guan':  { element: '肝木', zs: '人迎三盛' },
+                    'left-chi':   { element: '腎水', zs: '人迎二盛' }
+                };
+                const mapFemale = {
+                    'left-chun':  { element: '肺金', zs: '脈口一盛' },
+                    'left-guan':  { element: '脾土', zs: '脈口三盛' },
+                    'left-chi':   { element: '命門', zs: '脈口二盛' },
+                    'right-chun': { element: '心火', zs: '人迎一盛' },
+                    'right-guan': { element: '肝木', zs: '人迎三盛' },
+                    'right-chi':  { element: '腎水', zs: '人迎二盛' }
+                };
+                return isMale ? mapMale[boxId] : mapFemale[boxId];
+            };
+
+            const result = useMemo(() => {
+                if (!swipeState.box || !swipeState.dir) return null;
+                const mapping = getBoxElement(swipeState.box);
+                const isUp = swipeState.dir === 'up';
+
+                if (system === 'tangye') {
+                    const stateLabel = isUp ? '太過' : '不足';
+                    const rule = TANGYE_RULES[gender][mapping.element][stateLabel];
+                    if(rule) return { title: '湯液針法 處方', method: `${mapping.element} ${stateLabel}`, ...rule };
+                } else if (system === 'yuanluo') {
+                    const stateLabel = isUp ? '太過' : '不足';
+                    const rule = YUANLUO_RULES[gender][mapping.element][stateLabel];
+                    if(rule) return { title: '原絡針法 處方', method: `${mapping.element} ${stateLabel}`, ...rule };
+                } else if (system === 'zhongshi') {
+                    const agitatedSuffix = isUp ? '而躁' : '';
+                    let targetTreatment = '';
+                    const m = mapping.zs;
+                    if (m === '脈口一盛') targetTreatment = `脈口一盛${agitatedSuffix}（補${isUp?'三焦瀉心包':'膽瀉肝'}）`;
+                    if (m === '脈口二盛') targetTreatment = `脈口二盛${agitatedSuffix}（補${isUp?'小腸瀉心':'膀胱瀉腎'}）`;
+                    if (m === '脈口三盛') targetTreatment = `脈口三盛${agitatedSuffix}（補${isUp?'大腸瀉肺':'胃瀉脾'}）`;
+                    if (m === '人迎一盛') targetTreatment = `人迎一盛${agitatedSuffix}（補${isUp?'心包瀉三焦':'肝瀉膽'}）`;
+                    if (m === '人迎二盛') targetTreatment = `人迎二盛${agitatedSuffix}（補${isUp?'心瀉小腸':'腎瀉膀胱'}）`;
+                    if (m === '人迎三盛') targetTreatment = `人迎三盛${agitatedSuffix}（補${isUp?'肺瀉大腸':'脾瀉胃'}）`;
+                    
+                    const rule = ZHONGSHI_RULES[gender][targetTreatment];
+                    if(rule) return { title: '終始針法 處方', method: targetTreatment, ...rule };
+                }
+                return null;
+            }, [gender, system, swipeState]);
+
+            const handleDragEnd = (boxId, deltaY) => {
+                if (deltaY < -20) setSwipeState({ box: boxId, dir: 'up' });
+                else if (deltaY > 20) setSwipeState({ box: boxId, dir: 'down' });
+            };
+
+            const Box = ({ id, labelRight, labelLeft }) => {
+                const startY = useRef(0);
+                const isSelected = swipeState.box === id;
+                const activeColor = gender === 'male' ? 'bg-blue-100 border-blue-400' : 'bg-pink-100 border-pink-400';
+                
+                let text = '';
+                if (isSelected) {
+                    if (system === 'zhongshi') text = swipeState.dir === 'up' ? '躁' : '無躁';
+                    else text = swipeState.dir === 'up' ? '太過' : '不足';
+                }
+
+                return (
+                    <div className="flex items-center w-full justify-between">
+                        <div className="w-6 text-center text-sm font-bold text-slate-400">{labelLeft}</div>
+                        <div 
+                            className={`w-28 sm:w-36 aspect-square rounded-xl shadow-[4px_4px_10px_rgba(0,0,0,0.1)] border-2 flex items-center justify-center cursor-grab active:cursor-grabbing swipe-box transition-colors duration-200 select-none ${isSelected ? activeColor : 'bg-white border-white hover:border-slate-200'}`}
+                            onPointerDown={(e) => { startY.current = e.clientY; e.target.setPointerCapture(e.pointerId); }}
+                            onPointerUp={(e) => { e.target.releasePointerCapture(e.pointerId); handleDragEnd(id, e.clientY - startY.current); }}
+                        >
+                            {text && <span className="text-xl font-bold text-slate-500 opacity-70 pointer-events-none">{text}</span>}
+                            {!text && <span className="text-xs text-slate-300 opacity-50 pointer-events-none flex flex-col items-center gap-1"><span>↑上滑</span><span>下滑↓</span></span>}
+                        </div>
+                        <div className="w-6 text-center text-sm font-bold text-slate-400">{labelRight}</div>
+                    </div>
+                );
+            };
+
+            return (
+                <div className="space-y-6 pb-20">
+                    <header className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-indigo-500">
+                        <h1 className="text-2xl font-bold flex items-center gap-2 text-indigo-900">
+                            快速按鈕輔助
+                        </h1>
+                        <p className="text-slate-500 mt-2">滑動對應脈位，快速生成處方</p>
+                    </header>
+
+                    {/* Gender Toggle */}
+                    <div className="bg-white rounded-xl shadow-sm p-2 flex relative overflow-hidden border border-slate-200">
+                        <div className={`absolute top-0 bottom-0 w-1/2 transition-transform duration-300 ease-in-out ${gender === 'male' ? 'bg-blue-100 translate-x-0' : 'bg-pink-100 translate-x-full'}`}></div>
+                        <button onClick={() => setSwipeState({box:null, dir:null}) || setGender('male')} className={`flex-1 py-3 font-bold z-10 transition-colors ${gender === 'male' ? 'text-blue-800' : 'text-slate-400'}`}>男性</button>
+                        <button onClick={() => setSwipeState({box:null, dir:null}) || setGender('female')} className={`flex-1 py-3 font-bold z-10 transition-colors ${gender === 'female' ? 'text-pink-800' : 'text-slate-400'}`}>女性</button>
+                    </div>
+
+                    {/* System Toggle */}
+                    <div className="grid grid-cols-3 gap-2">
+                        <button onClick={() => setSwipeState({box:null, dir:null}) || setSystem('tangye')} className={`py-3 rounded-lg font-bold border transition-all ${system === 'tangye' ? 'bg-teal-100 text-teal-800 border-teal-300' : 'bg-white text-slate-400 border-slate-200'}`}>湯液</button>
+                        <button onClick={() => setSwipeState({box:null, dir:null}) || setSystem('zhongshi')} className={`py-3 rounded-lg font-bold border transition-all ${system === 'zhongshi' ? 'bg-orange-100 text-orange-800 border-orange-300' : 'bg-white text-slate-400 border-slate-200'}`}>終始</button>
+                        <button onClick={() => setSwipeState({box:null, dir:null}) || setSystem('yuanluo')} className={`py-3 rounded-lg font-bold border transition-all ${system === 'yuanluo' ? 'bg-blue-100 text-blue-800 border-blue-300' : 'bg-white text-slate-400 border-slate-200'}`}>原絡</button>
+                    </div>
+
+                    {/* Grid */}
+                    <div className="bg-slate-100 rounded-xl p-6 py-8">
+                        <div className="max-w-md mx-auto relative flex gap-4">
+                            {/* Left Column (Right Hand) */}
+                            <div className="flex-1 flex flex-col gap-6 items-end">
+                                <Box id="right-chi" labelRight="" labelLeft="尺" />
+                                <Box id="right-guan" labelRight="" labelLeft="關" />
+                                <Box id="right-chun" labelRight="" labelLeft="寸" />
+                                <div className="text-center font-bold text-slate-500 mt-2 w-28 sm:w-36">右手</div>
+                            </div>
+                            {/* Right Column (Left Hand) */}
+                            <div className="flex-1 flex flex-col gap-6 items-start">
+                                <Box id="left-chi" labelRight="尺" labelLeft="" />
+                                <Box id="left-guan" labelRight="關" labelLeft="" />
+                                <Box id="left-chun" labelRight="寸" labelLeft="" />
+                                <div className="text-center font-bold text-slate-500 mt-2 w-28 sm:w-36">左手</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <ResultCard result={result} gender={gender} systemType={system} />
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [currentPage, setCurrentPage] = useState('calculator'); // calculator, quick, medicine
+            const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+            return (
+                <div className="min-h-screen bg-slate-50 font-sans text-slate-800">
+                    {/* Navbar */}
+                    <nav className="bg-indigo-900 text-white p-4 shadow-md sticky top-0 z-50 flex items-center gap-4">
+                        <button onClick={() => setIsMenuOpen(true)} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
+                            <Icons.Menu />
+                        </button>
+                        <h1 className="font-bold text-lg">針灸決策輔助</h1>
+                    </nav>
+
+                    {/* Sidebar Overlay */}
+                    {isMenuOpen && (
+                        <div className="fixed inset-0 bg-black/50 z-50 transition-opacity" onClick={() => setIsMenuOpen(false)}></div>
+                    )}
+
+                    {/* Sidebar Panel */}
+                    <div className={`fixed inset-y-0 left-0 w-64 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+                        <div className="p-4 border-b flex justify-between items-center bg-indigo-50">
+                            <span className="font-bold text-indigo-900">選單功能</span>
+                            <button onClick={() => setIsMenuOpen(false)} className="p-2 text-indigo-900 hover:bg-indigo-100 rounded-lg"><Icons.X /></button>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
+                            <button onClick={() => { setCurrentPage('calculator'); setIsMenuOpen(false); }} className={`p-4 rounded-xl text-left font-bold transition-colors ${currentPage === 'calculator' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-700 hover:bg-slate-100'}`}>脈法計算機</button>
+                            <button onClick={() => { setCurrentPage('quick'); setIsMenuOpen(false); }} className={`p-4 rounded-xl text-left font-bold transition-colors ${currentPage === 'quick' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-700 hover:bg-slate-100'}`}>湯液/終始/原絡快速按鈕</button>
+                            <button onClick={() => { setCurrentPage('medicine'); setIsMenuOpen(false); }} className={`p-4 rounded-xl text-left font-bold transition-colors ${currentPage === 'medicine' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-700 hover:bg-slate-100'}`}>藥物輔助資訊</button>
+                        </div>
+                    </div>
+
+                    {/* Main Content */}
+                    <main className="p-4 md:p-8 max-w-4xl mx-auto">
+                        {currentPage === 'calculator' && <CalculatorPage />}
+                        {currentPage === 'quick' && <QuickButtonPage />}
+                        {currentPage === 'medicine' && <MedicineView />}
+                    </main>
+                </div>
+            );
+        };
 
         const root = createRoot(document.getElementById('root'));
-        root.render(<AcupunctureTool />);
+        root.render(<App />);
 
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .catch(err => console.log('Service Worker failed', err));
+            });
+        }
     </script>
 </body>
 </html>
