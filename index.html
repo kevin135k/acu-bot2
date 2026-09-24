@@ -258,7 +258,7 @@
 
         const MEDICINE_SYSTEMS = [
             {
-                id: 'weiwang', title: '湯液藥精系統', icon: '🧑‍🍳', leftAction: '補', rightAction: '瀉',
+                id: 'weiwang', title: '湯液藥精系統', icon: '🧑‍🍳', type: 'standard', leftAction: '補', rightAction: '瀉',
                 data: {
                     '心火': { pos: { x: 30, y: 20 }, element: '心火', left: '旋覆花7', right: '黃連2', color: 'bg-red-100 text-red-800 border-red-200' },
                     '脾土': { pos: { x: 70, y: 20 }, element: '脾土', left: '人參10', right: '生薑5', color: 'bg-orange-100 text-orange-800 border-orange-200' },
@@ -269,7 +269,7 @@
                 }
             },
             {
-                id: 'wensheng', title: '溫升涼降系統', icon: '🔥', leftAction: '升', rightAction: '降',
+                id: 'wensheng', title: '溫升涼降系統', icon: '🔥', type: 'standard', leftAction: '升', rightAction: '降',
                 data: {
                     '心火': { pos: { x: 30, y: 20 }, element: '心火', left: '薤白7', right: '黃連2', color: 'bg-red-100 text-red-800 border-red-200' },
                     '脾土': { pos: { x: 70, y: 20 }, element: '脾土', left: '乾薑10', right: '大黃5', color: 'bg-orange-100 text-orange-800 border-orange-200' },
@@ -280,7 +280,7 @@
                 }
             },
             {
-                id: 'liangsheng', title: '涼升溫降系統', icon: '🌪️', leftAction: '升', rightAction: '降',
+                id: 'liangsheng', title: '涼升溫降系統', icon: '🌪️', type: 'standard', leftAction: '升', rightAction: '降',
                 data: {
                     '心火': { pos: { x: 30, y: 20 }, element: '心火', left: '小麥7', right: '肉桂2', color: 'bg-red-100 text-red-800 border-red-200' },
                     '脾土': { pos: { x: 70, y: 20 }, element: '脾土', left: '升麻10', right: '厚朴5', color: 'bg-orange-100 text-orange-800 border-orange-200' },
@@ -288,6 +288,28 @@
                     '腎水': { pos: { x: 50, y: 85 }, element: '腎水', left: '旱蓮草6', right: '桂枝1', color: 'bg-blue-100 text-blue-800 border-blue-200' },
                     '肝木': { pos: { x: 18, y: 58 }, element: '肝木', left: '柴胡8', right: '吳茱萸3', color: 'bg-green-100 text-green-800 border-green-200' },
                     '命門': { pos: { x: 50, y: 39 }, element: '命門', left: '暫無資料', right: '暫無資料', color: 'bg-slate-100 text-slate-500 border-slate-200' }
+                }
+            },
+            {
+                id: 'zhongshi_renying', title: '終始藥方系統-人迎', icon: '☀️', type: 'list',
+                data: {
+                    '肝木': { pos: { x: 18, y: 58 }, element: '肝木', state: '一盛', list: ['桂枝8', '枳實8', '甘草3'], color: 'bg-green-100 text-green-800 border-green-200' },
+                    '心火': { pos: { x: 30, y: 20 }, element: '心火', state: '二盛而躁', list: ['旋覆花7', '黃連7', '豆豉2'], color: 'bg-red-100 text-red-800 border-red-200' },
+                    '脾土': { pos: { x: 70, y: 20 }, element: '脾土', state: '三盛', list: ['人參10', '生薑10', '白朮5'], color: 'bg-orange-100 text-orange-800 border-orange-200' },
+                    '肺金': { pos: { x: 82, y: 58 }, element: '肺金', state: '三盛而躁', list: ['五味子9', '厚朴9', '細辛4'], color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
+                    '腎水': { pos: { x: 50, y: 85 }, element: '腎水', state: '二盛', list: ['熟地6', '茯苓6', '芒硝1'], color: 'bg-blue-100 text-blue-800 border-blue-200' },
+                    '命門': { pos: { x: 50, y: 39 }, element: '命門', state: '一盛而躁', list: ['肉桂1', '黃柏6', '黃芩6'], color: 'bg-slate-100 text-slate-800 border-slate-200' }
+                }
+            },
+            {
+                id: 'zhongshi_maikou', title: '終始藥方系統-脈口', icon: '🌙', type: 'list',
+                data: {
+                    '肝木': { pos: { x: 18, y: 58 }, element: '肝木', state: '一盛', list: ['五味子8', '厚朴8', '細辛3'], color: 'bg-green-100 text-green-800 border-green-200' },
+                    '心火': { pos: { x: 30, y: 20 }, element: '心火', state: '二盛而躁', list: ['生地7', '茯苓7', '芒硝2'], color: 'bg-red-100 text-red-800 border-red-200' },
+                    '脾土': { pos: { x: 70, y: 20 }, element: '脾土', state: '三盛', list: ['桂枝10', '枳實10', '甘草5'], color: 'bg-orange-100 text-orange-800 border-orange-200' },
+                    '肺金': { pos: { x: 82, y: 58 }, element: '肺金', state: '三盛而躁', list: ['旋覆花9', '黃連9', '豆豉4'], color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
+                    '腎水': { pos: { x: 50, y: 85 }, element: '腎水', state: '二盛', list: ['人參6', '乾薑6', '白朮1'], color: 'bg-blue-100 text-blue-800 border-blue-200' },
+                    '命門': { pos: { x: 50, y: 39 }, element: '命門', state: '一盛而躁', list: ['肉桂1', '補骨脂6', '柴胡6'], color: 'bg-slate-100 text-slate-800 border-slate-200' }
                 }
             }
         ];
@@ -320,25 +342,42 @@
 
                                 {/* Element Nodes */}
                                 {Object.values(system.data).map((info, idx) => (
-                                    <div 
-                                        key={idx}
-                                        className="absolute transform -translate-x-1/2 -translate-y-1/2 flex items-center gap-1 sm:gap-2 shadow-sm rounded-lg bg-white/95 p-1 sm:p-1.5 border border-slate-200 z-10 hover:shadow-md transition-shadow"
-                                        style={{ left: `${info.pos.x}%`, top: `${info.pos.y}%` }}
-                                    >
-                                        <div className="flex flex-col items-center min-w-[24px] sm:min-w-[32px]">
-                                            <span className="text-[10px] sm:text-xs text-slate-400 font-medium leading-none mb-1">{system.leftAction}</span>
-                                            <span className="text-xs sm:text-sm font-bold text-slate-700 leading-none whitespace-nowrap">{info.left}</span>
+                                    system.type === 'list' ? (
+                                        <div 
+                                            key={idx}
+                                            className="absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 shadow-sm rounded-lg bg-white/95 p-1.5 border border-slate-200 z-10 hover:shadow-md transition-shadow"
+                                            style={{ left: `${info.pos.x}%`, top: `${info.pos.y}%` }}
+                                        >
+                                            <div className={`px-2 py-0.5 rounded border font-bold text-[11px] sm:text-sm whitespace-nowrap ${info.color}`}>
+                                                {info.state}
+                                            </div>
+                                            <div className="flex flex-col items-center gap-0.5">
+                                                {info.list.map((med, i) => (
+                                                    <span key={i} className="text-[10px] sm:text-xs font-bold text-slate-700 leading-none whitespace-nowrap">{med}</span>
+                                                ))}
+                                            </div>
                                         </div>
+                                    ) : (
+                                        <div 
+                                            key={idx}
+                                            className="absolute transform -translate-x-1/2 -translate-y-1/2 flex items-center gap-1 sm:gap-2 shadow-sm rounded-lg bg-white/95 p-1 sm:p-1.5 border border-slate-200 z-10 hover:shadow-md transition-shadow"
+                                            style={{ left: `${info.pos.x}%`, top: `${info.pos.y}%` }}
+                                        >
+                                            <div className="flex flex-col items-center min-w-[24px] sm:min-w-[32px]">
+                                                <span className="text-[10px] sm:text-xs text-slate-400 font-medium leading-none mb-1 whitespace-nowrap">{system.leftAction}</span>
+                                                <span className="text-xs sm:text-sm font-bold text-slate-700 leading-none whitespace-nowrap">{info.left}</span>
+                                            </div>
 
-                                        <div className={`px-1.5 py-1 sm:px-2 sm:py-1 rounded border font-bold text-[12px] sm:text-sm whitespace-nowrap ${info.color}`}>
-                                            {info.element}
-                                        </div>
+                                            <div className={`px-1.5 py-1 sm:px-2 sm:py-1 rounded border font-bold text-[12px] sm:text-sm whitespace-nowrap ${info.color}`}>
+                                                {info.element}
+                                            </div>
 
-                                        <div className="flex flex-col items-center min-w-[24px] sm:min-w-[32px]">
-                                            <span className="text-[10px] sm:text-xs text-slate-400 font-medium leading-none mb-1">{system.rightAction}</span>
-                                            <span className="text-xs sm:text-sm font-bold text-slate-700 leading-none whitespace-nowrap">{info.right}</span>
+                                            <div className="flex flex-col items-center min-w-[24px] sm:min-w-[32px]">
+                                                <span className="text-[10px] sm:text-xs text-slate-400 font-medium leading-none mb-1 whitespace-nowrap">{system.rightAction}</span>
+                                                <span className="text-xs sm:text-sm font-bold text-slate-700 leading-none whitespace-nowrap">{info.right}</span>
+                                            </div>
                                         </div>
-                                    </div>
+                                    )
                                 ))}
                             </div>
                         </div>
@@ -442,6 +481,23 @@
                     if (result.method.includes('三盛')) return '脾土';
                 }
                 return null;
+            }, [result, systemType]);
+
+            const displayMedicineSystems = useMemo(() => {
+                if (!result) return [];
+                let systems = [...MEDICINE_SYSTEMS];
+                
+                if (systemType === 'zhongshi') {
+                    const isRenying = result.method.includes('人迎');
+                    const targetZhongshiId = isRenying ? 'zhongshi_renying' : 'zhongshi_maikou';
+                    
+                    const targetSys = systems.find(s => s.id === targetZhongshiId);
+                    const otherSys = systems.filter(s => !s.id.startsWith('zhongshi_'));
+                    
+                    return [targetSys, ...otherSys];
+                } else {
+                    return systems.filter(s => !s.id.startsWith('zhongshi_'));
+                }
             }, [result, systemType]);
 
             if (!result) return null;
@@ -560,24 +616,37 @@
                                     </button>
                                 </div>
                                 <div className="space-y-4">
-                                    {MEDICINE_SYSTEMS.map(sys => {
+                                    {displayMedicineSystems.map(sys => {
                                         const elementData = sys.data[medicineElement];
                                         if (!elementData) return null;
                                         return (
                                             <div key={sys.id} className="bg-slate-50 border border-slate-200 p-4 rounded-lg">
-                                                <div className="font-bold text-slate-700 mb-2 flex items-center gap-2">
-                                                    <span>{sys.icon}</span> {sys.title}
+                                                <div className="font-bold text-slate-700 mb-3 flex items-center gap-2">
+                                                    <span className="text-xl">{sys.icon}</span> {sys.title}
                                                 </div>
-                                                <div className="flex gap-4">
-                                                    <div className="flex-1 bg-white p-3 rounded shadow-sm border border-slate-100 text-center">
-                                                        <div className="text-xs text-slate-400 mb-1">{sys.leftAction}</div>
-                                                        <div className="font-bold text-slate-800">{elementData.left}</div>
+                                                {sys.type === 'list' ? (
+                                                    <div className="bg-white p-3 rounded shadow-sm border border-slate-100 flex flex-col items-center gap-2">
+                                                        <div className={`px-3 py-1 rounded text-sm font-bold border ${elementData.color}`}>
+                                                            {elementData.state}
+                                                        </div>
+                                                        <div className="flex gap-4 sm:gap-6 mt-1">
+                                                            {elementData.list.map((med, i) => (
+                                                                <span key={i} className="font-bold text-slate-800 text-sm sm:text-base">{med}</span>
+                                                            ))}
+                                                        </div>
                                                     </div>
-                                                    <div className="flex-1 bg-white p-3 rounded shadow-sm border border-slate-100 text-center">
-                                                        <div className="text-xs text-slate-400 mb-1">{sys.rightAction}</div>
-                                                        <div className="font-bold text-slate-800">{elementData.right}</div>
+                                                ) : (
+                                                    <div className="flex gap-4">
+                                                        <div className="flex-1 bg-white p-3 rounded shadow-sm border border-slate-100 text-center">
+                                                            <div className="text-xs text-slate-400 mb-1">{sys.leftAction}</div>
+                                                            <div className="font-bold text-slate-800">{elementData.left}</div>
+                                                        </div>
+                                                        <div className="flex-1 bg-white p-3 rounded shadow-sm border border-slate-100 text-center">
+                                                            <div className="text-xs text-slate-400 mb-1">{sys.rightAction}</div>
+                                                            <div className="font-bold text-slate-800">{elementData.right}</div>
+                                                        </div>
                                                     </div>
-                                                </div>
+                                                )}
                                             </div>
                                         );
                                     })}
