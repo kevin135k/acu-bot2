@@ -315,6 +315,13 @@
         ];
 
         const MedicineView = () => {
+            const memoizedMedicineSystems = useMemo(() => {
+                return MEDICINE_SYSTEMS.map(sys => ({
+                    ...sys,
+                    dataKeys: Object.keys(sys.data)
+                }));
+            }, []);
+
             return (
                 <div className="space-y-6 animate-in fade-in duration-500 pb-20">
                     <header className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-indigo-500 mb-6">
@@ -322,7 +329,7 @@
                             <Icons.Pill /> 藥物輔助資訊
                         </h1>
                     </header>
-                    {MEDICINE_SYSTEMS.map(system => (
+                    {memoizedMedicineSystems.map(system => (
                         <div key={system.id} className="bg-white p-4 sm:p-6 rounded-xl shadow-sm overflow-hidden">
                             <h2 className="text-lg sm:text-xl font-bold flex items-center gap-2 mb-4 sm:mb-6 text-slate-800 border-b pb-3">
                                 <span className="text-2xl">{system.icon}</span> {system.title}
@@ -341,10 +348,11 @@
                                 </svg>
 
                                 {/* Element Nodes */}
-                                {Object.values(system.data).map((info, idx) => (
-                                    system.type === 'list' ? (
+                                {system.dataKeys.map((key) => {
+                                    const info = system.data[key];
+                                    return system.type === 'list' ? (
                                         <div 
-                                            key={idx}
+                                            key={key}
                                             className="absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 shadow-sm rounded-lg bg-white/95 p-1.5 border border-slate-200 z-10 hover:shadow-md transition-shadow"
                                             style={{ left: `${info.pos.x}%`, top: `${info.pos.y}%` }}
                                         >
@@ -359,7 +367,7 @@
                                         </div>
                                     ) : (
                                         <div 
-                                            key={idx}
+                                            key={key}
                                             className="absolute transform -translate-x-1/2 -translate-y-1/2 flex items-center gap-1 sm:gap-2 shadow-sm rounded-lg bg-white/95 p-1 sm:p-1.5 border border-slate-200 z-10 hover:shadow-md transition-shadow"
                                             style={{ left: `${info.pos.x}%`, top: `${info.pos.y}%` }}
                                         >
@@ -377,8 +385,8 @@
                                                 <span className="text-xs sm:text-sm font-bold text-slate-700 leading-none whitespace-nowrap">{info.right}</span>
                                             </div>
                                         </div>
-                                    )
-                                ))}
+                                    );
+                                })}
                             </div>
                         </div>
                     ))}
