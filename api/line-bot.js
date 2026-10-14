@@ -68,6 +68,8 @@ const POINT_LOCATIONS = {
   '太溪': { icon: '🦶', text: '足內側部，內踝後方，內踝尖與跟腱之間凹陷處。' }
 };
 
+const POINT_NAMES_REGEX = new RegExp(Object.keys(POINT_LOCATIONS).join('|'), 'g');
+
 const TANGYE_RULES = {
   male: {
     '心火': { '太過': { sedate: { point: '少府', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' }, tonify: { point: '前谷', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' } }, '不足': { tonify: { point: '少府', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '前谷', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } } },
@@ -415,10 +417,9 @@ export default async function handler(req, res) {
                text: '💡 提示：為了準確回覆，請在收到處方後，直接點擊下方出現的「📍 查看取穴位置」泡泡按鈕。\n\n您也可以直接加上名稱來查詢，例如：「取穴 曲泉」'
             }];
         } else {
-            let foundPoints = [];
-            for (const pt in POINT_LOCATIONS) {
-              if (userMessage.includes(pt)) foundPoints.push(pt);
-            }
+            const matches = userMessage.match(POINT_NAMES_REGEX);
+            let foundPoints = matches ? Array.from(new Set(matches)) : [];
+
             if (foundPoints.length > 0) {
                 let locText = "📍 【穴位位置指引】\n────────────\n";
                 foundPoints.forEach(pt => { 
