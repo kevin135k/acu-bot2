@@ -6,10 +6,7 @@ const POINT_NAMES_REGEX = new RegExp(Object.keys(POINT_LOCATIONS).join('|'), 'g'
 // 1. 醫療資料庫 (整合湯液、終始、原絡針法)
 // ==========================================
 
-
-
-
-
+import { POINT_LOCATIONS, POINT_NAMES_REGEX, TANGYE_RULES, ZHONGSHI_RULES, YUANLUO_RULES } from '../lib/rules.js';
 
 // ==========================================
 // 2. 智能文字解析 (Direct Query)
@@ -226,7 +223,7 @@ function calculateTreatmentResult(ansString) {
 // ==========================================
 // 5. Vercel 主程式入口 (Webhook Handler)
 // ==========================================
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(200).send('LINE Bot Webhook is running!');
 
   try {
