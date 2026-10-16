@@ -5,112 +5,7 @@ const { POINT_LOCATIONS } = shared;
 // 1. 醫療資料庫 (整合湯液、終始、原絡針法)
 // ==========================================
 
-const POINT_NAMES_REGEX = new RegExp(Object.keys(POINT_LOCATIONS).join('|'), 'g');
-
-const TANGYE_RULES = {
-  male: {
-    '心火': { '太過': { sedate: { point: '少府', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' }, tonify: { point: '前谷', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' } }, '不足': { tonify: { point: '少府', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '前谷', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } } },
-    '肝木': { '太過': { sedate: { point: '大敦', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' }, tonify: { point: '足竅陰', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' } }, '不足': { tonify: { point: '大敦', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '足竅陰', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } } },
-    '腎水': { '太過': { sedate: { point: '陰谷', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' }, tonify: { point: '委中', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' } }, '不足': { tonify: { point: '陰谷', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '委中', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } } },
-    '肺金': { '太過': { sedate: { point: '經渠', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' }, tonify: { point: '陽溪', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' } }, '不足': { tonify: { point: '經渠', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '陽溪', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } } },
-    '脾土': { '太過': { sedate: { point: '太白', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' }, tonify: { point: '陷谷', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' } }, '不足': { tonify: { point: '太白', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '陷谷', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } } },
-    '命門': { '太過': { sedate: { point: '勞宮', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' }, tonify: { point: '液門', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' } }, '不足': { tonify: { point: '勞宮', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '液門', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' } } }
-  },
-  female: {
-    '心火': { '太過': { sedate: { point: '少府', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' }, tonify: { point: '前谷', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' } }, '不足': { tonify: { point: '少府', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '前谷', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } } },
-    '肝木': { '太過': { sedate: { point: '大敦', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' }, tonify: { point: '足竅陰', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' } }, '不足': { tonify: { point: '大敦', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '足竅陰', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } } },
-    '腎水': { '太過': { sedate: { point: '陰谷', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' }, tonify: { point: '委中', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' } }, '不足': { tonify: { point: '陰谷', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '委中', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } } },
-    '肺金': { '太過': { sedate: { point: '經渠', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' }, tonify: { point: '陽溪', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' } }, '不足': { tonify: { point: '經渠', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '陽溪', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } } },
-    '脾土': { '太過': { sedate: { point: '太白', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' }, tonify: { point: '陷谷', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' } }, '不足': { tonify: { point: '太白', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '陷谷', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } } },
-    '命門': { '太過': { sedate: { point: '勞宮', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' }, tonify: { point: '液門', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' } }, '不足': { tonify: { point: '勞宮', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '液門', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' } } }
-  }
-};
-
-const ZHONGSHI_RULES = {
-  male: {
-    '人迎一盛（補肝瀉膽）': { tonify: { point: '曲泉', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '足臨泣', alias: '陽輔', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } },
-    '人迎二盛（補腎瀉膀胱）': { tonify: { point: '復溜', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '通谷', alias: '束骨', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } },
-    '人迎三盛（補脾瀉胃）': { tonify: { point: '大都', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '足三里', alias: '厲兌', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } },
-    '人迎一盛而躁（補心包瀉三焦）': { tonify: { point: '中衝', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '支溝', alias: '天井', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } },
-    '人迎二盛而躁（補心瀉小腸）': { tonify: { point: '少衝', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '陽谷', alias: '小海', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } },
-    '人迎三盛而躁（補肺瀉大腸）': { tonify: { point: '太淵', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '商陽', alias: '二間', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } },
-    '脈口一盛（補膽瀉肝）': { tonify: { point: '足臨泣', alias: '俠溪', side: 'right', desc: '向心、吐氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '行間', side: 'left', desc: '遠心、吸氣進針、深刺45度、陰數、逆轉' } },
-    '脈口二盛（補膀胱瀉腎）': { tonify: { point: '通谷', alias: '至陰', side: 'right', desc: '向心、吐氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '湧泉', side: 'left', desc: '遠心、吸氣進針、深刺45度、陰數、逆轉' } },
-    '脈口三盛（補胃瀉脾）': { tonify: { point: '足三里', alias: '解溪', side: 'right', desc: '向心、吐氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '商丘', side: 'left', desc: '遠心、吸氣進針、深刺45度、陰數、逆轉' } },
-    '脈口一盛而躁（補三焦瀉心包）': { tonify: { point: '支溝', alias: '中渚', side: 'left', desc: '向心、吐氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '大陵', side: 'right', desc: '遠心、吸氣進針、深刺45度、陰數、逆轉' } },
-    '脈口二盛而躁（補小腸瀉心）': { tonify: { point: '陽谷', alias: '後溪', side: 'left', desc: '向心、吐氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '神門', side: 'right', desc: '遠心、吸氣進針、深刺45度、陰數、逆轉' } },
-    '脈口三盛而躁（補大腸瀉肺）': { tonify: { point: '商陽', alias: '曲池', side: 'left', desc: '向心、吐氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '尺澤', side: 'right', desc: '遠心、吸氣進針、深刺45度、陰數、逆轉' } }
-  },
-  female: {
-    '人迎一盛（補肝瀉膽）': { tonify: { point: '曲泉', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '足臨泣', alias: '陽輔', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } },
-    '人迎二盛（補腎瀉膀胱）': { tonify: { point: '復溜', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '通谷', alias: '束骨', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } },
-    '人迎三盛（補脾瀉胃）': { tonify: { point: '大都', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '足三里', alias: '厲兌', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } },
-    '人迎一盛而躁（補心包瀉三焦）': { tonify: { point: '中衝', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '支溝', alias: '天井', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } },
-    '人迎二盛而躁（補心瀉小腸）': { tonify: { point: '少衝', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '陽谷', alias: '小海', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } },
-    '人迎三盛而躁（補肺瀉大腸）': { tonify: { point: '太淵', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '商陽', alias: '二間', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } },
-    '脈口一盛（補膽瀉肝）': { tonify: { point: '足臨泣', alias: '俠溪', side: 'left', desc: '向心、吐氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '行間', side: 'right', desc: '遠心、吸氣進針、深刺45度、陰數、逆轉' } },
-    '脈口二盛（補膀胱瀉腎）': { tonify: { point: '通谷', alias: '至陰', side: 'left', desc: '向心、吐氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '湧泉', side: 'right', desc: '遠心、吸氣進針、深刺45度、陰數、逆轉' } },
-    '脈口三盛（補胃瀉脾）': { tonify: { point: '足三里', alias: '解溪', side: 'left', desc: '向心、吐氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '商丘', side: 'right', desc: '遠心、吸氣進針、深刺45度、陰數、逆轉' } },
-    '脈口一盛而躁（補三焦瀉心包）': { tonify: { point: '支溝', alias: '中渚', side: 'right', desc: '向心、吐氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '大陵', side: 'left', desc: '遠心、吸氣進針、深刺45度、陰數、逆轉' } },
-    '脈口二盛而躁（補小腸瀉心）': { tonify: { point: '陽谷', alias: '後溪', side: 'right', desc: '向心、吐氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '神門', side: 'left', desc: '遠心、吸氣進針、深刺45度、陰數、逆轉' } },
-    '脈口三盛而躁（補大腸瀉肺）': { tonify: { point: '商陽', alias: '曲池', side: 'right', desc: '向心、吐氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '尺澤', side: 'left', desc: '遠心、吸氣進針、深刺45度、陰數、逆轉' } }
-  }
-};
-
-const YUANLUO_RULES = {
-  male: {
-    '心火': {
-      '太過': { pt1: { point: '腕骨', side: 'right', desc: '直刺、陽數、順轉' }, pt2: { point: '通里', side: 'left', desc: '直刺、陽數、順轉' } },
-      '不足': { pt1: { point: '神門', side: 'left', desc: '直刺、陽數、順轉' }, pt2: { point: '支正', side: 'right', desc: '直刺、陽數、順轉' } }
-    },
-    '肝木': {
-      '太過': { pt1: { point: '丘墟', side: 'right', desc: '直刺、陽數、順轉' }, pt2: { point: '蠡溝', side: 'left', desc: '直刺、陽數、順轉' } },
-      '不足': { pt1: { point: '太衝', side: 'left', desc: '直刺、陽數、順轉' }, pt2: { point: '光明', side: 'right', desc: '直刺、陽數、順轉' } }
-    },
-    '腎水': {
-      '太過': { pt1: { point: '京骨', side: 'right', desc: '直刺、陽數、順轉' }, pt2: { point: '大鍾', side: 'left', desc: '直刺、陽數、順轉' } },
-      '不足': { pt1: { point: '太溪', side: 'left', desc: '直刺、陽數、順轉' }, pt2: { point: '飛揚', side: 'right', desc: '直刺、陽數、順轉' } }
-    },
-    '肺金': {
-      '太過': { pt1: { point: '合谷', side: 'right', desc: '直刺、陽數、順轉' }, pt2: { point: '列缺', side: 'left', desc: '直刺、陽數、順轉' } },
-      '不足': { pt1: { point: '太淵', side: 'left', desc: '直刺、陽數、順轉' }, pt2: { point: '偏歷', side: 'right', desc: '直刺、陽數、順轉' } }
-    },
-    '脾土': {
-      '太過': { pt1: { point: '衝陽', side: 'right', desc: '直刺、陽數、順轉' }, pt2: { point: '公孫', side: 'left', desc: '直刺、陽數、順轉' } },
-      '不足': { pt1: { point: '太白', side: 'left', desc: '直刺、陽數、順轉' }, pt2: { point: '豐隆', side: 'right', desc: '直刺、陽數、順轉' } }
-    },
-    '命門': {
-      '太過': { pt1: { point: '陽池', side: 'right', desc: '直刺、陽數、順轉' }, pt2: { point: '內關', side: 'left', desc: '直刺、陽數、順轉' } },
-      '不足': { pt1: { point: '大陵', side: 'left', desc: '直刺、陽數、順轉' }, pt2: { point: '外關', side: 'right', desc: '直刺、陽數、順轉' } }
-    }
-  },
-  female: {
-    '心火': {
-      '太過': { pt1: { point: '腕骨', side: 'left', desc: '直刺、陽數、順轉' }, pt2: { point: '通里', side: 'right', desc: '直刺、陽數、順轉' } },
-      '不足': { pt1: { point: '神門', side: 'right', desc: '直刺、陽數、順轉' }, pt2: { point: '支正', side: 'left', desc: '直刺、陽數、順轉' } }
-    },
-    '肝木': {
-      '太過': { pt1: { point: '丘墟', side: 'left', desc: '直刺、陽數、順轉' }, pt2: { point: '蠡溝', side: 'right', desc: '直刺、陽數、順轉' } },
-      '不足': { pt1: { point: '太衝', side: 'right', desc: '直刺、陽數、順轉' }, pt2: { point: '光明', side: 'left', desc: '直刺、陽數、順轉' } }
-    },
-    '腎水': {
-      '太過': { pt1: { point: '京骨', side: 'left', desc: '直刺、陽數、順轉' }, pt2: { point: '大鍾', side: 'right', desc: '直刺、陽數、順轉' } },
-      '不足': { pt1: { point: '太溪', side: 'right', desc: '直刺、陽數、順轉' }, pt2: { point: '飛揚', side: 'left', desc: '直刺、陽數、順轉' } }
-    },
-    '肺金': {
-      '太過': { pt1: { point: '合谷', side: 'left', desc: '直刺、陽數、順轉' }, pt2: { point: '列缺', side: 'right', desc: '直刺、陽數、順轉' } },
-      '不足': { pt1: { point: '太淵', side: 'right', desc: '直刺、陽數、順轉' }, pt2: { point: '偏歷', side: 'left', desc: '直刺、陽數、順轉' } }
-    },
-    '脾土': {
-      '太過': { pt1: { point: '衝陽', side: 'left', desc: '直刺、陽數、順轉' }, pt2: { point: '公孫', side: 'right', desc: '直刺、陽數、順轉' } },
-      '不足': { pt1: { point: '太白', side: 'right', desc: '直刺、陽數、順轉' }, pt2: { point: '豐隆', side: 'left', desc: '直刺、陽數、順轉' } }
-    },
-    '命門': {
-      '太過': { pt1: { point: '陽池', side: 'left', desc: '直刺、陽數、順轉' }, pt2: { point: '內關', side: 'right', desc: '直刺、陽數、順轉' } },
-      '不足': { pt1: { point: '大陵', side: 'right', desc: '直刺、陽數、順轉' }, pt2: { point: '外關', side: 'left', desc: '直刺、陽數、順轉' } }
-    }
-  }
-};
+import { POINT_LOCATIONS, POINT_NAMES_REGEX, TANGYE_RULES, ZHONGSHI_RULES, YUANLUO_RULES } from '../lib/rules.js';
 
 // ==========================================
 // 2. 智能文字解析 (Direct Query)
@@ -327,7 +222,7 @@ function calculateTreatmentResult(ansString) {
 // ==========================================
 // 5. Vercel 主程式入口 (Webhook Handler)
 // ==========================================
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(200).send('LINE Bot Webhook is running!');
 
   try {
