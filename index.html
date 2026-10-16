@@ -32,7 +32,25 @@
 <body class="bg-slate-50">
     <div id="root"></div>
 
+    <script type="module">
+        import { POINT_LOCATIONS, POINT_NAMES_REGEX, TANGYE_RULES, ZHONGSHI_RULES, YUANLUO_RULES } from './lib/rules.js';
+
+        window.POINT_LOCATIONS = POINT_LOCATIONS;
+        window.TANGYE_RULES = TANGYE_RULES;
+        window.ZHONGSHI_RULES = ZHONGSHI_RULES;
+        window.YUANLUO_RULES = YUANLUO_RULES;
+    </script>
     <script type="text/babel">
+        // Wait for rules to be loaded
+        const checkRulesLoaded = setInterval(() => {
+            if (window.POINT_LOCATIONS) {
+                clearInterval(checkRulesLoaded);
+                initApp();
+            }
+        }, 10);
+
+        function initApp() {
+            const { POINT_LOCATIONS, TANGYE_RULES, ZHONGSHI_RULES, YUANLUO_RULES } = window;
         const { useState, useMemo, useEffect, useRef } = React;
         const { createRoot } = ReactDOM;
 
@@ -50,8 +68,7 @@
             Pill: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>
         };
 
-        // Load rules from window
-        // Since lib/rules.js is loaded as a global script, POINT_LOCATIONS, TANGYE_RULES, ZHONGSHI_RULES, and YUANLUO_RULES are already available globally.
+
 
         const MEDICINE_SYSTEMS = [
             {
@@ -506,7 +523,7 @@
                if (rule) res = { title: '終始針法 處方', method: zhongshiTreatment, tonify: rule.tonify, sedate: rule.sedate };
             } else if (systemType === 'yuanluo' && tangyePulse && tangyeState) {
                 const rule = YUANLUO_RULES[gender][tangyePulse][tangyeState];
-                if (rule) res = { title: '原絡針法 處方', method: `${tangyePulse} ${tangyeState}`, tonify: rule.tonify, sedate: rule.sedate };
+                if (rule) res = { title: '原絡針法 處方', method: `${tangyePulse} ${tangyeState}`, tonify: rule.tonify || rule.pt1, sedate: rule.sedate || rule.pt2 };
             }
             return res;
           }, [gender, systemType, tangyePulse, tangyeState, zhongshiTreatment]);
@@ -638,7 +655,7 @@
                 } else if (system === 'yuanluo') {
                     const stateLabel = isUp ? '太過' : '不足';
                     const rule = YUANLUO_RULES[gender][mapping.element][stateLabel];
-                    if(rule) return { title: '原絡針法 處方', method: `${mapping.element} ${stateLabel}`, ...rule };
+                    if(rule) return { title: '原絡針法 處方', method: `${mapping.element} ${stateLabel}`, tonify: rule.tonify || rule.pt1, sedate: rule.sedate || rule.pt2 };
                 } else if (system === 'zhongshi') {
                     const agitatedSuffix = isUp ? '而躁' : '';
                     let targetTreatment = '';
@@ -780,6 +797,7 @@
 
         const root = createRoot(document.getElementById('root'));
         root.render(<App />);
+        } // end of initApp
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
