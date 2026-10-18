@@ -1,7 +1,3 @@
-import { POINT_LOCATIONS, TANGYE_RULES, ZHONGSHI_RULES, YUANLUO_RULES } from '../shared-data.js';
-
-const POINT_NAMES_REGEX = new RegExp(Object.keys(POINT_LOCATIONS).join('|'), 'g');
-
 // ==========================================
 // 1. 醫療資料庫 (整合湯液、終始、原絡針法)
 // ==========================================
@@ -167,9 +163,9 @@ function calculateTreatmentResult(ansString) {
     methodTitle = `${pulse} ${state}`;
 
     resultText = `📋 【${title} 處方】\n────────────\n👤 病患：${genderStr}性 | ${methodTitle}\n────────────\n\n`;
-    resultText += `🟢 補法 (Tonify):\n${formatPoint(rule.tonify)}\n\n${formatPoint(rule.sedate)}`;
+    resultText += `🟢 補法 (Tonify):\n${formatPoint(rule.pt1)}\n\n${formatPoint(rule.pt2)}`;
 
-    [rule.tonify, rule.sedate].forEach(action => {
+    [rule.pt1, rule.pt2].forEach(action => {
        if (action.point) pointNames.push(action.point);
     });
 
