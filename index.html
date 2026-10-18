@@ -43,771 +43,1371 @@
         window.ZHONGSHI_RULES = ZHONGSHI_RULES;
         window.YUANLUO_RULES = YUANLUO_RULES;
     </script>
-    <script type="text/babel">
-        // Wait for rules to be loaded
-        const checkRulesLoaded = setInterval(() => {
-            if (window.POINT_LOCATIONS) {
-                clearInterval(checkRulesLoaded);
-                initApp();
-            }
-        }, 10);
+    <script>
+// Wait for rules to be loaded
+const checkRulesLoaded = setInterval(() => {
+  if (window.POINT_LOCATIONS) {
+    clearInterval(checkRulesLoaded);
+    initApp();
+  }
+}, 10);
+function initApp() {
+  const {
+    POINT_LOCATIONS,
+    TANGYE_RULES,
+    ZHONGSHI_RULES,
+    YUANLUO_RULES
+  } = window;
+  const {
+    useState,
+    useMemo,
+    useEffect,
+    useRef
+  } = React;
+  const {
+    createRoot
+  } = ReactDOM;
 
-        function initApp() {
-            const { POINT_LOCATIONS, TANGYE_RULES, ZHONGSHI_RULES, YUANLUO_RULES } = window;
-        const { useState, useMemo, useEffect, useRef } = React;
-        const { createRoot } = ReactDOM;
-
-        // --- 內建圖示組件 ---
-        const Icons = {
-            Menu: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>,
-            X: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>,
-            User: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
-            Activity: () => <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>,
-            ArrowRight: ({className}) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>,
-            RotateCcw: ({className}) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>,
-            MapPin: ({className}) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>,
-            Copy: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>,
-            Check: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>,
-            Pill: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>
-        };
-
-
-
-        const MEDICINE_SYSTEMS = [
-            {
-                id: 'weiwang', title: '湯液藥精系統', icon: '🧑‍🍳', type: 'standard', leftAction: '補', rightAction: '瀉',
-                data: {
-                    '心火': { pos: { x: 30, y: 20 }, element: '心火', left: '旋覆花7', right: '黃連2', color: 'bg-red-100 text-red-800 border-red-200' },
-                    '脾土': { pos: { x: 70, y: 20 }, element: '脾土', left: '人參10', right: '生薑5', color: 'bg-orange-100 text-orange-800 border-orange-200' },
-                    '肺金': { pos: { x: 82, y: 58 }, element: '肺金', left: '五味子9', right: '細辛4', color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
-                    '腎水': { pos: { x: 50, y: 85 }, element: '腎水', left: '地黃6', right: '茯苓1', color: 'bg-blue-100 text-blue-800 border-blue-200' },
-                    '肝木': { pos: { x: 18, y: 58 }, element: '肝木', left: '桂枝8', right: '枳實3', color: 'bg-green-100 text-green-800 border-green-200' },
-                    '命門': { pos: { x: 50, y: 39 }, element: '命門', left: '乾薑2熟地7', right: '黃柏6肉桂1', color: 'bg-slate-100 text-slate-800 border-slate-200' }
-                }
-            },
-            {
-                id: 'wensheng', title: '溫升涼降系統', icon: '🔥', type: 'standard', leftAction: '升', rightAction: '降',
-                data: {
-                    '心火': { pos: { x: 30, y: 20 }, element: '心火', left: '薤白7', right: '黃連2', color: 'bg-red-100 text-red-800 border-red-200' },
-                    '脾土': { pos: { x: 70, y: 20 }, element: '脾土', left: '乾薑10', right: '大黃5', color: 'bg-orange-100 text-orange-800 border-orange-200' },
-                    '肺金': { pos: { x: 82, y: 58 }, element: '肺金', left: '黃耆9', right: '石膏4', color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
-                    '腎水': { pos: { x: 50, y: 85 }, element: '腎水', left: '補骨脂6', right: '豬苓1', color: 'bg-blue-100 text-blue-800 border-blue-200' },
-                    '肝木': { pos: { x: 18, y: 58 }, element: '肝木', left: '桂枝8', right: '黃芩3', color: 'bg-green-100 text-green-800 border-green-200' },
-                    '命門': { pos: { x: 50, y: 39 }, element: '命門', left: '暫無資料', right: '暫無資料', color: 'bg-slate-100 text-slate-500 border-slate-200' }
-                }
-            },
-            {
-                id: 'liangsheng', title: '涼升溫降系統', icon: '🌪️', type: 'standard', leftAction: '升', rightAction: '降',
-                data: {
-                    '心火': { pos: { x: 30, y: 20 }, element: '心火', left: '小麥7', right: '肉桂2', color: 'bg-red-100 text-red-800 border-red-200' },
-                    '脾土': { pos: { x: 70, y: 20 }, element: '脾土', left: '升麻10', right: '厚朴5', color: 'bg-orange-100 text-orange-800 border-orange-200' },
-                    '肺金': { pos: { x: 82, y: 58 }, element: '肺金', left: '薄荷9', right: '杏仁4', color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
-                    '腎水': { pos: { x: 50, y: 85 }, element: '腎水', left: '旱蓮草6', right: '桂枝1', color: 'bg-blue-100 text-blue-800 border-blue-200' },
-                    '肝木': { pos: { x: 18, y: 58 }, element: '肝木', left: '柴胡8', right: '吳茱萸3', color: 'bg-green-100 text-green-800 border-green-200' },
-                    '命門': { pos: { x: 50, y: 39 }, element: '命門', left: '暫無資料', right: '暫無資料', color: 'bg-slate-100 text-slate-500 border-slate-200' }
-                }
-            },
-            {
-                id: 'zhongshi_renying', title: '終始藥方系統-人迎', icon: '☀️', type: 'list',
-                data: {
-                    '肝木': { pos: { x: 18, y: 58 }, element: '肝木', state: '一盛', list: ['桂枝8', '枳實8', '甘草3'], color: 'bg-green-100 text-green-800 border-green-200' },
-                    '心火': { pos: { x: 30, y: 20 }, element: '心火', state: '二盛而躁', list: ['旋覆花7', '黃連7', '豆豉2'], color: 'bg-red-100 text-red-800 border-red-200' },
-                    '脾土': { pos: { x: 70, y: 20 }, element: '脾土', state: '三盛', list: ['人參10', '生薑10', '白朮5'], color: 'bg-orange-100 text-orange-800 border-orange-200' },
-                    '肺金': { pos: { x: 82, y: 58 }, element: '肺金', state: '三盛而躁', list: ['五味子9', '厚朴9', '細辛4'], color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
-                    '腎水': { pos: { x: 50, y: 85 }, element: '腎水', state: '二盛', list: ['熟地6', '茯苓6', '芒硝1'], color: 'bg-blue-100 text-blue-800 border-blue-200' },
-                    '命門': { pos: { x: 50, y: 39 }, element: '命門', state: '一盛而躁', list: ['肉桂1', '黃柏6', '黃芩6'], color: 'bg-slate-100 text-slate-800 border-slate-200' }
-                }
-            },
-            {
-                id: 'zhongshi_maikou', title: '終始藥方系統-脈口', icon: '🌙', type: 'list',
-                data: {
-                    '肝木': { pos: { x: 18, y: 58 }, element: '肝木', state: '一盛', list: ['五味子8', '厚朴8', '細辛3'], color: 'bg-green-100 text-green-800 border-green-200' },
-                    '心火': { pos: { x: 30, y: 20 }, element: '心火', state: '二盛而躁', list: ['生地7', '茯苓7', '芒硝2'], color: 'bg-red-100 text-red-800 border-red-200' },
-                    '脾土': { pos: { x: 70, y: 20 }, element: '脾土', state: '三盛', list: ['桂枝10', '枳實10', '甘草5'], color: 'bg-orange-100 text-orange-800 border-orange-200' },
-                    '肺金': { pos: { x: 82, y: 58 }, element: '肺金', state: '三盛而躁', list: ['旋覆花9', '黃連9', '豆豉4'], color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
-                    '腎水': { pos: { x: 50, y: 85 }, element: '腎水', state: '二盛', list: ['人參6', '乾薑6', '白朮1'], color: 'bg-blue-100 text-blue-800 border-blue-200' },
-                    '命門': { pos: { x: 50, y: 39 }, element: '命門', state: '一盛而躁', list: ['肉桂1', '補骨脂6', '柴胡6'], color: 'bg-slate-100 text-slate-800 border-slate-200' }
-                }
-            }
-        ];
-
-        const MedicineView = () => {
-            const memoizedMedicineSystems = useMemo(() => {
-                return MEDICINE_SYSTEMS.map(sys => ({
-                    ...sys,
-                    dataKeys: Object.keys(sys.data)
-                }));
-            }, []);
-
-            return (
-                <div className="space-y-6 animate-in fade-in duration-500 pb-20">
-                    <header className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-indigo-500 mb-6">
-                        <h1 className="text-2xl font-bold flex items-center gap-2 text-indigo-900">
-                            <Icons.Pill /> 藥物輔助資訊
-                        </h1>
-                    </header>
-                    {memoizedMedicineSystems.map(system => (
-                        <div key={system.id} className="bg-white p-4 sm:p-6 rounded-xl shadow-sm overflow-hidden">
-                            <h2 className="text-lg sm:text-xl font-bold flex items-center gap-2 mb-4 sm:mb-6 text-slate-800 border-b pb-3">
-                                <span className="text-2xl">{system.icon}</span> {system.title}
-                            </h2>
-                            
-                            <div className="relative w-full aspect-[4/3] sm:aspect-[5/4] max-w-lg mx-auto bg-slate-50/50 rounded-xl mt-2 border border-slate-100">
-                                {/* SVG Pentagon Background */}
-                                <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full overflow-visible" preserveAspectRatio="none">
-                                    <polygon 
-                                        points="50,5 90,38 75,95 25,95 10,38"
-                                        fill="none"
-                                        stroke="#cbd5e1" 
-                                        strokeWidth="0.5"
-                                        strokeDasharray="2 2"
-                                    />
-                                </svg>
-
-                                {/* Element Nodes */}
-                                {system.dataKeys.map((key) => {
-                                    const info = system.data[key];
-                                    return system.type === 'list' ? (
-                                        <div 
-                                            key={key}
-                                            className="absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 shadow-sm rounded-lg bg-white/95 p-1.5 border border-slate-200 z-10 hover:shadow-md transition-shadow"
-                                            style={{ left: `${info.pos.x}%`, top: `${info.pos.y}%` }}
-                                        >
-                                            <div className={`px-2 py-0.5 rounded border font-bold text-[11px] sm:text-sm whitespace-nowrap ${info.color}`}>
-                                                {info.state}
-                                            </div>
-                                            <div className="flex flex-col items-center gap-0.5">
-                                                {info.list.map((med, i) => (
-                                                    <span key={i} className="text-[10px] sm:text-xs font-bold text-slate-700 leading-none whitespace-nowrap">{med}</span>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div 
-                                            key={key}
-                                            className="absolute transform -translate-x-1/2 -translate-y-1/2 flex items-center gap-1 sm:gap-2 shadow-sm rounded-lg bg-white/95 p-1 sm:p-1.5 border border-slate-200 z-10 hover:shadow-md transition-shadow"
-                                            style={{ left: `${info.pos.x}%`, top: `${info.pos.y}%` }}
-                                        >
-                                            <div className="flex flex-col items-center min-w-[24px] sm:min-w-[32px]">
-                                                <span className="text-[10px] sm:text-xs text-slate-400 font-medium leading-none mb-1 whitespace-nowrap">{system.leftAction}</span>
-                                                <span className="text-xs sm:text-sm font-bold text-slate-700 leading-none whitespace-nowrap">{info.left}</span>
-                                            </div>
-
-                                            <div className={`px-1.5 py-1 sm:px-2 sm:py-1 rounded border font-bold text-[12px] sm:text-sm whitespace-nowrap ${info.color}`}>
-                                                {info.element}
-                                            </div>
-
-                                            <div className="flex flex-col items-center min-w-[24px] sm:min-w-[32px]">
-                                                <span className="text-[10px] sm:text-xs text-slate-400 font-medium leading-none mb-1 whitespace-nowrap">{system.rightAction}</span>
-                                                <span className="text-xs sm:text-sm font-bold text-slate-700 leading-none whitespace-nowrap">{info.right}</span>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            );
-        };
-
-        const ResultCard = ({ result, gender, systemType }) => {
-            const [copied, setCopied] = useState(false);
-            const [viewMode, setViewMode] = useState('acupuncture'); // 'acupuncture' | 'medicine'
-
-            const displayActions = useMemo(() => {
-                if (!result) return [];
-                const actions = [{ type: 'tonify', ...result.tonify }, { type: 'sedate', ...result.sedate }];
-                
-                // Sort for Tangye and Yuanluo
-                if (systemType !== 'zhongshi') {
-                    const getPart = (item) => {
-                        if (!item || !item.point) return 'upper';
-                        const names = item.point.split('/');
-                        for(let name of names) {
-                            if (POINT_LOCATIONS[name]) {
-                                const icon = POINT_LOCATIONS[name].icon;
-                                if (icon === '✋' || icon === '💪') return 'upper';
-                                if (icon === '🦵' || icon === '🦶') return 'lower';
-                            }
-                        }
-                        return 'upper';
-                    };
-                    const getScore = (side, part) => {
-                        if (gender === 'male') {
-                            if ((side === 'left' && part === 'upper') || (side === 'right' && part === 'lower')) return 0;
-                            return 1;
-                        } else {
-                            if ((side === 'right' && part === 'upper') || (side === 'left' && part === 'lower')) return 0;
-                            return 1;
-                        }
-                    };
-
-                    const actionScores = new Map();
-                    for (const action of actions) {
-                        actionScores.set(action, getScore(action.side, getPart(action)));
-                    }
-
-                    actions.sort((a, b) => actionScores.get(a) - actionScores.get(b));
-                }
-                return actions;
-            }, [result, gender, systemType]);
-
-            const locationHints = useMemo(() => {
-                if (!result) return [];
-                const points = new Set();
-                const extract = (item) => {
-                    if(!item || !item.point) return;
-                    const names = [item.point];
-                    if (item.alias) names.push(item.alias);
-                    names.forEach(n => n.split('/').forEach(subName => points.add(subName)));
-                };
-                extract(result.tonify); extract(result.sedate);
-                const hints = [];
-                points.forEach(p => { if (POINT_LOCATIONS[p]) hints.push({ name: p, ...POINT_LOCATIONS[p] }); });
-                return hints;
-            }, [result]);
-
-            const handleCopy = () => {
-                if (!result) return;
-                const lines = [
-                    `【${result.title}】 ${result.method} (${gender === 'male' ? '男' : '女'})`
-                ];
-                displayActions.forEach(action => {
-                    const isTonify = action.type === 'tonify';
-                    const sideText = action.side === 'left' ? '左' : '右';
-                    const pointText = action.alias ? `${action.point}/${action.alias}` : action.point;
-                    lines.push(`${isTonify ? '補' : '瀉'} ${sideText}${pointText} (${action.desc})`);
-                });
-                
-                // Fallback copy mechanism
-                const textArea = document.createElement("textarea");
-                textArea.value = lines.join('\n');
-                document.body.appendChild(textArea);
-                textArea.select();
-                try {
-                    document.execCommand('copy');
-                    setCopied(true);
-                    setTimeout(() => setCopied(false), 2000);
-                } catch (err) {
-                    console.error('Failed to copy', err);
-                }
-                document.body.removeChild(textArea);
-            };
-
-            const medicineElement = useMemo(() => {
-                if (!result) return null;
-                if (systemType === 'tangye' || systemType === 'yuanluo') {
-                    return result.method.split(' ')[0]; // e.g., "心火"
-                } else if (systemType === 'zhongshi') {
-                    if (result.method.includes('一盛而躁')) return '命門';
-                    if (result.method.includes('二盛而躁')) return '心火';
-                    if (result.method.includes('三盛而躁')) return '肺金';
-                    if (result.method.includes('一盛')) return '肝木';
-                    if (result.method.includes('二盛')) return '腎水';
-                    if (result.method.includes('三盛')) return '脾土';
-                }
-                return null;
-            }, [result, systemType]);
-
-            const displayMedicineSystems = useMemo(() => {
-                if (!result) return [];
-                let systems = [...MEDICINE_SYSTEMS];
-                
-                if (systemType === 'zhongshi') {
-                    const isRenying = result.method.includes('人迎');
-                    const targetZhongshiId = isRenying ? 'zhongshi_renying' : 'zhongshi_maikou';
-                    
-                    const targetSys = systems.find(s => s.id === targetZhongshiId);
-                    const otherSys = systems.filter(s => !s.id.startsWith('zhongshi_'));
-                    
-                    return [targetSys, ...otherSys];
-                } else {
-                    return systems.filter(s => !s.id.startsWith('zhongshi_'));
-                }
-            }, [result, systemType]);
-
-            if (!result) return null;
-
-            return (
-                <div className="mt-8 animate-in slide-in-from-bottom-8 duration-700">
-                    <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
-                        <div className="bg-indigo-900 text-white p-4">
-                            <div className="flex justify-between items-center">
-                                <h4 className="text-lg font-bold">{result.method}</h4>
-                                <span className="bg-white/20 px-3 py-1 rounded-full text-sm">{result.title}</span>
-                            </div>
-                        </div>
-                        
-                        {viewMode === 'acupuncture' ? (
-                            <div className="p-6">
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                                    {displayActions.map((action, idx) => {
-                                        const isTonify = action.type === 'tonify';
-                                        return (
-                                            <div key={idx} className={`${isTonify ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'} border-l-4 p-4 rounded-r-lg`}>
-                                                <h5 className={`font-bold ${isTonify ? 'text-green-800' : 'text-red-800'} flex items-center gap-2 mb-2`}>
-                                                    {isTonify ? <Icons.ArrowRight className="w-5 h-5" /> : <Icons.RotateCcw className="w-5 h-5" />}
-                                                    {isTonify ? '補法 (Tonify)' : '瀉法 (Sedate)'}
-                                                </h5>
-                                                <div className="text-lg font-bold mb-1">
-                                                    {action.side === 'left' ? '左' : '右'}
-                                                    {action.alias ? `${action.point}/${action.alias}` : action.point}
-                                                </div>
-                                                <p className={`${isTonify ? 'text-green-700' : 'text-red-700'} text-sm leading-relaxed`}>{action.desc}</p>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                                
-                                {/* 複製與切換按鈕區塊 */}
-                                <div className="flex gap-3 mb-6">
-                                    <button 
-                                        onClick={handleCopy}
-                                        className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center gap-2 font-bold transition-all ${copied ? 'bg-green-100 text-green-700 border-2 border-green-500' : 'bg-purple-100 text-purple-700 border-2 border-purple-200 hover:border-purple-300'}`}
-                                    >
-                                        {copied ? <Icons.Check /> : <Icons.Copy />}
-                                        {copied ? '已複製到剪貼簿！' : '一鍵複製解答'}
-                                    </button>
-                                    <button 
-                                        onClick={() => setViewMode('medicine')}
-                                        className="flex-1 py-3 px-4 rounded-lg bg-indigo-100 text-indigo-700 border-2 border-indigo-200 hover:border-indigo-300 font-bold flex items-center justify-center gap-2 transition-all"
-                                    >
-                                        <Icons.Pill /> 顯示藥物處方
-                                    </button>
-                                </div>
-
-                                {systemType === 'tangye' && (
-                                    <div className="bg-slate-100/60 border border-slate-200 rounded-xl p-5 mb-6">
-                                        <p className="text-sm text-slate-500 leading-relaxed pl-6 -indent-6 mb-2">
-                                            ➡️ 進針：輕咳進針，在天地人三部，各針三次，共九次。過程配合病人以口呼吸：吸氣進針，吐氣停止。
-                                        </p>
-                                        <p className="text-sm text-slate-500 leading-relaxed pl-6 -indent-6">
-                                            🔄 行針：針上肢時，病人以鼻呼吸；針下肢時，病人以口呼吸。<br/>
-                                            針尖向心方向，配合吐氣動針，吸氣停止；針尖遠心方向，配合吸氣動針，吐氣停止。
-                                        </p>
-                                    </div>
-                                )}
-
-                                <div className="bg-slate-100 rounded-xl p-6 mb-6">
-                                    <h5 className="flex items-center gap-2 text-slate-700 font-bold mb-4 border-b border-slate-200 pb-2"><Icons.MapPin className="w-5 h-5" /> 穴位定位提示</h5>
-                                    <div className="grid grid-cols-1 gap-4">
-                                        {locationHints.map((hint, idx) => (
-                                            <div key={idx} className="flex gap-3 items-start">
-                                                <span className="text-2xl bg-white w-10 h-10 flex items-center justify-center rounded-lg shadow-sm border border-slate-200 shrink-0">{hint.icon}</span>
-                                                <div>
-                                                    <span className="font-bold text-slate-900 block mb-1">{hint.name}</span>
-                                                    <span className="text-slate-600 text-sm leading-relaxed">{hint.text}</span>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* 圖片區塊 */}
-                                <div className="space-y-4">
-                                    {locationHints.some(h => h.icon === '✋' || h.icon === '💪') && (
-                                        <>
-                                            <img src="hand1.jpg" alt="Hand 1" className="w-full rounded-xl shadow-sm" onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling.style.display = 'flex'; }} />
-                                            <div className="hidden w-full h-32 bg-slate-200 rounded-xl flex items-center justify-center text-slate-400 font-medium">hand1.jpg 預留區</div>
-                                            
-                                            <img src="hand2.jpg" alt="Hand 2" className="w-full rounded-xl shadow-sm" onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling.style.display = 'flex'; }} />
-                                            <div className="hidden w-full h-32 bg-slate-200 rounded-xl flex items-center justify-center text-slate-400 font-medium">hand2.jpg 預留區</div>
-                                            
-                                            <img src="hand3.jpg" alt="Hand 3" className="w-full rounded-xl shadow-sm" onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling.style.display = 'flex'; }} />
-                                            <div className="hidden w-full h-32 bg-slate-200 rounded-xl flex items-center justify-center text-slate-400 font-medium">hand3.jpg 預留區</div>
-                                        </>
-                                    )}
-                                    {locationHints.some(h => h.icon === '🦵' || h.icon === '🦶') && (
-                                        <>
-                                            <img src="foot1.jpg" alt="Foot 1" className="w-full rounded-xl shadow-sm" onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling.style.display = 'flex'; }} />
-                                            <div className="hidden w-full h-32 bg-slate-200 rounded-xl flex items-center justify-center text-slate-400 font-medium">foot1.jpg 預留區</div>
-                                            
-                                            <img src="foot2.jpg" alt="Foot 2" className="w-full rounded-xl shadow-sm" onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling.style.display = 'flex'; }} />
-                                            <div className="hidden w-full h-32 bg-slate-200 rounded-xl flex items-center justify-center text-slate-400 font-medium">foot2.jpg 預留區</div>
-                                        </>
-                                    )}
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="p-6 animate-in fade-in">
-                                <div className="mb-6 flex items-center justify-between border-b pb-4">
-                                    <h5 className="font-bold text-slate-800 text-lg flex items-center gap-2">
-                                        <Icons.Pill /> 藥物輔助組合 ({medicineElement})
-                                    </h5>
-                                    <button 
-                                        onClick={() => setViewMode('acupuncture')}
-                                        className="py-2 px-4 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-200 hover:bg-indigo-100 font-bold transition-all text-sm"
-                                    >
-                                        返回針灸處方
-                                    </button>
-                                </div>
-                                <div className="space-y-4">
-                                    {displayMedicineSystems.map(sys => {
-                                        const elementData = sys.data[medicineElement];
-                                        if (!elementData) return null;
-                                        return (
-                                            <div key={sys.id} className="bg-slate-50 border border-slate-200 p-4 rounded-lg">
-                                                <div className="font-bold text-slate-700 mb-3 flex items-center gap-2">
-                                                    <span className="text-xl">{sys.icon}</span> {sys.title}
-                                                </div>
-                                                {sys.type === 'list' ? (
-                                                    <div className="bg-white p-3 rounded shadow-sm border border-slate-100 flex flex-col items-center gap-2">
-                                                        <div className={`px-3 py-1 rounded text-sm font-bold border ${elementData.color}`}>
-                                                            {elementData.state}
-                                                        </div>
-                                                        <div className="flex gap-4 sm:gap-6 mt-1">
-                                                            {elementData.list.map((med, i) => (
-                                                                <span key={i} className="font-bold text-slate-800 text-sm sm:text-base">{med}</span>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex gap-4">
-                                                        <div className="flex-1 bg-white p-3 rounded shadow-sm border border-slate-100 text-center">
-                                                            <div className="text-xs text-slate-400 mb-1">{sys.leftAction}</div>
-                                                            <div className="font-bold text-slate-800">{elementData.left}</div>
-                                                        </div>
-                                                        <div className="flex-1 bg-white p-3 rounded shadow-sm border border-slate-100 text-center">
-                                                            <div className="text-xs text-slate-400 mb-1">{sys.rightAction}</div>
-                                                            <div className="font-bold text-slate-800">{elementData.right}</div>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            );
-        };
-
-        const CalculatorPage = () => {
-          const [gender, setGender] = useState('male');
-          const [systemType, setSystemType] = useState(null); // 'tangye', 'zhongshi', 'yuanluo'
-          const [tangyePulse, setTangyePulse] = useState(null);
-          const [tangyeState, setTangyeState] = useState(null);
-          const [zhongshiPulsePos, setZhongshiPulsePos] = useState(null);
-          const [isAgitated, setIsAgitated] = useState(null);
-          const [zhongshiTreatment, setZhongshiTreatment] = useState(null);
-
-          const handleSystemChange = (val) => {
-            setSystemType(val);
-            setTangyePulse(null); setTangyeState(null);
-            setZhongshiPulsePos(null); setIsAgitated(null); setZhongshiTreatment(null);
-          };
-
-          const handlePulsePosChange = (val) => { setZhongshiPulsePos(val); setZhongshiTreatment(null); };
-          const handleAgitatedChange = (val) => { setIsAgitated(val); setZhongshiTreatment(null); };
-
-          const zhongshiOptions = useMemo(() => {
-            if (!zhongshiPulsePos || isAgitated === null) return [];
-            if (zhongshiPulsePos === '人迎') {
-              return isAgitated === 'no' 
-                ? ['人迎一盛（補肝瀉膽）', '人迎二盛（補腎瀉膀胱）', '人迎三盛（補脾瀉胃）']
-                : ['人迎一盛而躁（補心包瀉三焦）', '人迎二盛而躁（補心瀉小腸）', '人迎三盛而躁（補肺瀉大腸）'];
-            } else {
-              return isAgitated === 'no'
-                ? ['脈口一盛（補膽瀉肝）', '脈口二盛（補膀胱瀉腎）', '脈口三盛（補胃瀉脾）']
-                : ['脈口一盛而躁（補三焦瀉心包）', '脈口二盛而躁（補小腸瀉心）', '脈口三盛而躁（補大腸瀉肺）'];
-            }
-          }, [zhongshiPulsePos, isAgitated]);
-
-          const result = useMemo(() => {
-            let res = null;
-            if (systemType === 'tangye' && tangyePulse && tangyeState) {
-              const rule = TANGYE_RULES[gender][tangyePulse][tangyeState];
-              if (rule) res = { title: '湯液針法 處方', method: `${tangyePulse} ${tangyeState}`, tonify: rule.tonify, sedate: rule.sedate };
-            } else if (systemType === 'zhongshi' && zhongshiTreatment) {
-               const rule = ZHONGSHI_RULES[gender][zhongshiTreatment];
-               if (rule) res = { title: '終始針法 處方', method: zhongshiTreatment, tonify: rule.tonify, sedate: rule.sedate };
-            } else if (systemType === 'yuanluo' && tangyePulse && tangyeState) {
-                const rule = YUANLUO_RULES[gender][tangyePulse][tangyeState];
-                if (rule) res = { title: '原絡針法 處方', method: `${tangyePulse} ${tangyeState}`, tonify: rule.tonify || rule.pt1, sedate: rule.sedate || rule.pt2 };
-            }
-            return res;
-          }, [gender, systemType, tangyePulse, tangyeState, zhongshiTreatment]);
-
-          return (
-            <div className="space-y-6 pb-20">
-                <header className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-indigo-500">
-                  <h1 className="text-2xl font-bold flex items-center gap-2 text-indigo-900">
-                    <Icons.Activity /> 脈法計算機
-                  </h1>
-                  <p className="text-slate-500 mt-2">Janna珍娜-湯液針法/終始針法/原絡針法 整合學習系統</p>
-                  <p className="text-slate-400 text-sm mt-1 text-right">劉可炫、小奈共同製作</p>
-                </header>
-
-                <section className="bg-white p-6 rounded-xl shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
-                  <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">病人性別</h2>
-                  <div className="flex gap-4">
-                    <button onClick={() => setGender('male')} className={`flex-1 py-3 px-4 rounded-lg border-2 transition-all flex items-center justify-center gap-2 ${gender === 'male' ? 'border-blue-500 bg-blue-50 text-blue-700 font-bold' : 'border-slate-200 hover:border-slate-300'}`}><Icons.User /> 男</button>
-                    <button onClick={() => setGender('female')} className={`flex-1 py-3 px-4 rounded-lg border-2 transition-all flex items-center justify-center gap-2 ${gender === 'female' ? 'border-pink-500 bg-pink-50 text-pink-700 font-bold' : 'border-slate-200 hover:border-slate-300'}`}><Icons.User /> 女</button>
-                  </div>
-                </section>
-
-                <section className="bg-white p-6 rounded-xl shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500 delay-100">
-                  <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">針法系統</h2>
-                  <div className="flex flex-col gap-3">
-                    <button onClick={() => handleSystemChange('tangye')} className={`py-3 px-4 rounded-lg border-2 transition-all ${systemType === 'tangye' ? 'border-teal-500 bg-teal-50 text-teal-700 font-bold' : 'border-slate-200 hover:border-slate-300'}`}>獨異 (湯液針法)</button>
-                    <button onClick={() => handleSystemChange('zhongshi')} className={`py-3 px-4 rounded-lg border-2 transition-all ${systemType === 'zhongshi' ? 'border-orange-500 bg-orange-50 text-orange-700 font-bold' : 'border-slate-200 hover:border-slate-300'}`}>陰陽不平衡 (終始針法)</button>
-                    <button onClick={() => handleSystemChange('yuanluo')} className={`py-3 px-4 rounded-lg border-2 transition-all ${systemType === 'yuanluo' ? 'border-blue-500 bg-blue-50 text-blue-700 font-bold' : 'border-slate-200 hover:border-slate-300'}`}>原絡針法</button>
-                  </div>
-                </section>
-
-                {(systemType === 'tangye' || systemType === 'yuanluo') && (
-                  <div className="space-y-6 animate-in zoom-in-95 duration-300">
-                    <section className="bg-white p-6 rounded-xl shadow-sm">
-                      <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">哪個脈位獨異？</h2>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        {['心火', '肝木', '腎水', '肺金', '脾土', '命門'].map(p => (
-                          <button key={p} onClick={() => setTangyePulse(p)} className={`py-2 px-3 rounded-lg border transition-all ${tangyePulse === p ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white border-slate-200 hover:bg-slate-50'}`}>{p}</button>
-                        ))}
-                      </div>
-                    </section>
-                    {tangyePulse && (
-                      <section className="bg-white p-6 rounded-xl shadow-sm animate-in fade-in slide-in-from-bottom-2">
-                        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">該脈位狀態？</h2>
-                        <div className="flex gap-4">
-                          <button onClick={() => setTangyeState('太過')} className={`flex-1 py-3 rounded-lg border-2 transition-all flex items-center justify-center gap-2 ${tangyeState === '太過' ? 'border-red-500 bg-red-50 text-red-700 font-bold' : 'border-slate-200'}`}><Icons.ArrowRight className="w-4 h-4 -rotate-45" /> 太過</button>
-                          <button onClick={() => setTangyeState('不足')} className={`flex-1 py-3 rounded-lg border-2 transition-all flex items-center justify-center gap-2 ${tangyeState === '不足' ? 'border-blue-500 bg-blue-50 text-blue-700 font-bold' : 'border-slate-200'}`}><Icons.ArrowRight className="w-4 h-4 rotate-45" /> 不足</button>
-                        </div>
-                      </section>
-                    )}
-                  </div>
-                )}
-
-                {systemType === 'zhongshi' && (
-                  <div className="space-y-6 animate-in zoom-in-95 duration-300">
-                    <section className="bg-white p-6 rounded-xl shadow-sm">
-                      <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">脈位狀態？</h2>
-                      <div className="flex gap-4">
-                        {['人迎', '脈口'].map(opt => (
-                          <button key={opt} onClick={() => handlePulsePosChange(opt)} className={`flex-1 py-3 rounded-lg border-2 transition-all ${zhongshiPulsePos === opt ? 'border-purple-500 bg-purple-50 text-purple-700 font-bold' : 'border-slate-200'}`}>{opt}</button>
-                        ))}
-                      </div>
-                    </section>
-                    {zhongshiPulsePos && (
-                      <section className="bg-white p-6 rounded-xl shadow-sm animate-in fade-in slide-in-from-bottom-2">
-                        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">是否為躁？</h2>
-                        <div className="flex gap-4">
-                           <button onClick={() => handleAgitatedChange('yes')} className={`flex-1 py-3 rounded-lg border-2 transition-all ${isAgitated === 'yes' ? 'border-red-500 bg-red-50 text-red-700 font-bold' : 'border-slate-200'}`}>是</button>
-                           <button onClick={() => handleAgitatedChange('no')} className={`flex-1 py-3 rounded-lg border-2 transition-all ${isAgitated === 'no' ? 'border-green-500 bg-green-50 text-green-700 font-bold' : 'border-slate-200'}`}>否</button>
-                        </div>
-                      </section>
-                    )}
-                    {zhongshiPulsePos && isAgitated && (
-                      <section className="bg-white p-6 rounded-xl shadow-sm animate-in fade-in slide-in-from-bottom-2">
-                        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">治療原則</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {zhongshiOptions.map(opt => (
-                            <button key={opt} onClick={() => setZhongshiTreatment(opt)} className={`p-4 rounded-lg border text-left transition-all ${zhongshiTreatment === opt ? 'bg-indigo-600 text-white border-indigo-600 shadow-md' : 'bg-white border-slate-200 hover:bg-slate-50'}`}>{opt}</button>
-                          ))}
-                        </div>
-                      </section>
-                    )}
-                  </div>
-                )}
-
-                <ResultCard result={result} gender={gender} systemType={systemType} />
-            </div>
-          );
-        };
-
-        const QuickButtonPage = () => {
-            const [gender, setGender] = useState('male');
-            const [system, setSystem] = useState('tangye'); // tangye, zhongshi, yuanluo
-            const [swipeState, setSwipeState] = useState({ box: null, dir: null });
-
-            const POSITIONS = ['right-chi', 'right-guan', 'right-chun', 'left-chi', 'left-guan', 'left-chun'];
-            
-            // Maps physical box to Element/Zhongshi label based on Gender
-            const getBoxElement = (boxId) => {
-                const isMale = gender === 'male';
-                const mapMale = {
-                    'right-chun': { element: '肺金', zs: '脈口一盛' },
-                    'right-guan': { element: '脾土', zs: '脈口三盛' },
-                    'right-chi':  { element: '命門', zs: '脈口二盛' },
-                    'left-chun':  { element: '心火', zs: '人迎一盛' },
-                    'left-guan':  { element: '肝木', zs: '人迎三盛' },
-                    'left-chi':   { element: '腎水', zs: '人迎二盛' }
-                };
-                const mapFemale = {
-                    'left-chun':  { element: '肺金', zs: '脈口一盛' },
-                    'left-guan':  { element: '脾土', zs: '脈口三盛' },
-                    'left-chi':   { element: '命門', zs: '脈口二盛' },
-                    'right-chun': { element: '心火', zs: '人迎一盛' },
-                    'right-guan': { element: '肝木', zs: '人迎三盛' },
-                    'right-chi':  { element: '腎水', zs: '人迎二盛' }
-                };
-                return isMale ? mapMale[boxId] : mapFemale[boxId];
-            };
-
-            const result = useMemo(() => {
-                if (!swipeState.box || !swipeState.dir) return null;
-                const mapping = getBoxElement(swipeState.box);
-                const isUp = swipeState.dir === 'up';
-
-                if (system === 'tangye') {
-                    const stateLabel = isUp ? '太過' : '不足';
-                    const rule = TANGYE_RULES[gender][mapping.element][stateLabel];
-                    if(rule) return { title: '湯液針法 處方', method: `${mapping.element} ${stateLabel}`, ...rule };
-                } else if (system === 'yuanluo') {
-                    const stateLabel = isUp ? '太過' : '不足';
-                    const rule = YUANLUO_RULES[gender][mapping.element][stateLabel];
-                    if(rule) return { title: '原絡針法 處方', method: `${mapping.element} ${stateLabel}`, tonify: rule.tonify || rule.pt1, sedate: rule.sedate || rule.pt2 };
-                } else if (system === 'zhongshi') {
-                    const agitatedSuffix = isUp ? '而躁' : '';
-                    let targetTreatment = '';
-                    const m = mapping.zs;
-                    if (m === '脈口一盛') targetTreatment = `脈口一盛${agitatedSuffix}（補${isUp?'三焦瀉心包':'膽瀉肝'}）`;
-                    if (m === '脈口二盛') targetTreatment = `脈口二盛${agitatedSuffix}（補${isUp?'小腸瀉心':'膀胱瀉腎'}）`;
-                    if (m === '脈口三盛') targetTreatment = `脈口三盛${agitatedSuffix}（補${isUp?'大腸瀉肺':'胃瀉脾'}）`;
-                    if (m === '人迎一盛') targetTreatment = `人迎一盛${agitatedSuffix}（補${isUp?'心包瀉三焦':'肝瀉膽'}）`;
-                    if (m === '人迎二盛') targetTreatment = `人迎二盛${agitatedSuffix}（補${isUp?'心瀉小腸':'腎瀉膀胱'}）`;
-                    if (m === '人迎三盛') targetTreatment = `人迎三盛${agitatedSuffix}（補${isUp?'肺瀉大腸':'脾瀉胃'}）`;
-                    
-                    const rule = ZHONGSHI_RULES[gender][targetTreatment];
-                    if(rule) return { title: '終始針法 處方', method: targetTreatment, ...rule };
-                }
-                return null;
-            }, [gender, system, swipeState]);
-
-            const handleDragEnd = (boxId, deltaY) => {
-                if (deltaY < -20) setSwipeState({ box: boxId, dir: 'up' });
-                else if (deltaY > 20) setSwipeState({ box: boxId, dir: 'down' });
-            };
-
-            const Box = ({ id, labelRight, labelLeft }) => {
-                const startY = useRef(0);
-                const isSelected = swipeState.box === id;
-                const activeColor = gender === 'male' ? 'bg-blue-100 border-blue-400' : 'bg-pink-100 border-pink-400';
-                
-                let text = '';
-                if (isSelected) {
-                    if (system === 'zhongshi') text = swipeState.dir === 'up' ? '躁' : '無躁';
-                    else text = swipeState.dir === 'up' ? '太過' : '不足';
-                }
-
-                return (
-                    <div className="flex items-center w-full justify-between">
-                        <div className="w-6 text-center text-sm font-bold text-slate-400">{labelLeft}</div>
-                        <div 
-                            className={`w-28 sm:w-36 aspect-square rounded-xl shadow-[4px_4px_10px_rgba(0,0,0,0.1)] border-2 flex items-center justify-center cursor-grab active:cursor-grabbing swipe-box transition-colors duration-200 select-none ${isSelected ? activeColor : 'bg-white border-white hover:border-slate-200'}`}
-                            onPointerDown={(e) => { startY.current = e.clientY; e.target.setPointerCapture(e.pointerId); }}
-                            onPointerUp={(e) => { e.target.releasePointerCapture(e.pointerId); handleDragEnd(id, e.clientY - startY.current); }}
-                        >
-                            {text && <span className="text-xl font-bold text-slate-500 opacity-70 pointer-events-none">{text}</span>}
-                            {!text && <span className="text-xs text-slate-300 opacity-50 pointer-events-none flex flex-col items-center gap-1"><span>↑上滑</span><span>下滑↓</span></span>}
-                        </div>
-                        <div className="w-6 text-center text-sm font-bold text-slate-400">{labelRight}</div>
-                    </div>
-                );
-            };
-
-            return (
-                <div className="space-y-6 pb-20">
-                    <header className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-indigo-500">
-                        <h1 className="text-2xl font-bold flex items-center gap-2 text-indigo-900">
-                            快速按鈕輔助
-                        </h1>
-                        <p className="text-slate-500 mt-2">滑動對應脈位，快速生成處方</p>
-                    </header>
-
-                    {/* Gender Toggle */}
-                    <div className="bg-white rounded-xl shadow-sm p-2 flex relative overflow-hidden border border-slate-200">
-                        <div className={`absolute top-0 bottom-0 w-1/2 transition-transform duration-300 ease-in-out ${gender === 'male' ? 'bg-blue-100 translate-x-0' : 'bg-pink-100 translate-x-full'}`}></div>
-                        <button onClick={() => setSwipeState({box:null, dir:null}) || setGender('male')} className={`flex-1 py-3 font-bold z-10 transition-colors ${gender === 'male' ? 'text-blue-800' : 'text-slate-400'}`}>男性</button>
-                        <button onClick={() => setSwipeState({box:null, dir:null}) || setGender('female')} className={`flex-1 py-3 font-bold z-10 transition-colors ${gender === 'female' ? 'text-pink-800' : 'text-slate-400'}`}>女性</button>
-                    </div>
-
-                    {/* System Toggle */}
-                    <div className="grid grid-cols-3 gap-2">
-                        <button onClick={() => setSwipeState({box:null, dir:null}) || setSystem('tangye')} className={`py-3 rounded-lg font-bold border transition-all ${system === 'tangye' ? 'bg-teal-100 text-teal-800 border-teal-300' : 'bg-white text-slate-400 border-slate-200'}`}>湯液</button>
-                        <button onClick={() => setSwipeState({box:null, dir:null}) || setSystem('zhongshi')} className={`py-3 rounded-lg font-bold border transition-all ${system === 'zhongshi' ? 'bg-orange-100 text-orange-800 border-orange-300' : 'bg-white text-slate-400 border-slate-200'}`}>終始</button>
-                        <button onClick={() => setSwipeState({box:null, dir:null}) || setSystem('yuanluo')} className={`py-3 rounded-lg font-bold border transition-all ${system === 'yuanluo' ? 'bg-blue-100 text-blue-800 border-blue-300' : 'bg-white text-slate-400 border-slate-200'}`}>原絡</button>
-                    </div>
-
-                    {/* Grid */}
-                    <div className="bg-slate-100 rounded-xl p-6 py-8">
-                        <div className="max-w-md mx-auto relative flex gap-4">
-                            {/* Left Column (Right Hand) */}
-                            <div className="flex-1 flex flex-col gap-6 items-end">
-                                <Box id="right-chi" labelRight="" labelLeft="尺" />
-                                <Box id="right-guan" labelRight="" labelLeft="關" />
-                                <Box id="right-chun" labelRight="" labelLeft="寸" />
-                                <div className="text-center font-bold text-slate-500 mt-2 w-28 sm:w-36">右手</div>
-                            </div>
-                            {/* Right Column (Left Hand) */}
-                            <div className="flex-1 flex flex-col gap-6 items-start">
-                                <Box id="left-chi" labelRight="尺" labelLeft="" />
-                                <Box id="left-guan" labelRight="關" labelLeft="" />
-                                <Box id="left-chun" labelRight="寸" labelLeft="" />
-                                <div className="text-center font-bold text-slate-500 mt-2 w-28 sm:w-36">左手</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <ResultCard result={result} gender={gender} systemType={system} />
-                </div>
-            );
-        };
-
-        const App = () => {
-            const [currentPage, setCurrentPage] = useState('calculator'); // calculator, quick, medicine
-            const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-            return (
-                <div className="min-h-screen bg-slate-50 font-sans text-slate-800">
-                    {/* Navbar */}
-                    <nav className="bg-indigo-900 text-white p-4 shadow-md sticky top-0 z-50 flex items-center gap-4">
-                        <button onClick={() => setIsMenuOpen(true)} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
-                            <Icons.Menu />
-                        </button>
-                        <h1 className="font-bold text-lg">針灸決策輔助</h1>
-                    </nav>
-
-                    {/* Sidebar Overlay */}
-                    {isMenuOpen && (
-                        <div className="fixed inset-0 bg-black/50 z-50 transition-opacity" onClick={() => setIsMenuOpen(false)}></div>
-                    )}
-
-                    {/* Sidebar Panel */}
-                    <div className={`fixed inset-y-0 left-0 w-64 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-                        <div className="p-4 border-b flex justify-between items-center bg-indigo-50">
-                            <span className="font-bold text-indigo-900">選單功能</span>
-                            <button onClick={() => setIsMenuOpen(false)} className="p-2 text-indigo-900 hover:bg-indigo-100 rounded-lg"><Icons.X /></button>
-                        </div>
-                        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
-                            <button onClick={() => { setCurrentPage('calculator'); setIsMenuOpen(false); }} className={`p-4 rounded-xl text-left font-bold transition-colors ${currentPage === 'calculator' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-700 hover:bg-slate-100'}`}>脈法計算機</button>
-                            <button onClick={() => { setCurrentPage('quick'); setIsMenuOpen(false); }} className={`p-4 rounded-xl text-left font-bold transition-colors ${currentPage === 'quick' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-700 hover:bg-slate-100'}`}>湯液/終始/原絡快速按鈕</button>
-                            <button onClick={() => { setCurrentPage('medicine'); setIsMenuOpen(false); }} className={`p-4 rounded-xl text-left font-bold transition-colors ${currentPage === 'medicine' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-700 hover:bg-slate-100'}`}>藥物輔助資訊</button>
-                        </div>
-                    </div>
-
-                    {/* Main Content */}
-                    <main className="p-4 md:p-8 max-w-4xl mx-auto">
-                        {currentPage === 'calculator' && <CalculatorPage />}
-                        {currentPage === 'quick' && <QuickButtonPage />}
-                        {currentPage === 'medicine' && <MedicineView />}
-                    </main>
-                </div>
-            );
-        };
-
-        const root = createRoot(document.getElementById('root'));
-        root.render(<App />);
-        } // end of initApp
-
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .catch(err => console.log('Service Worker failed', err));
-            });
+  // --- 內建圖示組件 ---
+  const Icons = {
+    Menu: () => /*#__PURE__*/React.createElement("svg", {
+      xmlns: "http://www.w3.org/2000/svg",
+      width: "24",
+      height: "24",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "2",
+      strokeLinecap: "round",
+      strokeLinejoin: "round"
+    }, /*#__PURE__*/React.createElement("line", {
+      x1: "3",
+      y1: "12",
+      x2: "21",
+      y2: "12"
+    }), /*#__PURE__*/React.createElement("line", {
+      x1: "3",
+      y1: "6",
+      x2: "21",
+      y2: "6"
+    }), /*#__PURE__*/React.createElement("line", {
+      x1: "3",
+      y1: "18",
+      x2: "21",
+      y2: "18"
+    })),
+    X: () => /*#__PURE__*/React.createElement("svg", {
+      xmlns: "http://www.w3.org/2000/svg",
+      width: "24",
+      height: "24",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "2",
+      strokeLinecap: "round",
+      strokeLinejoin: "round"
+    }, /*#__PURE__*/React.createElement("line", {
+      x1: "18",
+      y1: "6",
+      x2: "6",
+      y2: "18"
+    }), /*#__PURE__*/React.createElement("line", {
+      x1: "6",
+      y1: "6",
+      x2: "18",
+      y2: "18"
+    })),
+    User: () => /*#__PURE__*/React.createElement("svg", {
+      xmlns: "http://www.w3.org/2000/svg",
+      width: "20",
+      height: "20",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "2",
+      strokeLinecap: "round",
+      strokeLinejoin: "round"
+    }, /*#__PURE__*/React.createElement("path", {
+      d: "M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"
+    }), /*#__PURE__*/React.createElement("circle", {
+      cx: "12",
+      cy: "7",
+      r: "4"
+    })),
+    Activity: () => /*#__PURE__*/React.createElement("svg", {
+      xmlns: "http://www.w3.org/2000/svg",
+      width: "32",
+      height: "32",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "2",
+      strokeLinecap: "round",
+      strokeLinejoin: "round"
+    }, /*#__PURE__*/React.createElement("path", {
+      d: "M22 12h-4l-3 9L9 3l-3 9H2"
+    })),
+    ArrowRight: ({
+      className
+    }) => /*#__PURE__*/React.createElement("svg", {
+      xmlns: "http://www.w3.org/2000/svg",
+      width: "24",
+      height: "24",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "2",
+      strokeLinecap: "round",
+      strokeLinejoin: "round",
+      className: className
+    }, /*#__PURE__*/React.createElement("path", {
+      d: "M5 12h14"
+    }), /*#__PURE__*/React.createElement("path", {
+      d: "m12 5 7 7-7 7"
+    })),
+    RotateCcw: ({
+      className
+    }) => /*#__PURE__*/React.createElement("svg", {
+      xmlns: "http://www.w3.org/2000/svg",
+      width: "24",
+      height: "24",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "2",
+      strokeLinecap: "round",
+      strokeLinejoin: "round",
+      className: className
+    }, /*#__PURE__*/React.createElement("path", {
+      d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"
+    }), /*#__PURE__*/React.createElement("path", {
+      d: "M3 3v5h5"
+    })),
+    MapPin: ({
+      className
+    }) => /*#__PURE__*/React.createElement("svg", {
+      xmlns: "http://www.w3.org/2000/svg",
+      width: "24",
+      height: "24",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "2",
+      strokeLinecap: "round",
+      strokeLinejoin: "round",
+      className: className
+    }, /*#__PURE__*/React.createElement("path", {
+      d: "M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"
+    }), /*#__PURE__*/React.createElement("circle", {
+      cx: "12",
+      cy: "10",
+      r: "3"
+    })),
+    Copy: () => /*#__PURE__*/React.createElement("svg", {
+      xmlns: "http://www.w3.org/2000/svg",
+      width: "20",
+      height: "20",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "2",
+      strokeLinecap: "round",
+      strokeLinejoin: "round"
+    }, /*#__PURE__*/React.createElement("rect", {
+      x: "9",
+      y: "9",
+      width: "13",
+      height: "13",
+      rx: "2",
+      ry: "2"
+    }), /*#__PURE__*/React.createElement("path", {
+      d: "M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+    })),
+    Check: () => /*#__PURE__*/React.createElement("svg", {
+      xmlns: "http://www.w3.org/2000/svg",
+      width: "20",
+      height: "20",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "2",
+      strokeLinecap: "round",
+      strokeLinejoin: "round"
+    }, /*#__PURE__*/React.createElement("polyline", {
+      points: "20 6 9 17 4 12"
+    })),
+    Pill: () => /*#__PURE__*/React.createElement("svg", {
+      xmlns: "http://www.w3.org/2000/svg",
+      width: "20",
+      height: "20",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "2",
+      strokeLinecap: "round",
+      strokeLinejoin: "round"
+    }, /*#__PURE__*/React.createElement("path", {
+      d: "m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"
+    }), /*#__PURE__*/React.createElement("path", {
+      d: "m8.5 8.5 7 7"
+    }))
+  };
+  const MEDICINE_SYSTEMS = [{
+    id: 'weiwang',
+    title: '湯液藥精系統',
+    icon: '🧑‍🍳',
+    type: 'standard',
+    leftAction: '補',
+    rightAction: '瀉',
+    data: {
+      '心火': {
+        pos: {
+          x: 30,
+          y: 20
+        },
+        element: '心火',
+        left: '旋覆花7',
+        right: '黃連2',
+        color: 'bg-red-100 text-red-800 border-red-200'
+      },
+      '脾土': {
+        pos: {
+          x: 70,
+          y: 20
+        },
+        element: '脾土',
+        left: '人參10',
+        right: '生薑5',
+        color: 'bg-orange-100 text-orange-800 border-orange-200'
+      },
+      '肺金': {
+        pos: {
+          x: 82,
+          y: 58
+        },
+        element: '肺金',
+        left: '五味子9',
+        right: '細辛4',
+        color: 'bg-yellow-100 text-yellow-800 border-yellow-200'
+      },
+      '腎水': {
+        pos: {
+          x: 50,
+          y: 85
+        },
+        element: '腎水',
+        left: '地黃6',
+        right: '茯苓1',
+        color: 'bg-blue-100 text-blue-800 border-blue-200'
+      },
+      '肝木': {
+        pos: {
+          x: 18,
+          y: 58
+        },
+        element: '肝木',
+        left: '桂枝8',
+        right: '枳實3',
+        color: 'bg-green-100 text-green-800 border-green-200'
+      },
+      '命門': {
+        pos: {
+          x: 50,
+          y: 39
+        },
+        element: '命門',
+        left: '乾薑2熟地7',
+        right: '黃柏6肉桂1',
+        color: 'bg-slate-100 text-slate-800 border-slate-200'
+      }
+    }
+  }, {
+    id: 'wensheng',
+    title: '溫升涼降系統',
+    icon: '🔥',
+    type: 'standard',
+    leftAction: '升',
+    rightAction: '降',
+    data: {
+      '心火': {
+        pos: {
+          x: 30,
+          y: 20
+        },
+        element: '心火',
+        left: '薤白7',
+        right: '黃連2',
+        color: 'bg-red-100 text-red-800 border-red-200'
+      },
+      '脾土': {
+        pos: {
+          x: 70,
+          y: 20
+        },
+        element: '脾土',
+        left: '乾薑10',
+        right: '大黃5',
+        color: 'bg-orange-100 text-orange-800 border-orange-200'
+      },
+      '肺金': {
+        pos: {
+          x: 82,
+          y: 58
+        },
+        element: '肺金',
+        left: '黃耆9',
+        right: '石膏4',
+        color: 'bg-yellow-100 text-yellow-800 border-yellow-200'
+      },
+      '腎水': {
+        pos: {
+          x: 50,
+          y: 85
+        },
+        element: '腎水',
+        left: '補骨脂6',
+        right: '豬苓1',
+        color: 'bg-blue-100 text-blue-800 border-blue-200'
+      },
+      '肝木': {
+        pos: {
+          x: 18,
+          y: 58
+        },
+        element: '肝木',
+        left: '桂枝8',
+        right: '黃芩3',
+        color: 'bg-green-100 text-green-800 border-green-200'
+      },
+      '命門': {
+        pos: {
+          x: 50,
+          y: 39
+        },
+        element: '命門',
+        left: '暫無資料',
+        right: '暫無資料',
+        color: 'bg-slate-100 text-slate-500 border-slate-200'
+      }
+    }
+  }, {
+    id: 'liangsheng',
+    title: '涼升溫降系統',
+    icon: '🌪️',
+    type: 'standard',
+    leftAction: '升',
+    rightAction: '降',
+    data: {
+      '心火': {
+        pos: {
+          x: 30,
+          y: 20
+        },
+        element: '心火',
+        left: '小麥7',
+        right: '肉桂2',
+        color: 'bg-red-100 text-red-800 border-red-200'
+      },
+      '脾土': {
+        pos: {
+          x: 70,
+          y: 20
+        },
+        element: '脾土',
+        left: '升麻10',
+        right: '厚朴5',
+        color: 'bg-orange-100 text-orange-800 border-orange-200'
+      },
+      '肺金': {
+        pos: {
+          x: 82,
+          y: 58
+        },
+        element: '肺金',
+        left: '薄荷9',
+        right: '杏仁4',
+        color: 'bg-yellow-100 text-yellow-800 border-yellow-200'
+      },
+      '腎水': {
+        pos: {
+          x: 50,
+          y: 85
+        },
+        element: '腎水',
+        left: '旱蓮草6',
+        right: '桂枝1',
+        color: 'bg-blue-100 text-blue-800 border-blue-200'
+      },
+      '肝木': {
+        pos: {
+          x: 18,
+          y: 58
+        },
+        element: '肝木',
+        left: '柴胡8',
+        right: '吳茱萸3',
+        color: 'bg-green-100 text-green-800 border-green-200'
+      },
+      '命門': {
+        pos: {
+          x: 50,
+          y: 39
+        },
+        element: '命門',
+        left: '暫無資料',
+        right: '暫無資料',
+        color: 'bg-slate-100 text-slate-500 border-slate-200'
+      }
+    }
+  }, {
+    id: 'zhongshi_renying',
+    title: '終始藥方系統-人迎',
+    icon: '☀️',
+    type: 'list',
+    data: {
+      '肝木': {
+        pos: {
+          x: 18,
+          y: 58
+        },
+        element: '肝木',
+        state: '一盛',
+        list: ['桂枝8', '枳實8', '甘草3'],
+        color: 'bg-green-100 text-green-800 border-green-200'
+      },
+      '心火': {
+        pos: {
+          x: 30,
+          y: 20
+        },
+        element: '心火',
+        state: '二盛而躁',
+        list: ['旋覆花7', '黃連7', '豆豉2'],
+        color: 'bg-red-100 text-red-800 border-red-200'
+      },
+      '脾土': {
+        pos: {
+          x: 70,
+          y: 20
+        },
+        element: '脾土',
+        state: '三盛',
+        list: ['人參10', '生薑10', '白朮5'],
+        color: 'bg-orange-100 text-orange-800 border-orange-200'
+      },
+      '肺金': {
+        pos: {
+          x: 82,
+          y: 58
+        },
+        element: '肺金',
+        state: '三盛而躁',
+        list: ['五味子9', '厚朴9', '細辛4'],
+        color: 'bg-yellow-100 text-yellow-800 border-yellow-200'
+      },
+      '腎水': {
+        pos: {
+          x: 50,
+          y: 85
+        },
+        element: '腎水',
+        state: '二盛',
+        list: ['熟地6', '茯苓6', '芒硝1'],
+        color: 'bg-blue-100 text-blue-800 border-blue-200'
+      },
+      '命門': {
+        pos: {
+          x: 50,
+          y: 39
+        },
+        element: '命門',
+        state: '一盛而躁',
+        list: ['肉桂1', '黃柏6', '黃芩6'],
+        color: 'bg-slate-100 text-slate-800 border-slate-200'
+      }
+    }
+  }, {
+    id: 'zhongshi_maikou',
+    title: '終始藥方系統-脈口',
+    icon: '🌙',
+    type: 'list',
+    data: {
+      '肝木': {
+        pos: {
+          x: 18,
+          y: 58
+        },
+        element: '肝木',
+        state: '一盛',
+        list: ['五味子8', '厚朴8', '細辛3'],
+        color: 'bg-green-100 text-green-800 border-green-200'
+      },
+      '心火': {
+        pos: {
+          x: 30,
+          y: 20
+        },
+        element: '心火',
+        state: '二盛而躁',
+        list: ['生地7', '茯苓7', '芒硝2'],
+        color: 'bg-red-100 text-red-800 border-red-200'
+      },
+      '脾土': {
+        pos: {
+          x: 70,
+          y: 20
+        },
+        element: '脾土',
+        state: '三盛',
+        list: ['桂枝10', '枳實10', '甘草5'],
+        color: 'bg-orange-100 text-orange-800 border-orange-200'
+      },
+      '肺金': {
+        pos: {
+          x: 82,
+          y: 58
+        },
+        element: '肺金',
+        state: '三盛而躁',
+        list: ['旋覆花9', '黃連9', '豆豉4'],
+        color: 'bg-yellow-100 text-yellow-800 border-yellow-200'
+      },
+      '腎水': {
+        pos: {
+          x: 50,
+          y: 85
+        },
+        element: '腎水',
+        state: '二盛',
+        list: ['人參6', '乾薑6', '白朮1'],
+        color: 'bg-blue-100 text-blue-800 border-blue-200'
+      },
+      '命門': {
+        pos: {
+          x: 50,
+          y: 39
+        },
+        element: '命門',
+        state: '一盛而躁',
+        list: ['肉桂1', '補骨脂6', '柴胡6'],
+        color: 'bg-slate-100 text-slate-800 border-slate-200'
+      }
+    }
+  }];
+  const MedicineView = () => {
+    const memoizedMedicineSystems = useMemo(() => {
+      return MEDICINE_SYSTEMS.map(sys => ({
+        ...sys,
+        dataKeys: Object.keys(sys.data)
+      }));
+    }, []);
+    return /*#__PURE__*/React.createElement("div", {
+      className: "space-y-6 animate-in fade-in duration-500 pb-20"
+    }, /*#__PURE__*/React.createElement("header", {
+      className: "bg-white p-6 rounded-xl shadow-sm border-l-4 border-indigo-500 mb-6"
+    }, /*#__PURE__*/React.createElement("h1", {
+      className: "text-2xl font-bold flex items-center gap-2 text-indigo-900"
+    }, /*#__PURE__*/React.createElement(Icons.Pill, null), " 藥物輔助資訊")), memoizedMedicineSystems.map(system => /*#__PURE__*/React.createElement("div", {
+      key: system.id,
+      className: "bg-white p-4 sm:p-6 rounded-xl shadow-sm overflow-hidden"
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "text-lg sm:text-xl font-bold flex items-center gap-2 mb-4 sm:mb-6 text-slate-800 border-b pb-3"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-2xl"
+    }, system.icon), " ", system.title), /*#__PURE__*/React.createElement("div", {
+      className: "relative w-full aspect-[4/3] sm:aspect-[5/4] max-w-lg mx-auto bg-slate-50/50 rounded-xl mt-2 border border-slate-100"
+    }, /*#__PURE__*/React.createElement("svg", {
+      viewBox: "0 0 100 100",
+      className: "absolute inset-0 w-full h-full overflow-visible",
+      preserveAspectRatio: "none"
+    }, /*#__PURE__*/React.createElement("polygon", {
+      points: "50,5 90,38 75,95 25,95 10,38",
+      fill: "none",
+      stroke: "#cbd5e1",
+      strokeWidth: "0.5",
+      strokeDasharray: "2 2"
+    })), system.dataKeys.map(key => {
+      const info = system.data[key];
+      return system.type === 'list' ? /*#__PURE__*/React.createElement("div", {
+        key: key,
+        className: "absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 shadow-sm rounded-lg bg-white/95 p-1.5 border border-slate-200 z-10 hover:shadow-md transition-shadow",
+        style: {
+          left: `${info.pos.x}%`,
+          top: `${info.pos.y}%`
         }
-    </script>
+      }, /*#__PURE__*/React.createElement("div", {
+        className: `px-2 py-0.5 rounded border font-bold text-[11px] sm:text-sm whitespace-nowrap ${info.color}`
+      }, info.state), /*#__PURE__*/React.createElement("div", {
+        className: "flex flex-col items-center gap-0.5"
+      }, info.list.map((med, i) => /*#__PURE__*/React.createElement("span", {
+        key: i,
+        className: "text-[10px] sm:text-xs font-bold text-slate-700 leading-none whitespace-nowrap"
+      }, med)))) : /*#__PURE__*/React.createElement("div", {
+        key: key,
+        className: "absolute transform -translate-x-1/2 -translate-y-1/2 flex items-center gap-1 sm:gap-2 shadow-sm rounded-lg bg-white/95 p-1 sm:p-1.5 border border-slate-200 z-10 hover:shadow-md transition-shadow",
+        style: {
+          left: `${info.pos.x}%`,
+          top: `${info.pos.y}%`
+        }
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "flex flex-col items-center min-w-[24px] sm:min-w-[32px]"
+      }, /*#__PURE__*/React.createElement("span", {
+        className: "text-[10px] sm:text-xs text-slate-400 font-medium leading-none mb-1 whitespace-nowrap"
+      }, system.leftAction), /*#__PURE__*/React.createElement("span", {
+        className: "text-xs sm:text-sm font-bold text-slate-700 leading-none whitespace-nowrap"
+      }, info.left)), /*#__PURE__*/React.createElement("div", {
+        className: `px-1.5 py-1 sm:px-2 sm:py-1 rounded border font-bold text-[12px] sm:text-sm whitespace-nowrap ${info.color}`
+      }, info.element), /*#__PURE__*/React.createElement("div", {
+        className: "flex flex-col items-center min-w-[24px] sm:min-w-[32px]"
+      }, /*#__PURE__*/React.createElement("span", {
+        className: "text-[10px] sm:text-xs text-slate-400 font-medium leading-none mb-1 whitespace-nowrap"
+      }, system.rightAction), /*#__PURE__*/React.createElement("span", {
+        className: "text-xs sm:text-sm font-bold text-slate-700 leading-none whitespace-nowrap"
+      }, info.right)));
+    })))));
+  };
+  const ResultCard = ({
+    result,
+    gender,
+    systemType
+  }) => {
+    const [copied, setCopied] = useState(false);
+    const [viewMode, setViewMode] = useState('acupuncture'); // 'acupuncture' | 'medicine'
+
+    const displayActions = useMemo(() => {
+      if (!result) return [];
+      const actions = [{
+        type: 'tonify',
+        ...result.tonify
+      }, {
+        type: 'sedate',
+        ...result.sedate
+      }];
+
+      // Sort for Tangye and Yuanluo
+      if (systemType !== 'zhongshi') {
+        const getPart = item => {
+          if (!item || !item.point) return 'upper';
+          const names = item.point.split('/');
+          for (let name of names) {
+            if (POINT_LOCATIONS[name]) {
+              const icon = POINT_LOCATIONS[name].icon;
+              if (icon === '✋' || icon === '💪') return 'upper';
+              if (icon === '🦵' || icon === '🦶') return 'lower';
+            }
+          }
+          return 'upper';
+        };
+        const getScore = (side, part) => {
+          if (gender === 'male') {
+            if (side === 'left' && part === 'upper' || side === 'right' && part === 'lower') return 0;
+            return 1;
+          } else {
+            if (side === 'right' && part === 'upper' || side === 'left' && part === 'lower') return 0;
+            return 1;
+          }
+        };
+        const actionScores = new Map();
+        for (const action of actions) {
+          actionScores.set(action, getScore(action.side, getPart(action)));
+        }
+        actions.sort((a, b) => actionScores.get(a) - actionScores.get(b));
+      }
+      return actions;
+    }, [result, gender, systemType]);
+    const locationHints = useMemo(() => {
+      if (!result) return [];
+      const points = new Set();
+      const extract = item => {
+        if (!item || !item.point) return;
+        const names = [item.point];
+        if (item.alias) names.push(item.alias);
+        names.forEach(n => n.split('/').forEach(subName => points.add(subName)));
+      };
+      extract(result.tonify);
+      extract(result.sedate);
+      const hints = [];
+      points.forEach(p => {
+        if (POINT_LOCATIONS[p]) hints.push({
+          name: p,
+          ...POINT_LOCATIONS[p]
+        });
+      });
+      return hints;
+    }, [result]);
+    const handleCopy = () => {
+      if (!result) return;
+      const lines = [`【${result.title}】 ${result.method} (${gender === 'male' ? '男' : '女'})`];
+      displayActions.forEach(action => {
+        const isTonify = action.type === 'tonify';
+        const sideText = action.side === 'left' ? '左' : '右';
+        const pointText = action.alias ? `${action.point}/${action.alias}` : action.point;
+        lines.push(`${isTonify ? '補' : '瀉'} ${sideText}${pointText} (${action.desc})`);
+      });
+
+      // Fallback copy mechanism
+      const textArea = document.createElement("textarea");
+      textArea.value = lines.join('\n');
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch (err) {
+        console.error('Failed to copy', err);
+      }
+      document.body.removeChild(textArea);
+    };
+    const medicineElement = useMemo(() => {
+      if (!result) return null;
+      if (systemType === 'tangye' || systemType === 'yuanluo') {
+        return result.method.split(' ')[0]; // e.g., "心火"
+      } else if (systemType === 'zhongshi') {
+        if (result.method.includes('一盛而躁')) return '命門';
+        if (result.method.includes('二盛而躁')) return '心火';
+        if (result.method.includes('三盛而躁')) return '肺金';
+        if (result.method.includes('一盛')) return '肝木';
+        if (result.method.includes('二盛')) return '腎水';
+        if (result.method.includes('三盛')) return '脾土';
+      }
+      return null;
+    }, [result, systemType]);
+    const displayMedicineSystems = useMemo(() => {
+      if (!result) return [];
+      let systems = [...MEDICINE_SYSTEMS];
+      if (systemType === 'zhongshi') {
+        const isRenying = result.method.includes('人迎');
+        const targetZhongshiId = isRenying ? 'zhongshi_renying' : 'zhongshi_maikou';
+        const targetSys = systems.find(s => s.id === targetZhongshiId);
+        const otherSys = systems.filter(s => !s.id.startsWith('zhongshi_'));
+        return [targetSys, ...otherSys];
+      } else {
+        return systems.filter(s => !s.id.startsWith('zhongshi_'));
+      }
+    }, [result, systemType]);
+    if (!result) return null;
+    return /*#__PURE__*/React.createElement("div", {
+      className: "mt-8 animate-in slide-in-from-bottom-8 duration-700"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-indigo-900 text-white p-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex justify-between items-center"
+    }, /*#__PURE__*/React.createElement("h4", {
+      className: "text-lg font-bold"
+    }, result.method), /*#__PURE__*/React.createElement("span", {
+      className: "bg-white/20 px-3 py-1 rounded-full text-sm"
+    }, result.title))), viewMode === 'acupuncture' ? /*#__PURE__*/React.createElement("div", {
+      className: "p-6"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8"
+    }, displayActions.map((action, idx) => {
+      const isTonify = action.type === 'tonify';
+      return /*#__PURE__*/React.createElement("div", {
+        key: idx,
+        className: `${isTonify ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'} border-l-4 p-4 rounded-r-lg`
+      }, /*#__PURE__*/React.createElement("h5", {
+        className: `font-bold ${isTonify ? 'text-green-800' : 'text-red-800'} flex items-center gap-2 mb-2`
+      }, isTonify ? /*#__PURE__*/React.createElement(Icons.ArrowRight, {
+        className: "w-5 h-5"
+      }) : /*#__PURE__*/React.createElement(Icons.RotateCcw, {
+        className: "w-5 h-5"
+      }), isTonify ? '補法 (Tonify)' : '瀉法 (Sedate)'), /*#__PURE__*/React.createElement("div", {
+        className: "text-lg font-bold mb-1"
+      }, action.side === 'left' ? '左' : '右', action.alias ? `${action.point}/${action.alias}` : action.point), /*#__PURE__*/React.createElement("p", {
+        className: `${isTonify ? 'text-green-700' : 'text-red-700'} text-sm leading-relaxed`
+      }, action.desc));
+    })), /*#__PURE__*/React.createElement("div", {
+      className: "flex gap-3 mb-6"
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: handleCopy,
+      className: `flex-1 py-3 px-4 rounded-lg flex items-center justify-center gap-2 font-bold transition-all ${copied ? 'bg-green-100 text-green-700 border-2 border-green-500' : 'bg-purple-100 text-purple-700 border-2 border-purple-200 hover:border-purple-300'}`
+    }, copied ? /*#__PURE__*/React.createElement(Icons.Check, null) : /*#__PURE__*/React.createElement(Icons.Copy, null), copied ? '已複製到剪貼簿！' : '一鍵複製解答'), /*#__PURE__*/React.createElement("button", {
+      onClick: () => setViewMode('medicine'),
+      className: "flex-1 py-3 px-4 rounded-lg bg-indigo-100 text-indigo-700 border-2 border-indigo-200 hover:border-indigo-300 font-bold flex items-center justify-center gap-2 transition-all"
+    }, /*#__PURE__*/React.createElement(Icons.Pill, null), " 顯示藥物處方")), systemType === 'tangye' && /*#__PURE__*/React.createElement("div", {
+      className: "bg-slate-100/60 border border-slate-200 rounded-xl p-5 mb-6"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-sm text-slate-500 leading-relaxed pl-6 -indent-6 mb-2"
+    }, "➡️ 進針：輕咳進針，在天地人三部，各針三次，共九次。過程配合病人以口呼吸：吸氣進針，吐氣停止。"), /*#__PURE__*/React.createElement("p", {
+      className: "text-sm text-slate-500 leading-relaxed pl-6 -indent-6"
+    }, "🔄 行針：針上肢時，病人以鼻呼吸；針下肢時，病人以口呼吸。", /*#__PURE__*/React.createElement("br", null), "針尖向心方向，配合吐氣動針，吸氣停止；針尖遠心方向，配合吸氣動針，吐氣停止。")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-slate-100 rounded-xl p-6 mb-6"
+    }, /*#__PURE__*/React.createElement("h5", {
+      className: "flex items-center gap-2 text-slate-700 font-bold mb-4 border-b border-slate-200 pb-2"
+    }, /*#__PURE__*/React.createElement(Icons.MapPin, {
+      className: "w-5 h-5"
+    }), " 穴位定位提示"), /*#__PURE__*/React.createElement("div", {
+      className: "grid grid-cols-1 gap-4"
+    }, locationHints.map((hint, idx) => /*#__PURE__*/React.createElement("div", {
+      key: idx,
+      className: "flex gap-3 items-start"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-2xl bg-white w-10 h-10 flex items-center justify-center rounded-lg shadow-sm border border-slate-200 shrink-0"
+    }, hint.icon), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
+      className: "font-bold text-slate-900 block mb-1"
+    }, hint.name), /*#__PURE__*/React.createElement("span", {
+      className: "text-slate-600 text-sm leading-relaxed"
+    }, hint.text)))))), /*#__PURE__*/React.createElement("div", {
+      className: "space-y-4"
+    }, locationHints.some(h => h.icon === '✋' || h.icon === '💪') && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("img", {
+      src: "hand1.jpg",
+      alt: "Hand 1",
+      className: "w-full rounded-xl shadow-sm",
+      onError: e => {
+        e.target.style.display = 'none';
+        e.target.nextElementSibling.style.display = 'flex';
+      }
+    }), /*#__PURE__*/React.createElement("div", {
+      className: "hidden w-full h-32 bg-slate-200 rounded-xl flex items-center justify-center text-slate-400 font-medium"
+    }, "hand1.jpg 預留區"), /*#__PURE__*/React.createElement("img", {
+      src: "hand2.jpg",
+      alt: "Hand 2",
+      className: "w-full rounded-xl shadow-sm",
+      onError: e => {
+        e.target.style.display = 'none';
+        e.target.nextElementSibling.style.display = 'flex';
+      }
+    }), /*#__PURE__*/React.createElement("div", {
+      className: "hidden w-full h-32 bg-slate-200 rounded-xl flex items-center justify-center text-slate-400 font-medium"
+    }, "hand2.jpg 預留區"), /*#__PURE__*/React.createElement("img", {
+      src: "hand3.jpg",
+      alt: "Hand 3",
+      className: "w-full rounded-xl shadow-sm",
+      onError: e => {
+        e.target.style.display = 'none';
+        e.target.nextElementSibling.style.display = 'flex';
+      }
+    }), /*#__PURE__*/React.createElement("div", {
+      className: "hidden w-full h-32 bg-slate-200 rounded-xl flex items-center justify-center text-slate-400 font-medium"
+    }, "hand3.jpg 預留區")), locationHints.some(h => h.icon === '🦵' || h.icon === '🦶') && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("img", {
+      src: "foot1.jpg",
+      alt: "Foot 1",
+      className: "w-full rounded-xl shadow-sm",
+      onError: e => {
+        e.target.style.display = 'none';
+        e.target.nextElementSibling.style.display = 'flex';
+      }
+    }), /*#__PURE__*/React.createElement("div", {
+      className: "hidden w-full h-32 bg-slate-200 rounded-xl flex items-center justify-center text-slate-400 font-medium"
+    }, "foot1.jpg 預留區"), /*#__PURE__*/React.createElement("img", {
+      src: "foot2.jpg",
+      alt: "Foot 2",
+      className: "w-full rounded-xl shadow-sm",
+      onError: e => {
+        e.target.style.display = 'none';
+        e.target.nextElementSibling.style.display = 'flex';
+      }
+    }), /*#__PURE__*/React.createElement("div", {
+      className: "hidden w-full h-32 bg-slate-200 rounded-xl flex items-center justify-center text-slate-400 font-medium"
+    }, "foot2.jpg 預留區")))) : /*#__PURE__*/React.createElement("div", {
+      className: "p-6 animate-in fade-in"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "mb-6 flex items-center justify-between border-b pb-4"
+    }, /*#__PURE__*/React.createElement("h5", {
+      className: "font-bold text-slate-800 text-lg flex items-center gap-2"
+    }, /*#__PURE__*/React.createElement(Icons.Pill, null), " 藥物輔助組合 (", medicineElement, ")"), /*#__PURE__*/React.createElement("button", {
+      onClick: () => setViewMode('acupuncture'),
+      className: "py-2 px-4 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-200 hover:bg-indigo-100 font-bold transition-all text-sm"
+    }, "返回針灸處方")), /*#__PURE__*/React.createElement("div", {
+      className: "space-y-4"
+    }, displayMedicineSystems.map(sys => {
+      const elementData = sys.data[medicineElement];
+      if (!elementData) return null;
+      return /*#__PURE__*/React.createElement("div", {
+        key: sys.id,
+        className: "bg-slate-50 border border-slate-200 p-4 rounded-lg"
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "font-bold text-slate-700 mb-3 flex items-center gap-2"
+      }, /*#__PURE__*/React.createElement("span", {
+        className: "text-xl"
+      }, sys.icon), " ", sys.title), sys.type === 'list' ? /*#__PURE__*/React.createElement("div", {
+        className: "bg-white p-3 rounded shadow-sm border border-slate-100 flex flex-col items-center gap-2"
+      }, /*#__PURE__*/React.createElement("div", {
+        className: `px-3 py-1 rounded text-sm font-bold border ${elementData.color}`
+      }, elementData.state), /*#__PURE__*/React.createElement("div", {
+        className: "flex gap-4 sm:gap-6 mt-1"
+      }, elementData.list.map((med, i) => /*#__PURE__*/React.createElement("span", {
+        key: i,
+        className: "font-bold text-slate-800 text-sm sm:text-base"
+      }, med)))) : /*#__PURE__*/React.createElement("div", {
+        className: "flex gap-4"
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "flex-1 bg-white p-3 rounded shadow-sm border border-slate-100 text-center"
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "text-xs text-slate-400 mb-1"
+      }, sys.leftAction), /*#__PURE__*/React.createElement("div", {
+        className: "font-bold text-slate-800"
+      }, elementData.left)), /*#__PURE__*/React.createElement("div", {
+        className: "flex-1 bg-white p-3 rounded shadow-sm border border-slate-100 text-center"
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "text-xs text-slate-400 mb-1"
+      }, sys.rightAction), /*#__PURE__*/React.createElement("div", {
+        className: "font-bold text-slate-800"
+      }, elementData.right))));
+    })))));
+  };
+  const CalculatorPage = () => {
+    const [gender, setGender] = useState('male');
+    const [systemType, setSystemType] = useState(null); // 'tangye', 'zhongshi', 'yuanluo'
+    const [tangyePulse, setTangyePulse] = useState(null);
+    const [tangyeState, setTangyeState] = useState(null);
+    const [zhongshiPulsePos, setZhongshiPulsePos] = useState(null);
+    const [isAgitated, setIsAgitated] = useState(null);
+    const [zhongshiTreatment, setZhongshiTreatment] = useState(null);
+    const handleSystemChange = val => {
+      setSystemType(val);
+      setTangyePulse(null);
+      setTangyeState(null);
+      setZhongshiPulsePos(null);
+      setIsAgitated(null);
+      setZhongshiTreatment(null);
+    };
+    const handlePulsePosChange = val => {
+      setZhongshiPulsePos(val);
+      setZhongshiTreatment(null);
+    };
+    const handleAgitatedChange = val => {
+      setIsAgitated(val);
+      setZhongshiTreatment(null);
+    };
+    const zhongshiOptions = useMemo(() => {
+      if (!zhongshiPulsePos || isAgitated === null) return [];
+      if (zhongshiPulsePos === '人迎') {
+        return isAgitated === 'no' ? ['人迎一盛（補肝瀉膽）', '人迎二盛（補腎瀉膀胱）', '人迎三盛（補脾瀉胃）'] : ['人迎一盛而躁（補心包瀉三焦）', '人迎二盛而躁（補心瀉小腸）', '人迎三盛而躁（補肺瀉大腸）'];
+      } else {
+        return isAgitated === 'no' ? ['脈口一盛（補膽瀉肝）', '脈口二盛（補膀胱瀉腎）', '脈口三盛（補胃瀉脾）'] : ['脈口一盛而躁（補三焦瀉心包）', '脈口二盛而躁（補小腸瀉心）', '脈口三盛而躁（補大腸瀉肺）'];
+      }
+    }, [zhongshiPulsePos, isAgitated]);
+    const result = useMemo(() => {
+      let res = null;
+      if (systemType === 'tangye' && tangyePulse && tangyeState) {
+        const rule = TANGYE_RULES[gender][tangyePulse][tangyeState];
+        if (rule) res = {
+          title: '湯液針法 處方',
+          method: `${tangyePulse} ${tangyeState}`,
+          tonify: rule.tonify,
+          sedate: rule.sedate
+        };
+      } else if (systemType === 'zhongshi' && zhongshiTreatment) {
+        const rule = ZHONGSHI_RULES[gender][zhongshiTreatment];
+        if (rule) res = {
+          title: '終始針法 處方',
+          method: zhongshiTreatment,
+          tonify: rule.tonify,
+          sedate: rule.sedate
+        };
+      } else if (systemType === 'yuanluo' && tangyePulse && tangyeState) {
+        const rule = YUANLUO_RULES[gender][tangyePulse][tangyeState];
+        if (rule) res = {
+          title: '原絡針法 處方',
+          method: `${tangyePulse} ${tangyeState}`,
+          tonify: rule.tonify || rule.pt1,
+          sedate: rule.sedate || rule.pt2
+        };
+      }
+      return res;
+    }, [gender, systemType, tangyePulse, tangyeState, zhongshiTreatment]);
+    return /*#__PURE__*/React.createElement("div", {
+      className: "space-y-6 pb-20"
+    }, /*#__PURE__*/React.createElement("header", {
+      className: "bg-white p-6 rounded-xl shadow-sm border-l-4 border-indigo-500"
+    }, /*#__PURE__*/React.createElement("h1", {
+      className: "text-2xl font-bold flex items-center gap-2 text-indigo-900"
+    }, /*#__PURE__*/React.createElement(Icons.Activity, null), " 脈法計算機"), /*#__PURE__*/React.createElement("p", {
+      className: "text-slate-500 mt-2"
+    }, "Janna珍娜-湯液針法/終始針法/原絡針法 整合學習系統"), /*#__PURE__*/React.createElement("p", {
+      className: "text-slate-400 text-sm mt-1 text-right"
+    }, "劉可炫、小奈共同製作")), /*#__PURE__*/React.createElement("section", {
+      className: "bg-white p-6 rounded-xl shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500"
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "text-lg font-semibold mb-4 flex items-center gap-2"
+    }, "病人性別"), /*#__PURE__*/React.createElement("div", {
+      className: "flex gap-4"
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: () => setGender('male'),
+      className: `flex-1 py-3 px-4 rounded-lg border-2 transition-all flex items-center justify-center gap-2 ${gender === 'male' ? 'border-blue-500 bg-blue-50 text-blue-700 font-bold' : 'border-slate-200 hover:border-slate-300'}`
+    }, /*#__PURE__*/React.createElement(Icons.User, null), " 男"), /*#__PURE__*/React.createElement("button", {
+      onClick: () => setGender('female'),
+      className: `flex-1 py-3 px-4 rounded-lg border-2 transition-all flex items-center justify-center gap-2 ${gender === 'female' ? 'border-pink-500 bg-pink-50 text-pink-700 font-bold' : 'border-slate-200 hover:border-slate-300'}`
+    }, /*#__PURE__*/React.createElement(Icons.User, null), " 女"))), /*#__PURE__*/React.createElement("section", {
+      className: "bg-white p-6 rounded-xl shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500 delay-100"
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "text-lg font-semibold mb-4 flex items-center gap-2"
+    }, "針法系統"), /*#__PURE__*/React.createElement("div", {
+      className: "flex flex-col gap-3"
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: () => handleSystemChange('tangye'),
+      className: `py-3 px-4 rounded-lg border-2 transition-all ${systemType === 'tangye' ? 'border-teal-500 bg-teal-50 text-teal-700 font-bold' : 'border-slate-200 hover:border-slate-300'}`
+    }, "獨異 (湯液針法)"), /*#__PURE__*/React.createElement("button", {
+      onClick: () => handleSystemChange('zhongshi'),
+      className: `py-3 px-4 rounded-lg border-2 transition-all ${systemType === 'zhongshi' ? 'border-orange-500 bg-orange-50 text-orange-700 font-bold' : 'border-slate-200 hover:border-slate-300'}`
+    }, "陰陽不平衡 (終始針法)"), /*#__PURE__*/React.createElement("button", {
+      onClick: () => handleSystemChange('yuanluo'),
+      className: `py-3 px-4 rounded-lg border-2 transition-all ${systemType === 'yuanluo' ? 'border-blue-500 bg-blue-50 text-blue-700 font-bold' : 'border-slate-200 hover:border-slate-300'}`
+    }, "原絡針法"))), (systemType === 'tangye' || systemType === 'yuanluo') && /*#__PURE__*/React.createElement("div", {
+      className: "space-y-6 animate-in zoom-in-95 duration-300"
+    }, /*#__PURE__*/React.createElement("section", {
+      className: "bg-white p-6 rounded-xl shadow-sm"
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "text-lg font-semibold mb-4 flex items-center gap-2"
+    }, "哪個脈位獨異？"), /*#__PURE__*/React.createElement("div", {
+      className: "grid grid-cols-2 md:grid-cols-3 gap-3"
+    }, ['心火', '肝木', '腎水', '肺金', '脾土', '命門'].map(p => /*#__PURE__*/React.createElement("button", {
+      key: p,
+      onClick: () => setTangyePulse(p),
+      className: `py-2 px-3 rounded-lg border transition-all ${tangyePulse === p ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white border-slate-200 hover:bg-slate-50'}`
+    }, p)))), tangyePulse && /*#__PURE__*/React.createElement("section", {
+      className: "bg-white p-6 rounded-xl shadow-sm animate-in fade-in slide-in-from-bottom-2"
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "text-lg font-semibold mb-4 flex items-center gap-2"
+    }, "該脈位狀態？"), /*#__PURE__*/React.createElement("div", {
+      className: "flex gap-4"
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: () => setTangyeState('太過'),
+      className: `flex-1 py-3 rounded-lg border-2 transition-all flex items-center justify-center gap-2 ${tangyeState === '太過' ? 'border-red-500 bg-red-50 text-red-700 font-bold' : 'border-slate-200'}`
+    }, /*#__PURE__*/React.createElement(Icons.ArrowRight, {
+      className: "w-4 h-4 -rotate-45"
+    }), " 太過"), /*#__PURE__*/React.createElement("button", {
+      onClick: () => setTangyeState('不足'),
+      className: `flex-1 py-3 rounded-lg border-2 transition-all flex items-center justify-center gap-2 ${tangyeState === '不足' ? 'border-blue-500 bg-blue-50 text-blue-700 font-bold' : 'border-slate-200'}`
+    }, /*#__PURE__*/React.createElement(Icons.ArrowRight, {
+      className: "w-4 h-4 rotate-45"
+    }), " 不足")))), systemType === 'zhongshi' && /*#__PURE__*/React.createElement("div", {
+      className: "space-y-6 animate-in zoom-in-95 duration-300"
+    }, /*#__PURE__*/React.createElement("section", {
+      className: "bg-white p-6 rounded-xl shadow-sm"
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "text-lg font-semibold mb-4 flex items-center gap-2"
+    }, "脈位狀態？"), /*#__PURE__*/React.createElement("div", {
+      className: "flex gap-4"
+    }, ['人迎', '脈口'].map(opt => /*#__PURE__*/React.createElement("button", {
+      key: opt,
+      onClick: () => handlePulsePosChange(opt),
+      className: `flex-1 py-3 rounded-lg border-2 transition-all ${zhongshiPulsePos === opt ? 'border-purple-500 bg-purple-50 text-purple-700 font-bold' : 'border-slate-200'}`
+    }, opt)))), zhongshiPulsePos && /*#__PURE__*/React.createElement("section", {
+      className: "bg-white p-6 rounded-xl shadow-sm animate-in fade-in slide-in-from-bottom-2"
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "text-lg font-semibold mb-4 flex items-center gap-2"
+    }, "是否為躁？"), /*#__PURE__*/React.createElement("div", {
+      className: "flex gap-4"
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: () => handleAgitatedChange('yes'),
+      className: `flex-1 py-3 rounded-lg border-2 transition-all ${isAgitated === 'yes' ? 'border-red-500 bg-red-50 text-red-700 font-bold' : 'border-slate-200'}`
+    }, "是"), /*#__PURE__*/React.createElement("button", {
+      onClick: () => handleAgitatedChange('no'),
+      className: `flex-1 py-3 rounded-lg border-2 transition-all ${isAgitated === 'no' ? 'border-green-500 bg-green-50 text-green-700 font-bold' : 'border-slate-200'}`
+    }, "否"))), zhongshiPulsePos && isAgitated && /*#__PURE__*/React.createElement("section", {
+      className: "bg-white p-6 rounded-xl shadow-sm animate-in fade-in slide-in-from-bottom-2"
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "text-lg font-semibold mb-4 flex items-center gap-2"
+    }, "治療原則"), /*#__PURE__*/React.createElement("div", {
+      className: "grid grid-cols-1 md:grid-cols-2 gap-3"
+    }, zhongshiOptions.map(opt => /*#__PURE__*/React.createElement("button", {
+      key: opt,
+      onClick: () => setZhongshiTreatment(opt),
+      className: `p-4 rounded-lg border text-left transition-all ${zhongshiTreatment === opt ? 'bg-indigo-600 text-white border-indigo-600 shadow-md' : 'bg-white border-slate-200 hover:bg-slate-50'}`
+    }, opt))))), /*#__PURE__*/React.createElement(ResultCard, {
+      result: result,
+      gender: gender,
+      systemType: systemType
+    }));
+  };
+  const QuickButtonPage = () => {
+    const [gender, setGender] = useState('male');
+    const [system, setSystem] = useState('tangye'); // tangye, zhongshi, yuanluo
+    const [swipeState, setSwipeState] = useState({
+      box: null,
+      dir: null
+    });
+    const POSITIONS = ['right-chi', 'right-guan', 'right-chun', 'left-chi', 'left-guan', 'left-chun'];
+
+    // Maps physical box to Element/Zhongshi label based on Gender
+    const getBoxElement = boxId => {
+      const isMale = gender === 'male';
+      const mapMale = {
+        'right-chun': {
+          element: '肺金',
+          zs: '脈口一盛'
+        },
+        'right-guan': {
+          element: '脾土',
+          zs: '脈口三盛'
+        },
+        'right-chi': {
+          element: '命門',
+          zs: '脈口二盛'
+        },
+        'left-chun': {
+          element: '心火',
+          zs: '人迎一盛'
+        },
+        'left-guan': {
+          element: '肝木',
+          zs: '人迎三盛'
+        },
+        'left-chi': {
+          element: '腎水',
+          zs: '人迎二盛'
+        }
+      };
+      const mapFemale = {
+        'left-chun': {
+          element: '肺金',
+          zs: '脈口一盛'
+        },
+        'left-guan': {
+          element: '脾土',
+          zs: '脈口三盛'
+        },
+        'left-chi': {
+          element: '命門',
+          zs: '脈口二盛'
+        },
+        'right-chun': {
+          element: '心火',
+          zs: '人迎一盛'
+        },
+        'right-guan': {
+          element: '肝木',
+          zs: '人迎三盛'
+        },
+        'right-chi': {
+          element: '腎水',
+          zs: '人迎二盛'
+        }
+      };
+      return isMale ? mapMale[boxId] : mapFemale[boxId];
+    };
+    const result = useMemo(() => {
+      if (!swipeState.box || !swipeState.dir) return null;
+      const mapping = getBoxElement(swipeState.box);
+      const isUp = swipeState.dir === 'up';
+      if (system === 'tangye') {
+        const stateLabel = isUp ? '太過' : '不足';
+        const rule = TANGYE_RULES[gender][mapping.element][stateLabel];
+        if (rule) return {
+          title: '湯液針法 處方',
+          method: `${mapping.element} ${stateLabel}`,
+          ...rule
+        };
+      } else if (system === 'yuanluo') {
+        const stateLabel = isUp ? '太過' : '不足';
+        const rule = YUANLUO_RULES[gender][mapping.element][stateLabel];
+        if (rule) return {
+          title: '原絡針法 處方',
+          method: `${mapping.element} ${stateLabel}`,
+          tonify: rule.tonify || rule.pt1,
+          sedate: rule.sedate || rule.pt2
+        };
+      } else if (system === 'zhongshi') {
+        const agitatedSuffix = isUp ? '而躁' : '';
+        let targetTreatment = '';
+        const m = mapping.zs;
+        if (m === '脈口一盛') targetTreatment = `脈口一盛${agitatedSuffix}（補${isUp ? '三焦瀉心包' : '膽瀉肝'}）`;
+        if (m === '脈口二盛') targetTreatment = `脈口二盛${agitatedSuffix}（補${isUp ? '小腸瀉心' : '膀胱瀉腎'}）`;
+        if (m === '脈口三盛') targetTreatment = `脈口三盛${agitatedSuffix}（補${isUp ? '大腸瀉肺' : '胃瀉脾'}）`;
+        if (m === '人迎一盛') targetTreatment = `人迎一盛${agitatedSuffix}（補${isUp ? '心包瀉三焦' : '肝瀉膽'}）`;
+        if (m === '人迎二盛') targetTreatment = `人迎二盛${agitatedSuffix}（補${isUp ? '心瀉小腸' : '腎瀉膀胱'}）`;
+        if (m === '人迎三盛') targetTreatment = `人迎三盛${agitatedSuffix}（補${isUp ? '肺瀉大腸' : '脾瀉胃'}）`;
+        const rule = ZHONGSHI_RULES[gender][targetTreatment];
+        if (rule) return {
+          title: '終始針法 處方',
+          method: targetTreatment,
+          ...rule
+        };
+      }
+      return null;
+    }, [gender, system, swipeState]);
+    const handleDragEnd = (boxId, deltaY) => {
+      if (deltaY < -20) setSwipeState({
+        box: boxId,
+        dir: 'up'
+      });else if (deltaY > 20) setSwipeState({
+        box: boxId,
+        dir: 'down'
+      });
+    };
+    const Box = ({
+      id,
+      labelRight,
+      labelLeft
+    }) => {
+      const startY = useRef(0);
+      const isSelected = swipeState.box === id;
+      const activeColor = gender === 'male' ? 'bg-blue-100 border-blue-400' : 'bg-pink-100 border-pink-400';
+      let text = '';
+      if (isSelected) {
+        if (system === 'zhongshi') text = swipeState.dir === 'up' ? '躁' : '無躁';else text = swipeState.dir === 'up' ? '太過' : '不足';
+      }
+      return /*#__PURE__*/React.createElement("div", {
+        className: "flex items-center w-full justify-between"
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "w-6 text-center text-sm font-bold text-slate-400"
+      }, labelLeft), /*#__PURE__*/React.createElement("div", {
+        className: `w-28 sm:w-36 aspect-square rounded-xl shadow-[4px_4px_10px_rgba(0,0,0,0.1)] border-2 flex items-center justify-center cursor-grab active:cursor-grabbing swipe-box transition-colors duration-200 select-none ${isSelected ? activeColor : 'bg-white border-white hover:border-slate-200'}`,
+        onPointerDown: e => {
+          startY.current = e.clientY;
+          e.target.setPointerCapture(e.pointerId);
+        },
+        onPointerUp: e => {
+          e.target.releasePointerCapture(e.pointerId);
+          handleDragEnd(id, e.clientY - startY.current);
+        }
+      }, text && /*#__PURE__*/React.createElement("span", {
+        className: "text-xl font-bold text-slate-500 opacity-70 pointer-events-none"
+      }, text), !text && /*#__PURE__*/React.createElement("span", {
+        className: "text-xs text-slate-300 opacity-50 pointer-events-none flex flex-col items-center gap-1"
+      }, /*#__PURE__*/React.createElement("span", null, "↑上滑"), /*#__PURE__*/React.createElement("span", null, "下滑↓"))), /*#__PURE__*/React.createElement("div", {
+        className: "w-6 text-center text-sm font-bold text-slate-400"
+      }, labelRight));
+    };
+    return /*#__PURE__*/React.createElement("div", {
+      className: "space-y-6 pb-20"
+    }, /*#__PURE__*/React.createElement("header", {
+      className: "bg-white p-6 rounded-xl shadow-sm border-l-4 border-indigo-500"
+    }, /*#__PURE__*/React.createElement("h1", {
+      className: "text-2xl font-bold flex items-center gap-2 text-indigo-900"
+    }, "快速按鈕輔助"), /*#__PURE__*/React.createElement("p", {
+      className: "text-slate-500 mt-2"
+    }, "滑動對應脈位，快速生成處方")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-xl shadow-sm p-2 flex relative overflow-hidden border border-slate-200"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: `absolute top-0 bottom-0 w-1/2 transition-transform duration-300 ease-in-out ${gender === 'male' ? 'bg-blue-100 translate-x-0' : 'bg-pink-100 translate-x-full'}`
+    }), /*#__PURE__*/React.createElement("button", {
+      onClick: () => setSwipeState({
+        box: null,
+        dir: null
+      }) || setGender('male'),
+      className: `flex-1 py-3 font-bold z-10 transition-colors ${gender === 'male' ? 'text-blue-800' : 'text-slate-400'}`
+    }, "男性"), /*#__PURE__*/React.createElement("button", {
+      onClick: () => setSwipeState({
+        box: null,
+        dir: null
+      }) || setGender('female'),
+      className: `flex-1 py-3 font-bold z-10 transition-colors ${gender === 'female' ? 'text-pink-800' : 'text-slate-400'}`
+    }, "女性")), /*#__PURE__*/React.createElement("div", {
+      className: "grid grid-cols-3 gap-2"
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: () => setSwipeState({
+        box: null,
+        dir: null
+      }) || setSystem('tangye'),
+      className: `py-3 rounded-lg font-bold border transition-all ${system === 'tangye' ? 'bg-teal-100 text-teal-800 border-teal-300' : 'bg-white text-slate-400 border-slate-200'}`
+    }, "湯液"), /*#__PURE__*/React.createElement("button", {
+      onClick: () => setSwipeState({
+        box: null,
+        dir: null
+      }) || setSystem('zhongshi'),
+      className: `py-3 rounded-lg font-bold border transition-all ${system === 'zhongshi' ? 'bg-orange-100 text-orange-800 border-orange-300' : 'bg-white text-slate-400 border-slate-200'}`
+    }, "終始"), /*#__PURE__*/React.createElement("button", {
+      onClick: () => setSwipeState({
+        box: null,
+        dir: null
+      }) || setSystem('yuanluo'),
+      className: `py-3 rounded-lg font-bold border transition-all ${system === 'yuanluo' ? 'bg-blue-100 text-blue-800 border-blue-300' : 'bg-white text-slate-400 border-slate-200'}`
+    }, "原絡")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-slate-100 rounded-xl p-6 py-8"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-md mx-auto relative flex gap-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex-1 flex flex-col gap-6 items-end"
+    }, /*#__PURE__*/React.createElement(Box, {
+      id: "right-chi",
+      labelRight: "",
+      labelLeft: "尺"
+    }), /*#__PURE__*/React.createElement(Box, {
+      id: "right-guan",
+      labelRight: "",
+      labelLeft: "關"
+    }), /*#__PURE__*/React.createElement(Box, {
+      id: "right-chun",
+      labelRight: "",
+      labelLeft: "寸"
+    }), /*#__PURE__*/React.createElement("div", {
+      className: "text-center font-bold text-slate-500 mt-2 w-28 sm:w-36"
+    }, "右手")), /*#__PURE__*/React.createElement("div", {
+      className: "flex-1 flex flex-col gap-6 items-start"
+    }, /*#__PURE__*/React.createElement(Box, {
+      id: "left-chi",
+      labelRight: "尺",
+      labelLeft: ""
+    }), /*#__PURE__*/React.createElement(Box, {
+      id: "left-guan",
+      labelRight: "關",
+      labelLeft: ""
+    }), /*#__PURE__*/React.createElement(Box, {
+      id: "left-chun",
+      labelRight: "寸",
+      labelLeft: ""
+    }), /*#__PURE__*/React.createElement("div", {
+      className: "text-center font-bold text-slate-500 mt-2 w-28 sm:w-36"
+    }, "左手")))), /*#__PURE__*/React.createElement(ResultCard, {
+      result: result,
+      gender: gender,
+      systemType: system
+    }));
+  };
+  const App = () => {
+    const [currentPage, setCurrentPage] = useState('calculator'); // calculator, quick, medicine
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-slate-50 font-sans text-slate-800"
+    }, /*#__PURE__*/React.createElement("nav", {
+      className: "bg-indigo-900 text-white p-4 shadow-md sticky top-0 z-50 flex items-center gap-4"
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: () => setIsMenuOpen(true),
+      className: "p-2 hover:bg-white/10 rounded-lg transition-colors"
+    }, /*#__PURE__*/React.createElement(Icons.Menu, null)), /*#__PURE__*/React.createElement("h1", {
+      className: "font-bold text-lg"
+    }, "針灸決策輔助")), isMenuOpen && /*#__PURE__*/React.createElement("div", {
+      className: "fixed inset-0 bg-black/50 z-50 transition-opacity",
+      onClick: () => setIsMenuOpen(false)
+    }), /*#__PURE__*/React.createElement("div", {
+      className: `fixed inset-y-0 left-0 w-64 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "p-4 border-b flex justify-between items-center bg-indigo-50"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "font-bold text-indigo-900"
+    }, "選單功能"), /*#__PURE__*/React.createElement("button", {
+      onClick: () => setIsMenuOpen(false),
+      className: "p-2 text-indigo-900 hover:bg-indigo-100 rounded-lg"
+    }, /*#__PURE__*/React.createElement(Icons.X, null))), /*#__PURE__*/React.createElement("div", {
+      className: "flex-1 overflow-y-auto p-4 flex flex-col gap-2"
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: () => {
+        setCurrentPage('calculator');
+        setIsMenuOpen(false);
+      },
+      className: `p-4 rounded-xl text-left font-bold transition-colors ${currentPage === 'calculator' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-700 hover:bg-slate-100'}`
+    }, "脈法計算機"), /*#__PURE__*/React.createElement("button", {
+      onClick: () => {
+        setCurrentPage('quick');
+        setIsMenuOpen(false);
+      },
+      className: `p-4 rounded-xl text-left font-bold transition-colors ${currentPage === 'quick' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-700 hover:bg-slate-100'}`
+    }, "湯液/終始/原絡快速按鈕"), /*#__PURE__*/React.createElement("button", {
+      onClick: () => {
+        setCurrentPage('medicine');
+        setIsMenuOpen(false);
+      },
+      className: `p-4 rounded-xl text-left font-bold transition-colors ${currentPage === 'medicine' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-700 hover:bg-slate-100'}`
+    }, "藥物輔助資訊"))), /*#__PURE__*/React.createElement("main", {
+      className: "p-4 md:p-8 max-w-4xl mx-auto"
+    }, currentPage === 'calculator' && /*#__PURE__*/React.createElement(CalculatorPage, null), currentPage === 'quick' && /*#__PURE__*/React.createElement(QuickButtonPage, null), currentPage === 'medicine' && /*#__PURE__*/React.createElement(MedicineView, null)));
+  };
+  const root = createRoot(document.getElementById('root'));
+  root.render(/*#__PURE__*/React.createElement(App, null));
+} // end of initApp
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(err => console.log('Service Worker failed', err));
+  });
+}
+
+</script>
 </body>
 </html>
