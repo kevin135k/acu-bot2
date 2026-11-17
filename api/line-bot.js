@@ -219,7 +219,7 @@ function calculateTreatmentResult(ansString) {
 // ==========================================
 // 5. Vercel 主程式入口 (Webhook Handler)
 // ==========================================
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(200).send('LINE Bot Webhook is running!');
 
   try {
