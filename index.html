@@ -161,7 +161,7 @@
             },
             '脾土': {
               '太過': { sedate: { point: '太白', side: 'left', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' }, tonify: { point: '陷谷', side: 'right', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' } },
-              '不足': { tonify: { point: '太白', side: 'left', desc: '遠心、吸氣進針、數、順轉' }, sedate: { point: '陷谷', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } }
+              '不足': { tonify: { point: '太白', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' }, sedate: { point: '陷谷', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' } }
             },
             '命門': {
               '太過': { sedate: { point: '勞宮', side: 'right', desc: '向心、吐氣進針、深刺45度、陰數、逆轉' }, tonify: { point: '液門', side: 'left', desc: '遠心、吸氣進針、淺刺15度、陽數、順轉' } },
@@ -204,59 +204,59 @@
         const YUANLUO_RULES = {
             male: {
                 '心火': {
-                    '太過': { tonify: { point: '腕骨', side: 'left', desc: '直刺、陽數、順轉' }, sedate: { point: '通里', side: 'left', desc: '直刺、陽數、順轉' } },
-                    '不足': { tonify: { point: '神門', side: 'left', desc: '直刺、陽數、順轉' }, sedate: { point: '支正', side: 'left', desc: '直刺、陽數、順轉' } }
+                    '太過': { tonify: { point: '腕骨', side: 'right', desc: '直刺、陽數、順轉' }, sedate: { point: '通里', side: 'left', desc: '直刺、陽數、順轉' }, pt1: { point: '腕骨', side: 'right', desc: '直刺、陽數、順轉' }, pt2: { point: '通里', side: 'left', desc: '直刺、陽數、順轉' } },
+                    '不足': { tonify: { point: '神門', side: 'left', desc: '直刺、陽數、順轉' }, sedate: { point: '支正', side: 'right', desc: '直刺、陽數、順轉' }, pt1: { point: '神門', side: 'left', desc: '直刺、陽數、順轉' }, pt2: { point: '支正', side: 'right', desc: '直刺、陽數、順轉' } }
                 },
                 '肝木': {
-                    '太過': { tonify: { point: '丘墟', side: 'right', desc: '直刺、陽數、順轉' }, sedate: { point: '蠡溝', side: 'right', desc: '直刺、陽數、順轉' } },
-                    '不足': { tonify: { point: '太衝', side: 'right', desc: '直刺、陽數、順轉' }, sedate: { point: '光明', side: 'right', desc: '直刺、陽數、順轉' } }
+                    '太過': { tonify: { point: '丘墟', side: 'left', desc: '直刺、陽數、順轉' }, sedate: { point: '蠡溝', side: 'right', desc: '直刺、陽數、順轉' }, pt1: { point: '丘墟', side: 'left', desc: '直刺、陽數、順轉' }, pt2: { point: '蠡溝', side: 'right', desc: '直刺、陽數、順轉' } },
+                    '不足': { tonify: { point: '太衝', side: 'right', desc: '直刺、陽數、順轉' }, sedate: { point: '光明', side: 'left', desc: '直刺、陽數、順轉' }, pt1: { point: '太衝', side: 'right', desc: '直刺、陽數、順轉' }, pt2: { point: '光明', side: 'left', desc: '直刺、陽數、順轉' } }
                 },
                 '腎水': {
-                    '太過': { tonify: { point: '京骨', side: 'right', desc: '直刺、陽數、順轉' }, sedate: { point: '大鍾', side: 'right', desc: '直刺、陽數、順轉' } },
-                    '不足': { tonify: { point: '太溪', side: 'right', desc: '直刺、陽數、順轉' }, sedate: { point: '飛揚', side: 'right', desc: '直刺、陽數、順轉' } }
+                    '太過': { tonify: { point: '京骨', side: 'left', desc: '直刺、陽數、順轉' }, sedate: { point: '大鍾', side: 'right', desc: '直刺、陽數、順轉' }, pt1: { point: '京骨', side: 'left', desc: '直刺、陽數、順轉' }, pt2: { point: '大鍾', side: 'right', desc: '直刺、陽數、順轉' } },
+                    '不足': { tonify: { point: '太溪', side: 'right', desc: '直刺、陽數、順轉' }, sedate: { point: '飛揚', side: 'left', desc: '直刺、陽數、順轉' }, pt1: { point: '太溪', side: 'right', desc: '直刺、陽數、順轉' }, pt2: { point: '飛揚', side: 'left', desc: '直刺、陽數、順轉' } }
                 },
                 '肺金': {
-                    '太過': { tonify: { point: '合谷', side: 'left', desc: '直刺、陽數、順轉' }, sedate: { point: '列缺', side: 'left', desc: '直刺、陽數、順轉' } },
-                    '不足': { tonify: { point: '太淵', side: 'left', desc: '直刺、陽數、順轉' }, sedate: { point: '偏歷', side: 'left', desc: '直刺、陽數、順轉' } }
+                    '太過': { tonify: { point: '合谷', side: 'right', desc: '直刺、陽數、順轉' }, sedate: { point: '列缺', side: 'left', desc: '直刺、陽數、順轉' }, pt1: { point: '合谷', side: 'right', desc: '直刺、陽數、順轉' }, pt2: { point: '列缺', side: 'left', desc: '直刺、陽數、順轉' } },
+                    '不足': { tonify: { point: '太淵', side: 'left', desc: '直刺、陽數、順轉' }, sedate: { point: '偏歷', side: 'right', desc: '直刺、陽數、順轉' }, pt1: { point: '太淵', side: 'left', desc: '直刺、陽數、順轉' }, pt2: { point: '偏歷', side: 'right', desc: '直刺、陽數、順轉' } }
                 },
                 '脾土': {
-                    '太過': { tonify: { point: '衝陽', side: 'right', desc: '直刺、陽數、順轉' }, sedate: { point: '公孫', side: 'right', desc: '直刺、陽數、順轉' } },
-                    '不足': { tonify: { point: '太白', side: 'right', desc: '直刺、陽數、順轉' }, sedate: { point: '豐隆', side: 'right', desc: '直刺、陽數、順轉' } }
+                    '太過': { tonify: { point: '衝陽', side: 'left', desc: '直刺、陽數、順轉' }, sedate: { point: '公孫', side: 'right', desc: '直刺、陽數、順轉' }, pt1: { point: '衝陽', side: 'left', desc: '直刺、陽數、順轉' }, pt2: { point: '公孫', side: 'right', desc: '直刺、陽數、順轉' } },
+                    '不足': { tonify: { point: '太白', side: 'right', desc: '直刺、陽數、順轉' }, sedate: { point: '豐隆', side: 'left', desc: '直刺、陽數、順轉' }, pt1: { point: '太白', side: 'right', desc: '直刺、陽數、順轉' }, pt2: { point: '豐隆', side: 'left', desc: '直刺、陽數、順轉' } }
                 },
                 '命門': {
-                    '太過': { tonify: { point: '陽池', side: 'left', desc: '直刺、陽數、順轉' }, sedate: { point: '內關', side: 'left', desc: '直刺、陽數、順轉' } },
-                    '不足': { tonify: { point: '大陵', side: 'left', desc: '直刺、陽數、順轉' }, sedate: { point: '外關', side: 'left', desc: '直刺、陽數、順轉' } }
+                    '太過': { tonify: { point: '陽池', side: 'right', desc: '直刺、陽數、順轉' }, sedate: { point: '內關', side: 'left', desc: '直刺、陽數、順轉' }, pt1: { point: '陽池', side: 'right', desc: '直刺、陽數、順轉' }, pt2: { point: '內關', side: 'left', desc: '直刺、陽數、順轉' } },
+                    '不足': { tonify: { point: '大陵', side: 'left', desc: '直刺、陽數、順轉' }, sedate: { point: '外關', side: 'right', desc: '直刺、陽數、順轉' }, pt1: { point: '大陵', side: 'left', desc: '直刺、陽數、順轉' }, pt2: { point: '外關', side: 'right', desc: '直刺、陽數、順轉' } }
                 }
             },
             female: {
                 '心火': {
-                    '太過': { tonify: { point: '腕骨', side: 'right', desc: '直刺、陽數、順轉' }, sedate: { point: '通里', side: 'right', desc: '直刺、陽數、順轉' } },
-                    '不足': { tonify: { point: '神門', side: 'right', desc: '直刺、陽數、順轉' }, sedate: { point: '支正', side: 'right', desc: '直刺、陽數、順轉' } }
+                    '太過': { tonify: { point: '腕骨', side: 'left', desc: '直刺、陽數、順轉' }, sedate: { point: '通里', side: 'right', desc: '直刺、陽數、順轉' }, pt1: { point: '腕骨', side: 'left', desc: '直刺、陽數、順轉' }, pt2: { point: '通里', side: 'right', desc: '直刺、陽數、順轉' } },
+                    '不足': { tonify: { point: '神門', side: 'right', desc: '直刺、陽數、順轉' }, sedate: { point: '支正', side: 'left', desc: '直刺、陽數、順轉' }, pt1: { point: '神門', side: 'right', desc: '直刺、陽數、順轉' }, pt2: { point: '支正', side: 'left', desc: '直刺、陽數、順轉' } }
                 },
                 '肝木': {
-                    '太過': { tonify: { point: '丘墟', side: 'left', desc: '直刺、陽數、順轉' }, sedate: { point: '蠡溝', side: 'left', desc: '直刺、陽數、順轉' } },
-                    '不足': { tonify: { point: '太衝', side: 'left', desc: '直刺、陽數、順轉' }, sedate: { point: '光明', side: 'left', desc: '直刺、陽數、順轉' } }
+                    '太過': { tonify: { point: '丘墟', side: 'right', desc: '直刺、陽數、順轉' }, sedate: { point: '蠡溝', side: 'left', desc: '直刺、陽數、順轉' }, pt1: { point: '丘墟', side: 'right', desc: '直刺、陽數、順轉' }, pt2: { point: '蠡溝', side: 'left', desc: '直刺、陽數、順轉' } },
+                    '不足': { tonify: { point: '太衝', side: 'left', desc: '直刺、陽數、順轉' }, sedate: { point: '光明', side: 'right', desc: '直刺、陽數、順轉' }, pt1: { point: '太衝', side: 'left', desc: '直刺、陽數、順轉' }, pt2: { point: '光明', side: 'right', desc: '直刺、陽數、順轉' } }
                 },
                 '腎水': {
-                    '太過': { tonify: { point: '京骨', side: 'left', desc: '直刺、陽數、順轉' }, sedate: { point: '大鍾', side: 'left', desc: '直刺、陽數、順轉' } },
-                    '不足': { tonify: { point: '太溪', side: 'left', desc: '直刺、陽數、順轉' }, sedate: { point: '飛揚', side: 'left', desc: '直刺、陽數、順轉' } }
+                    '太過': { tonify: { point: '京骨', side: 'right', desc: '直刺、陽數、順轉' }, sedate: { point: '大鍾', side: 'left', desc: '直刺、陽數、順轉' }, pt1: { point: '京骨', side: 'right', desc: '直刺、陽數、順轉' }, pt2: { point: '大鍾', side: 'left', desc: '直刺、陽數、順轉' } },
+                    '不足': { tonify: { point: '太溪', side: 'left', desc: '直刺、陽數、順轉' }, sedate: { point: '飛揚', side: 'right', desc: '直刺、陽數、順轉' }, pt1: { point: '太溪', side: 'left', desc: '直刺、陽數、順轉' }, pt2: { point: '飛揚', side: 'right', desc: '直刺、陽數、順轉' } }
                 },
                 '肺金': {
-                    '太過': { tonify: { point: '合谷', side: 'right', desc: '直刺、陽數、順轉' }, sedate: { point: '列缺', side: 'right', desc: '直刺、陽數、順轉' } },
-                    '不足': { tonify: { point: '太淵', side: 'right', desc: '直刺、陽數、順轉' }, sedate: { point: '偏歷', side: 'right', desc: '直刺、陽數、順轉' } }
+                    '太過': { tonify: { point: '合谷', side: 'left', desc: '直刺、陽數、順轉' }, sedate: { point: '列缺', side: 'right', desc: '直刺、陽數、順轉' }, pt1: { point: '合谷', side: 'left', desc: '直刺、陽數、順轉' }, pt2: { point: '列缺', side: 'right', desc: '直刺、陽數、順轉' } },
+                    '不足': { tonify: { point: '太淵', side: 'right', desc: '直刺、陽數、順轉' }, sedate: { point: '偏歷', side: 'left', desc: '直刺、陽數、順轉' }, pt1: { point: '太淵', side: 'right', desc: '直刺、陽數、順轉' }, pt2: { point: '偏歷', side: 'left', desc: '直刺、陽數、順轉' } }
                 },
                 '脾土': {
-                    '太過': { tonify: { point: '衝陽', side: 'left', desc: '直刺、陽數、順轉' }, sedate: { point: '公孫', side: 'left', desc: '直刺、陽數、順轉' } },
-                    '不足': { tonify: { point: '太白', side: 'left', desc: '直刺、陽數、順轉' }, sedate: { point: '豐隆', side: 'left', desc: '直刺、陽數、順轉' } }
+                    '太過': { tonify: { point: '衝陽', side: 'right', desc: '直刺、陽數、順轉' }, sedate: { point: '公孫', side: 'left', desc: '直刺、陽數、順轉' }, pt1: { point: '衝陽', side: 'right', desc: '直刺、陽數、順轉' }, pt2: { point: '公孫', side: 'left', desc: '直刺、陽數、順轉' } },
+                    '不足': { tonify: { point: '太白', side: 'left', desc: '直刺、陽數、順轉' }, sedate: { point: '豐隆', side: 'right', desc: '直刺、陽數、順轉' }, pt1: { point: '太白', side: 'left', desc: '直刺、陽數、順轉' }, pt2: { point: '豐隆', side: 'right', desc: '直刺、陽數、順轉' } }
                 },
                 '命門': {
-                    '太過': { tonify: { point: '陽池', side: 'right', desc: '直刺、陽數、順轉' }, sedate: { point: '內關', side: 'right', desc: '直刺、陽數、順轉' } },
-                    '不足': { tonify: { point: '大陵', side: 'right', desc: '直刺、陽數、順轉' }, sedate: { point: '外關', side: 'right', desc: '直刺、陽數、順轉' } }
+                    '太過': { tonify: { point: '陽池', side: 'left', desc: '直刺、陽數、順轉' }, sedate: { point: '內關', side: 'right', desc: '直刺、陽數、順轉' }, pt1: { point: '陽池', side: 'left', desc: '直刺、陽數、順轉' }, pt2: { point: '內關', side: 'right', desc: '直刺、陽數、順轉' } },
+                    '不足': { tonify: { point: '大陵', side: 'right', desc: '直刺、陽數、順轉' }, sedate: { point: '外關', side: 'left', desc: '直刺、陽數、順轉' }, pt1: { point: '大陵', side: 'right', desc: '直刺、陽數、順轉' }, pt2: { point: '外關', side: 'left', desc: '直刺、陽數、順轉' } }
                 }
             }
         };
 
-        const MEDICINE_SYSTEMS = [
+        const PAN_MEDICINE_SYSTEMS = [
             {
                 id: 'weiwang', title: '湯液藥精系統', icon: '🧑‍🍳', type: 'standard', leftAction: '補', rightAction: '瀉',
                 data: {
@@ -314,15 +314,43 @@
             }
         ];
 
-        const MedicineView = () => {
+        const XIAO_MEDICINE_SYSTEMS = [
+            {
+                id: 'xiao_zhongshi_renying', title: '(蕭)終始藥方系統-人迎', icon: '☀️', type: 'list',
+                data: {
+                    '肝木': { pos: { x: 18, y: 58 }, element: '肝木', state: '一盛', list: ['梔子1.3g 1.3錢', '龍膽草0.8g 0.8錢', '桂枝0.8g 1.8錢'], color: 'bg-green-100 text-green-800 border-green-200' },
+                    '心火': { pos: { x: 30, y: 20 }, element: '心火', state: '二盛而躁', list: ['淡竹葉1.7g 2.7錢', '木通1.2g 1.2錢', '旋覆花0.7g 0.7錢'], color: 'bg-red-100 text-red-800 border-red-200' },
+                    '脾土': { pos: { x: 70, y: 20 }, element: '脾土', state: '三盛', list: ['牡丹皮0.5g 0.5錢', '生地黃1g 1錢', '黨參1g 5錢'], color: 'bg-orange-100 text-orange-800 border-orange-200' },
+                    '肺金': { pos: { x: 82, y: 58 }, element: '肺金', state: '三盛而躁', list: ['大黃0.9g 0.9錢', '厚朴1.4g 4錢', '五味子0.9g 0.9錢'], color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
+                    '腎水': { pos: { x: 50, y: 85 }, element: '腎水', state: '二盛', list: ['滑石1.6g 6錢', '木通1g 1錢', '熟地黃1.6g 6錢'], color: 'bg-blue-100 text-blue-800 border-blue-200' },
+                    '命門': { pos: { x: 50, y: 39 }, element: '命門', state: '一盛而躁', list: ['生地黃1.7g 7錢', '山茱萸1.2g 2錢', '旋覆花0.7g 0.7錢'], color: 'bg-slate-100 text-slate-800 border-slate-200' }
+                }
+            },
+            {
+                id: 'xiao_zhongshi_maikou', title: '(蕭)終始藥方系統-脈口', icon: '🌙', type: 'list',
+                data: {
+                    '肝木': { pos: { x: 18, y: 58 }, element: '肝木', state: '一盛', list: ['吳茱萸0.8g 1.8錢', '生薑1.3g 3錢', '枳實0.8g 3.8錢'], color: 'bg-green-100 text-green-800 border-green-200' },
+                    '心火': { pos: { x: 30, y: 20 }, element: '心火', state: '二盛而躁', list: ['薤白1.7g 2.7錢', '桂枝1.2g 1.2錢', '黃連0.7g 0.7錢'], color: 'bg-red-100 text-red-800 border-red-200' },
+                    '脾土': { pos: { x: 70, y: 20 }, element: '脾土', state: '三盛', list: ['沙參0.5g 1.5錢', '麥門冬1g 3錢', '附子1g 1錢'], color: 'bg-orange-100 text-orange-800 border-orange-200' },
+                    '肺金': { pos: { x: 82, y: 58 }, element: '肺金', state: '三盛而躁', list: ['黃耆1.9g 4.9錢', '升麻0.4g 1.4錢', '葶藶子1.9g 4.9錢'], color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
+                    '腎水': { pos: { x: 50, y: 85 }, element: '腎水', state: '二盛', list: ['桂枝1g 1錢', '白朮1.6g 6錢', '茯苓1.6g 6錢'], color: 'bg-blue-100 text-blue-800 border-blue-200' },
+                    '命門': { pos: { x: 50, y: 39 }, element: '命門', state: '一盛而躁', list: ['熟地黃1.7g 7錢', '肉桂0.2g 1.2錢', '黃連0.7g 0.7錢'], color: 'bg-slate-100 text-slate-800 border-slate-200' }
+                }
+            }
+        ];
+
+        const MEDICINE_SYSTEMS = PAN_MEDICINE_SYSTEMS;
+
+        const PentagonMedicineView = ({ title, subtitle, systems }) => {
             return (
                 <div className="space-y-6 animate-in fade-in duration-500 pb-20">
                     <header className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-indigo-500 mb-6">
                         <h1 className="text-2xl font-bold flex items-center gap-2 text-indigo-900">
-                            <Icons.Pill /> 藥物輔助資訊
+                            <Icons.Pill /> {title}
                         </h1>
+                        {subtitle && <p className="text-slate-500 mt-2 text-sm">{subtitle}</p>}
                     </header>
-                    {MEDICINE_SYSTEMS.map(system => (
+                    {systems.map(system => (
                         <div key={system.id} className="bg-white p-4 sm:p-6 rounded-xl shadow-sm overflow-hidden">
                             <h2 className="text-lg sm:text-xl font-bold flex items-center gap-2 mb-4 sm:mb-6 text-slate-800 border-b pb-3">
                                 <span className="text-2xl">{system.icon}</span> {system.title}
@@ -341,10 +369,10 @@
                                 </svg>
 
                                 {/* Element Nodes */}
-                                {Object.values(system.data).map((info, idx) => (
+                                {Object.values(system.data).map((info) => (
                                     system.type === 'list' ? (
                                         <div 
-                                            key={idx}
+                                            key={info.element}
                                             className="absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 shadow-sm rounded-lg bg-white/95 p-1.5 border border-slate-200 z-10 hover:shadow-md transition-shadow"
                                             style={{ left: `${info.pos.x}%`, top: `${info.pos.y}%` }}
                                         >
@@ -359,7 +387,7 @@
                                         </div>
                                     ) : (
                                         <div 
-                                            key={idx}
+                                            key={info.element}
                                             className="absolute transform -translate-x-1/2 -translate-y-1/2 flex items-center gap-1 sm:gap-2 shadow-sm rounded-lg bg-white/95 p-1 sm:p-1.5 border border-slate-200 z-10 hover:shadow-md transition-shadow"
                                             style={{ left: `${info.pos.x}%`, top: `${info.pos.y}%` }}
                                         >
@@ -386,9 +414,39 @@
             );
         };
 
+        const MedicineView = () => (
+            <PentagonMedicineView 
+                title="潘老師用藥策略" 
+                subtitle="五大用藥系統：湯液藥精、溫升涼降、涼升溫降、終始藥方系統" 
+                systems={PAN_MEDICINE_SYSTEMS} 
+            />
+        );
+
+        const getPointPart = (item) => {
+            if (!item || !item.point) return 'upper';
+            const names = item.point.split('/');
+            for (let name of names) {
+                if (POINT_LOCATIONS[name]) {
+                    const icon = POINT_LOCATIONS[name].icon;
+                    if (icon === '✋' || icon === '💪') return 'upper';
+                    if (icon === '🦵' || icon === '🦶') return 'lower';
+                }
+            }
+            return 'upper';
+        };
+
+        const getPartScore = (gender, side, part) => {
+            if (gender === 'male') {
+                return ((side === 'left' && part === 'upper') || (side === 'right' && part === 'lower')) ? 0 : 1;
+            } else {
+                return ((side === 'right' && part === 'upper') || (side === 'left' && part === 'lower')) ? 0 : 1;
+            }
+        };
+
         const ResultCard = ({ result, gender, systemType }) => {
             const [copied, setCopied] = useState(false);
             const [viewMode, setViewMode] = useState('acupuncture'); // 'acupuncture' | 'medicine'
+            const [medStrategy, setMedStrategy] = useState('pan'); // 'pan' | 'xiao'
 
             const displayActions = useMemo(() => {
                 if (!result) return [];
@@ -397,30 +455,9 @@
                 // Sort for Tangye and Yuanluo
                 if (systemType !== 'zhongshi') {
                     actions.sort((a, b) => {
-                        const getPart = (item) => {
-                            if (!item || !item.point) return 'upper';
-                            const names = item.point.split('/');
-                            for(let name of names) {
-                                if (POINT_LOCATIONS[name]) {
-                                    const icon = POINT_LOCATIONS[name].icon;
-                                    if (icon === '✋' || icon === '💪') return 'upper';
-                                    if (icon === '🦵' || icon === '🦶') return 'lower';
-                                }
-                            }
-                            return 'upper'; 
-                        };
-                        const partA = getPart(a);
-                        const partB = getPart(b);
-                        const getScore = (side, part) => {
-                            if (gender === 'male') {
-                                if ((side === 'left' && part === 'upper') || (side === 'right' && part === 'lower')) return 0;
-                                return 1;
-                            } else {
-                                if ((side === 'right' && part === 'upper') || (side === 'left' && part === 'lower')) return 0;
-                                return 1;
-                            }
-                        };
-                        return getScore(a.side, partA) - getScore(b.side, partB);
+                        const partA = getPointPart(a);
+                        const partB = getPointPart(b);
+                        return getPartScore(gender, a.side, partA) - getPartScore(gender, b.side, partB);
                     });
                 }
                 return actions;
@@ -441,7 +478,7 @@
                 return hints;
             }, [result]);
 
-            const handleCopy = () => {
+            const handleCopy = async () => {
                 if (!result) return;
                 const lines = [
                     `【${result.title}】 ${result.method} (${gender === 'male' ? '男' : '女'})`
@@ -453,19 +490,35 @@
                     lines.push(`${isTonify ? '補' : '瀉'} ${sideText}${pointText} (${action.desc})`);
                 });
                 
-                // Fallback copy mechanism
-                const textArea = document.createElement("textarea");
-                textArea.value = lines.join('\n');
-                document.body.appendChild(textArea);
-                textArea.select();
-                try {
-                    document.execCommand('copy');
+                const copyText = lines.join('\n');
+                let success = false;
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    try {
+                        await navigator.clipboard.writeText(copyText);
+                        success = true;
+                    } catch (err) {
+                        success = false;
+                    }
+                }
+                if (!success) {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = copyText;
+                    textArea.style.position = 'fixed';
+                    textArea.style.opacity = '0';
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        success = true;
+                    } catch (err) {
+                        console.error('Failed to copy', err);
+                    }
+                    document.body.removeChild(textArea);
+                }
+                if (success) {
                     setCopied(true);
                     setTimeout(() => setCopied(false), 2000);
-                } catch (err) {
-                    console.error('Failed to copy', err);
                 }
-                document.body.removeChild(textArea);
             };
 
             const medicineElement = useMemo(() => {
@@ -485,7 +538,7 @@
 
             const displayMedicineSystems = useMemo(() => {
                 if (!result) return [];
-                let systems = [...MEDICINE_SYSTEMS];
+                let systems = [...PAN_MEDICINE_SYSTEMS];
                 
                 if (systemType === 'zhongshi') {
                     const isRenying = result.method.includes('人迎');
@@ -498,6 +551,19 @@
                 } else {
                     return systems.filter(s => !s.id.startsWith('zhongshi_'));
                 }
+            }, [result, systemType]);
+
+            const displayXiaoMedicineSystems = useMemo(() => {
+                if (!result) return [];
+                let systems = [...XIAO_MEDICINE_SYSTEMS];
+                if (systemType === 'zhongshi') {
+                    const isRenying = result.method.includes('人迎');
+                    const targetId = isRenying ? 'xiao_zhongshi_renying' : 'xiao_zhongshi_maikou';
+                    const targetSys = systems.find(s => s.id === targetId);
+                    const otherSys = systems.filter(s => s.id !== targetId);
+                    return [targetSys, ...otherSys];
+                }
+                return systems;
             }, [result, systemType]);
 
             if (!result) return null;
@@ -546,17 +612,17 @@
                                         onClick={() => setViewMode('medicine')}
                                         className="flex-1 py-3 px-4 rounded-lg bg-indigo-100 text-indigo-700 border-2 border-indigo-200 hover:border-indigo-300 font-bold flex items-center justify-center gap-2 transition-all"
                                     >
-                                        <Icons.Pill /> 顯示藥物處方
+                                        <Icons.Pill /> 顯示用藥策略
                                     </button>
                                 </div>
 
                                 {systemType === 'tangye' && (
                                     <div className="bg-slate-100/60 border border-slate-200 rounded-xl p-5 mb-6">
                                         <p className="text-sm text-slate-500 leading-relaxed pl-6 -indent-6 mb-2">
-                                            ➡️ 進針：輕咳進針，在天地人三部，各針三次，共九次。過程配合病人以口呼吸：吸氣進針，吐氣停止。
+                                             進針：輕咳進針，在天地人三部，各針三次，共九次。過程配合病人以口呼吸：吸氣進針，吐氣停止。
                                         </p>
                                         <p className="text-sm text-slate-500 leading-relaxed pl-6 -indent-6">
-                                            🔄 行針：針上肢時，病人以鼻呼吸；針下肢時，病人以口呼吸。<br/>
+                                             行針：針上肢時，病人以鼻呼吸；針下肢時，病人以口呼吸。<br/>
                                             針尖向心方向，配合吐氣動針，吸氣停止；針尖遠心方向，配合吸氣動針，吐氣停止。
                                         </p>
                                     </div>
@@ -604,19 +670,36 @@
                             </div>
                         ) : (
                             <div className="p-6 animate-in fade-in">
-                                <div className="mb-6 flex items-center justify-between border-b pb-4">
+                                <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
                                     <h5 className="font-bold text-slate-800 text-lg flex items-center gap-2">
-                                        <Icons.Pill /> 藥物輔助組合 ({medicineElement})
+                                        <Icons.Pill /> 用藥策略組合 ({medicineElement})
                                     </h5>
                                     <button 
                                         onClick={() => setViewMode('acupuncture')}
-                                        className="py-2 px-4 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-200 hover:bg-indigo-100 font-bold transition-all text-sm"
+                                        className="py-2 px-4 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-200 hover:bg-indigo-100 font-bold transition-all text-sm self-start sm:self-auto"
                                     >
                                         返回針灸處方
                                     </button>
                                 </div>
+
+                                {/* 醫師策略切換 Tab */}
+                                <div className="flex gap-2 mb-6 bg-slate-100 p-1.5 rounded-xl">
+                                    <button 
+                                        onClick={() => setMedStrategy('pan')}
+                                        className={`flex-1 py-2.5 px-3 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-1.5 ${medStrategy === 'pan' ? 'bg-white text-indigo-700 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-700'}`}
+                                    >
+                                        🧑‍🏫 潘老師用藥策略
+                                    </button>
+                                    <button 
+                                        onClick={() => setMedStrategy('xiao')}
+                                        className={`flex-1 py-2.5 px-3 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-1.5 ${medStrategy === 'xiao' ? 'bg-white text-indigo-700 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-700'}`}
+                                    >
+                                        👨‍⚕️ 蕭醫師用藥策略
+                                    </button>
+                                </div>
+
                                 <div className="space-y-4">
-                                    {displayMedicineSystems.map(sys => {
+                                    {(medStrategy === 'pan' ? displayMedicineSystems : displayXiaoMedicineSystems).map(sys => {
                                         const elementData = sys.data[medicineElement];
                                         if (!elementData) return null;
                                         return (
@@ -629,7 +712,7 @@
                                                         <div className={`px-3 py-1 rounded text-sm font-bold border ${elementData.color}`}>
                                                             {elementData.state}
                                                         </div>
-                                                        <div className="flex gap-4 sm:gap-6 mt-1">
+                                                        <div className="flex flex-wrap justify-center gap-3 sm:gap-6 mt-1">
                                                             {elementData.list.map((med, i) => (
                                                                 <span key={i} className="font-bold text-slate-800 text-sm sm:text-base">{med}</span>
                                                             ))}
@@ -790,38 +873,37 @@
           );
         };
 
+        const MAP_MALE = {
+            'right-chun': { element: '肺金', zs: '脈口一盛' },
+            'right-guan': { element: '脾土', zs: '脈口三盛' },
+            'right-chi':  { element: '命門', zs: '脈口二盛' },
+            'left-chun':  { element: '心火', zs: '人迎一盛' },
+            'left-guan':  { element: '肝木', zs: '人迎三盛' },
+            'left-chi':   { element: '腎水', zs: '人迎二盛' }
+        };
+        const MAP_FEMALE = {
+            'left-chun':  { element: '肺金', zs: '脈口一盛' },
+            'left-guan':  { element: '脾土', zs: '脈口三盛' },
+            'left-chi':   { element: '命門', zs: '脈口二盛' },
+            'right-chun': { element: '心火', zs: '人迎一盛' },
+            'right-guan': { element: '肝木', zs: '人迎三盛' },
+            'right-chi':  { element: '腎水', zs: '人迎二盛' }
+        };
+
         const QuickButtonPage = () => {
             const [gender, setGender] = useState('male');
             const [system, setSystem] = useState('tangye'); // tangye, zhongshi, yuanluo
             const [swipeState, setSwipeState] = useState({ box: null, dir: null });
 
-            const POSITIONS = ['right-chi', 'right-guan', 'right-chun', 'left-chi', 'left-guan', 'left-chun'];
-            
             // Maps physical box to Element/Zhongshi label based on Gender
             const getBoxElement = (boxId) => {
-                const isMale = gender === 'male';
-                const mapMale = {
-                    'right-chun': { element: '肺金', zs: '脈口一盛' },
-                    'right-guan': { element: '脾土', zs: '脈口三盛' },
-                    'right-chi':  { element: '命門', zs: '脈口二盛' },
-                    'left-chun':  { element: '心火', zs: '人迎一盛' },
-                    'left-guan':  { element: '肝木', zs: '人迎三盛' },
-                    'left-chi':   { element: '腎水', zs: '人迎二盛' }
-                };
-                const mapFemale = {
-                    'left-chun':  { element: '肺金', zs: '脈口一盛' },
-                    'left-guan':  { element: '脾土', zs: '脈口三盛' },
-                    'left-chi':   { element: '命門', zs: '脈口二盛' },
-                    'right-chun': { element: '心火', zs: '人迎一盛' },
-                    'right-guan': { element: '肝木', zs: '人迎三盛' },
-                    'right-chi':  { element: '腎水', zs: '人迎二盛' }
-                };
-                return isMale ? mapMale[boxId] : mapFemale[boxId];
+                return (gender === 'male' ? MAP_MALE : MAP_FEMALE)[boxId];
             };
 
             const result = useMemo(() => {
                 if (!swipeState.box || !swipeState.dir) return null;
                 const mapping = getBoxElement(swipeState.box);
+                if (!mapping) return null;
                 const isUp = swipeState.dir === 'up';
 
                 if (system === 'tangye') {
@@ -893,15 +975,15 @@
                     {/* Gender Toggle */}
                     <div className="bg-white rounded-xl shadow-sm p-2 flex relative overflow-hidden border border-slate-200">
                         <div className={`absolute top-0 bottom-0 w-1/2 transition-transform duration-300 ease-in-out ${gender === 'male' ? 'bg-blue-100 translate-x-0' : 'bg-pink-100 translate-x-full'}`}></div>
-                        <button onClick={() => setSwipeState({box:null, dir:null}) || setGender('male')} className={`flex-1 py-3 font-bold z-10 transition-colors ${gender === 'male' ? 'text-blue-800' : 'text-slate-400'}`}>男性</button>
-                        <button onClick={() => setSwipeState({box:null, dir:null}) || setGender('female')} className={`flex-1 py-3 font-bold z-10 transition-colors ${gender === 'female' ? 'text-pink-800' : 'text-slate-400'}`}>女性</button>
+                        <button onClick={() => { setSwipeState({box:null, dir:null}); setGender('male'); }} className={`flex-1 py-3 font-bold z-10 transition-colors ${gender === 'male' ? 'text-blue-800' : 'text-slate-400'}`}>男性</button>
+                        <button onClick={() => { setSwipeState({box:null, dir:null}); setGender('female'); }} className={`flex-1 py-3 font-bold z-10 transition-colors ${gender === 'female' ? 'text-pink-800' : 'text-slate-400'}`}>女性</button>
                     </div>
 
                     {/* System Toggle */}
                     <div className="grid grid-cols-3 gap-2">
-                        <button onClick={() => setSwipeState({box:null, dir:null}) || setSystem('tangye')} className={`py-3 rounded-lg font-bold border transition-all ${system === 'tangye' ? 'bg-teal-100 text-teal-800 border-teal-300' : 'bg-white text-slate-400 border-slate-200'}`}>湯液</button>
-                        <button onClick={() => setSwipeState({box:null, dir:null}) || setSystem('zhongshi')} className={`py-3 rounded-lg font-bold border transition-all ${system === 'zhongshi' ? 'bg-orange-100 text-orange-800 border-orange-300' : 'bg-white text-slate-400 border-slate-200'}`}>終始</button>
-                        <button onClick={() => setSwipeState({box:null, dir:null}) || setSystem('yuanluo')} className={`py-3 rounded-lg font-bold border transition-all ${system === 'yuanluo' ? 'bg-blue-100 text-blue-800 border-blue-300' : 'bg-white text-slate-400 border-slate-200'}`}>原絡</button>
+                        <button onClick={() => { setSwipeState({box:null, dir:null}); setSystem('tangye'); }} className={`py-3 rounded-lg font-bold border transition-all ${system === 'tangye' ? 'bg-teal-100 text-teal-800 border-teal-300' : 'bg-white text-slate-400 border-slate-200'}`}>湯液</button>
+                        <button onClick={() => { setSwipeState({box:null, dir:null}); setSystem('zhongshi'); }} className={`py-3 rounded-lg font-bold border transition-all ${system === 'zhongshi' ? 'bg-orange-100 text-orange-800 border-orange-300' : 'bg-white text-slate-400 border-slate-200'}`}>終始</button>
+                        <button onClick={() => { setSwipeState({box:null, dir:null}); setSystem('yuanluo'); }} className={`py-3 rounded-lg font-bold border transition-all ${system === 'yuanluo' ? 'bg-blue-100 text-blue-800 border-blue-300' : 'bg-white text-slate-400 border-slate-200'}`}>原絡</button>
                     </div>
 
                     {/* Grid */}
@@ -930,7 +1012,7 @@
         };
 
         const App = () => {
-            const [currentPage, setCurrentPage] = useState('calculator'); // calculator, quick, medicine
+            const [currentPage, setCurrentPage] = useState('calculator'); // calculator, quick, pan_medicine, xiao_medicine
             const [isMenuOpen, setIsMenuOpen] = useState(false);
 
             return (
@@ -957,7 +1039,8 @@
                         <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
                             <button onClick={() => { setCurrentPage('calculator'); setIsMenuOpen(false); }} className={`p-4 rounded-xl text-left font-bold transition-colors ${currentPage === 'calculator' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-700 hover:bg-slate-100'}`}>脈法計算機</button>
                             <button onClick={() => { setCurrentPage('quick'); setIsMenuOpen(false); }} className={`p-4 rounded-xl text-left font-bold transition-colors ${currentPage === 'quick' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-700 hover:bg-slate-100'}`}>湯液/終始/原絡快速按鈕</button>
-                            <button onClick={() => { setCurrentPage('medicine'); setIsMenuOpen(false); }} className={`p-4 rounded-xl text-left font-bold transition-colors ${currentPage === 'medicine' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-700 hover:bg-slate-100'}`}>藥物輔助資訊</button>
+                            <button onClick={() => { setCurrentPage('pan_medicine'); setIsMenuOpen(false); }} className={`p-4 rounded-xl text-left font-bold transition-colors ${currentPage === 'pan_medicine' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-700 hover:bg-slate-100'}`}>潘老師用藥策略</button>
+                            <button onClick={() => { setCurrentPage('xiao_medicine'); setIsMenuOpen(false); }} className={`p-4 rounded-xl text-left font-bold transition-colors ${currentPage === 'xiao_medicine' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-700 hover:bg-slate-100'}`}>蕭醫師用藥策略</button>
                         </div>
                     </div>
 
@@ -965,7 +1048,20 @@
                     <main className="p-4 md:p-8 max-w-4xl mx-auto">
                         {currentPage === 'calculator' && <CalculatorPage />}
                         {currentPage === 'quick' && <QuickButtonPage />}
-                        {currentPage === 'medicine' && <MedicineView />}
+                        {(currentPage === 'pan_medicine' || currentPage === 'medicine') && (
+                            <PentagonMedicineView 
+                                title="潘老師用藥策略" 
+                                subtitle="五大用藥系統：湯液藥精、溫升涼降、涼升溫降、終始藥方系統" 
+                                systems={PAN_MEDICINE_SYSTEMS} 
+                            />
+                        )}
+                        {currentPage === 'xiao_medicine' && (
+                            <PentagonMedicineView 
+                                title="蕭醫師用藥策略" 
+                                subtitle="終始藥方系統：人迎與脈口各盛衰精準用藥及劑量" 
+                                systems={XIAO_MEDICINE_SYSTEMS} 
+                            />
+                        )}
                     </main>
                 </div>
             );
