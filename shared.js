@@ -1,4 +1,14 @@
-const { POINT_LOCATIONS, POINT_NAMES_REGEX, TANGYE_RULES, ZHONGSHI_RULES, YUANLUO_RULES } = require('./lib/rules.js');
+const { 
+  POINT_LOCATIONS, 
+  POINT_NAMES_REGEX, 
+  TANGYE_RULES, 
+  ZHONGSHI_RULES, 
+  YUANLUO_RULES,
+  PAN_MEDICINE_SYSTEMS,
+  XIAO_MEDICINE_SYSTEMS,
+  MEDICINE_SYSTEMS,
+  XIAO_MEDICINE_MAP
+} = require('./lib/rules.js');
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -6,7 +16,11 @@ if (typeof module !== 'undefined' && module.exports) {
     POINT_NAMES_REGEX,
     TANGYE_RULES,
     ZHONGSHI_RULES,
-    YUANLUO_RULES
+    YUANLUO_RULES,
+    PAN_MEDICINE_SYSTEMS,
+    XIAO_MEDICINE_SYSTEMS,
+    MEDICINE_SYSTEMS,
+    XIAO_MEDICINE_MAP
   };
 } else if (typeof window !== 'undefined') {
   window.POINT_LOCATIONS = POINT_LOCATIONS;
@@ -14,4 +28,8 @@ if (typeof module !== 'undefined' && module.exports) {
   window.TANGYE_RULES = TANGYE_RULES;
   window.ZHONGSHI_RULES = ZHONGSHI_RULES;
   window.YUANLUO_RULES = YUANLUO_RULES;
+  window.PAN_MEDICINE_SYSTEMS = PAN_MEDICINE_SYSTEMS;
+  window.XIAO_MEDICINE_SYSTEMS = XIAO_MEDICINE_SYSTEMS;
+  window.MEDICINE_SYSTEMS = MEDICINE_SYSTEMS;
+  window.XIAO_MEDICINE_MAP = XIAO_MEDICINE_MAP;
 }

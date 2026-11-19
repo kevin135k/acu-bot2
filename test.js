@@ -151,8 +151,91 @@ async function testLineBot() {
   text = replied.messages[0].text;
   assert.ok(text.includes('左 太衝') && text.includes('右 光明'), '女 原絡 肝木 不足 應為左太衝右光明');
 
-  console.log('✅ LINE Bot Webhook 模擬運算驗證通過！');
+  // 3. 測試 Quick Reply 包含用藥按鈕
+  assert.ok(replied.messages[0].quickReply, '處方回傳應包含 quickReply');
+  const qrItems = replied.messages[0].quickReply.items;
+  const medBtn = qrItems.find(i => i.action.label === '💊 查看用藥策略');
+  assert.ok(medBtn, '處方回傳應包含「💊 查看用藥策略」快捷按鈕');
+
+  // 4. 關鍵字「人迎一盛」用藥查詢
+  req.body.events[0].message.text = '人迎一盛用藥';
+  await handler(req, res);
+  text = replied.messages[0].text;
+  assert.ok(text.includes('梔子1.3g 1.3錢') && text.includes('龍膽草0.8g 0.8錢') && text.includes('桂枝0.8g 1.8錢'), '人迎一盛應包含蕭醫師正確藥物與劑量');
+
+  // 5. 關鍵字「脈口三盛而躁」用藥查詢
+  req.body.events[0].message.text = '脈口三盛而躁';
+  await handler(req, res);
+  text = replied.messages[0].text;
+  assert.ok(text.includes('黃耆1.9g 4.9錢') && text.includes('升麻0.4g 1.4錢') && text.includes('葶藶子1.9g 4.9錢'), '脈口三盛而躁應包含蕭醫師正確藥物與劑量');
+
+  // 6. 關鍵字「蕭醫師」查詢
+  req.body.events[0].message.text = '蕭醫師用藥';
+  await handler(req, res);
+  text = replied.messages[0].text;
+  assert.ok(text.includes('蕭醫師用藥策略') && text.includes('人迎一盛') && text.includes('脈口一盛'), '蕭醫師關鍵字應回傳終始藥方系統');
+
+  // 7. 關鍵字「潘老師」查詢
+  req.body.events[0].message.text = '潘老師用藥';
+  await handler(req, res);
+  text = replied.messages[0].text;
+  assert.ok(text.includes('潘老師用藥策略') && text.includes('湯液藥精系統') && text.includes('溫升涼降系統'), '潘老師關鍵字應回傳五大系統');
+
+  // 8. 關鍵字「心火用藥」五行查詢
+  req.body.events[0].message.text = '心火用藥';
+  await handler(req, res);
+  text = replied.messages[0].text;
+  assert.ok(text.includes('心火 用藥策略整合') && text.includes('蕭醫師') && text.includes('潘老師'), '心火關鍵字應整合蕭醫師與潘老師用藥');
+
+  // 9. postback action=med 測試
+  let postbackReq = {
+    method: 'POST',
+    body: {
+      events: [{
+        replyToken: 'valid-token',
+        type: 'postback',
+        postback: { data: 'action=med&type=zs&treatment=' + encodeURIComponent('人迎二盛（補腎瀉膀胱）') }
+      }]
+    }
+  };
+  await handler(postbackReq, res);
+  text = replied.messages[0].text;
+  assert.ok(text.includes('人迎二盛 用藥策略') && text.includes('滑石1.6g 6錢') && text.includes('木通1g 1錢') && text.includes('熟地黃1.6g 6錢'), 'postback action=med 人迎二盛應回傳滑石、木通、熟地黃及劑量');
+
+  console.log('✅ LINE Bot Webhook 模擬運算與用藥自動回應驗證通過！');
 }
+
+console.log('\n--- 測試 6: 蕭醫師 12 組用藥與劑量精確性驗證 ---');
+const { XIAO_MEDICINE_MAP, PAN_MEDICINE_SYSTEMS, XIAO_MEDICINE_SYSTEMS } = require('./lib/rules.js');
+
+const expectedXiao = {
+  '人迎一盛': ['梔子1.3g 1.3錢', '龍膽草0.8g 0.8錢', '桂枝0.8g 1.8錢'],
+  '人迎一盛而躁': ['生地黃1.7g 7錢', '山茱萸1.2g 2錢', '旋覆花0.7g 0.7錢'],
+  '人迎二盛': ['滑石1.6g 6錢', '木通1g 1錢', '熟地黃1.6g 6錢'],
+  '人迎二盛而躁': ['淡竹葉1.7g 2.7錢', '木通1.2g 1.2錢', '旋覆花0.7g 0.7錢'],
+  '人迎三盛': ['牡丹皮0.5g 0.5錢', '生地黃1g 1錢', '黨參1g 5錢'],
+  '人迎三盛而躁': ['大黃0.9g 0.9錢', '厚朴1.4g 4錢', '五味子0.9g 0.9錢'],
+  '脈口一盛': ['吳茱萸0.8g 1.8錢', '生薑1.3g 3錢', '枳實0.8g 3.8錢'],
+  '脈口一盛而躁': ['熟地黃1.7g 7錢', '肉桂0.2g 1.2錢', '黃連0.7g 0.7錢'],
+  '脈口二盛': ['桂枝1g 1錢', '白朮1.6g 6錢', '茯苓1.6g 6錢'],
+  '脈口二盛而躁': ['薤白1.7g 2.7錢', '桂枝1.2g 1.2錢', '黃連0.7g 0.7錢'],
+  '脈口三盛': ['沙參0.5g 1.5錢', '麥門冬1g 3錢', '附子1g 1錢'],
+  '脈口三盛而躁': ['黃耆1.9g 4.9錢', '升麻0.4g 1.4錢', '葶藶子1.9g 4.9錢']
+};
+
+for (const [key, meds] of Object.entries(expectedXiao)) {
+  assert.ok(XIAO_MEDICINE_MAP[key], `XIAO_MEDICINE_MAP 應有 ${key}`);
+  assert.deepStrictEqual(XIAO_MEDICINE_MAP[key].list, meds, `${key} 藥物與劑量應完全一致`);
+}
+assert.strictEqual(XIAO_MEDICINE_SYSTEMS.length, 2, '蕭醫師應有兩組系統（人迎、脈口）');
+assert.strictEqual(PAN_MEDICINE_SYSTEMS.length, 5, '潘老師應有五組系統');
+console.log('✅ 蕭醫師 12 組用藥與劑量 100% 精確匹配！');
+
+console.log('\n--- 測試 7: index.html 介面選單驗證 ---');
+assert.ok(indexHtml.includes('潘老師用藥策略'), 'index.html 應有潘老師用藥策略');
+assert.ok(indexHtml.includes('蕭醫師用藥策略'), 'index.html 應有蕭醫師用藥策略');
+assert.ok(indexHtml.includes("currentPage === 'xiao_medicine'"), 'index.html 應有 xiao_medicine 頁面切換');
+console.log('✅ index.html 頁面與選單驗證通過！');
 
 testLineBot().then(() => {
   console.log('\n=========================================');
