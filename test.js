@@ -231,11 +231,17 @@ assert.strictEqual(XIAO_MEDICINE_SYSTEMS.length, 2, '蕭醫師應有兩組系統
 assert.strictEqual(PAN_MEDICINE_SYSTEMS.length, 5, '潘老師應有五組系統');
 console.log('✅ 蕭醫師 12 組用藥與劑量 100% 精確匹配！');
 
-console.log('\n--- 測試 7: index.html 介面選單驗證 ---');
+console.log('\n--- 測試 7: index.html 介面選單與手法文案驗證 ---');
 assert.ok(indexHtml.includes('潘老師用藥策略'), 'index.html 應有潘老師用藥策略');
 assert.ok(indexHtml.includes('蕭醫師用藥策略'), 'index.html 應有蕭醫師用藥策略');
 assert.ok(indexHtml.includes("currentPage === 'xiao_medicine'"), 'index.html 應有 xiao_medicine 頁面切換');
-console.log('✅ index.html 頁面與選單驗證通過！');
+assert.ok(indexHtml.includes('穴位圖一覽'), 'index.html 應有穴位圖一覽選單');
+assert.ok(indexHtml.includes("currentPage === 'gallery'"), 'index.html 應有 gallery 頁面切換');
+assert.ok(indexHtml.includes('脈法判讀為蕭醫師的脈法'), 'index.html 第二頁應加註「脈法判讀為蕭醫師的脈法」');
+assert.ok(!indexHtml.includes('逆轉'), 'index.html 不應再包含「逆轉」');
+const rulesJs = fs.readFileSync('./lib/rules.js', 'utf8');
+assert.ok(!rulesJs.includes('逆轉'), 'lib/rules.js 不應再包含「逆轉」');
+console.log('✅ index.html 與 lib/rules.js 頁面、選單與手法文案驗證通過！');
 
 testLineBot().then(() => {
   console.log('\n=========================================');

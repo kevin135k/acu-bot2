@@ -422,6 +422,73 @@
             />
         );
 
+        const AcupointGalleryView = () => {
+            const handImages = [
+                { src: 'hand1.jpg', label: '手部穴位圖 1' },
+                { src: 'hand2.jpg', label: '手部穴位圖 2' },
+                { src: 'hand3.jpg', label: '手部穴位圖 3' }
+            ];
+            const footImages = [
+                { src: 'foot1.jpg', label: '足部穴位圖 1' },
+                { src: 'foot2.jpg', label: '足部穴位圖 2' }
+            ];
+
+            return (
+                <div className="space-y-6 animate-in fade-in duration-500 pb-20">
+                    <header className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-indigo-500">
+                        <h1 className="text-2xl font-bold flex items-center gap-2 text-indigo-900">
+                            <Icons.MapPin /> 穴位圖一覽
+                        </h1>
+                        <p className="text-slate-500 mt-2 text-sm">手部與足部常用穴位參考圖全集</p>
+                    </header>
+
+                    <section className="bg-white p-4 sm:p-6 rounded-xl shadow-sm space-y-4">
+                        <h2 className="text-lg font-bold text-slate-800 border-b pb-3 flex items-center gap-2">
+                            <span>✋</span> 手部穴位圖
+                        </h2>
+                        <div className="grid grid-cols-1 gap-6">
+                            {handImages.map((img) => (
+                                <div key={img.src} className="space-y-2">
+                                    <div className="text-sm font-semibold text-slate-600">{img.label}</div>
+                                    <img
+                                        src={img.src}
+                                        alt={img.label}
+                                        className="w-full rounded-xl shadow-sm border border-slate-200"
+                                        onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling.style.display = 'flex'; }}
+                                    />
+                                    <div className="hidden w-full h-32 bg-slate-200 rounded-xl items-center justify-center text-slate-400 font-medium">
+                                        {img.src} 載入失敗
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+
+                    <section className="bg-white p-4 sm:p-6 rounded-xl shadow-sm space-y-4">
+                        <h2 className="text-lg font-bold text-slate-800 border-b pb-3 flex items-center gap-2">
+                            <span>🦶</span> 足部穴位圖
+                        </h2>
+                        <div className="grid grid-cols-1 gap-6">
+                            {footImages.map((img) => (
+                                <div key={img.src} className="space-y-2">
+                                    <div className="text-sm font-semibold text-slate-600">{img.label}</div>
+                                    <img
+                                        src={img.src}
+                                        alt={img.label}
+                                        className="w-full rounded-xl shadow-sm border border-slate-200"
+                                        onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling.style.display = 'flex'; }}
+                                    />
+                                    <div className="hidden w-full h-32 bg-slate-200 rounded-xl items-center justify-center text-slate-400 font-medium">
+                                        {img.src} 載入失敗
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                </div>
+            );
+        };
+
         const getPointPart = (item) => {
             if (!item || !item.point) return 'upper';
             const names = item.point.split('/');
@@ -970,6 +1037,7 @@
                             快速按鈕輔助
                         </h1>
                         <p className="text-slate-500 mt-2">滑動對應脈位，快速生成處方</p>
+                        <p className="text-indigo-600 text-sm font-medium mt-1">※ 脈法判讀為蕭醫師的脈法</p>
                     </header>
 
                     {/* Gender Toggle */}
@@ -1012,7 +1080,7 @@
         };
 
         const App = () => {
-            const [currentPage, setCurrentPage] = useState('calculator'); // calculator, quick, pan_medicine, xiao_medicine
+            const [currentPage, setCurrentPage] = useState('calculator'); // calculator, quick, pan_medicine, xiao_medicine, gallery
             const [isMenuOpen, setIsMenuOpen] = useState(false);
 
             return (
@@ -1041,6 +1109,7 @@
                             <button onClick={() => { setCurrentPage('quick'); setIsMenuOpen(false); }} className={`p-4 rounded-xl text-left font-bold transition-colors ${currentPage === 'quick' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-700 hover:bg-slate-100'}`}>湯液/終始/原絡快速按鈕</button>
                             <button onClick={() => { setCurrentPage('pan_medicine'); setIsMenuOpen(false); }} className={`p-4 rounded-xl text-left font-bold transition-colors ${currentPage === 'pan_medicine' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-700 hover:bg-slate-100'}`}>潘老師用藥策略</button>
                             <button onClick={() => { setCurrentPage('xiao_medicine'); setIsMenuOpen(false); }} className={`p-4 rounded-xl text-left font-bold transition-colors ${currentPage === 'xiao_medicine' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-700 hover:bg-slate-100'}`}>蕭醫師用藥策略</button>
+                            <button onClick={() => { setCurrentPage('gallery'); setIsMenuOpen(false); }} className={`p-4 rounded-xl text-left font-bold transition-colors ${currentPage === 'gallery' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-700 hover:bg-slate-100'}`}>穴位圖一覽</button>
                         </div>
                     </div>
 
@@ -1062,6 +1131,7 @@
                                 systems={XIAO_MEDICINE_SYSTEMS} 
                             />
                         )}
+                        {currentPage === 'gallery' && <AcupointGalleryView />}
                     </main>
                 </div>
             );
