@@ -243,6 +243,76 @@ const rulesJs = fs.readFileSync('./lib/rules.js', 'utf8');
 assert.ok(!rulesJs.includes('逆轉'), 'lib/rules.js 不應再包含「逆轉」');
 console.log('✅ index.html 與 lib/rules.js 頁面、選單與手法文案驗證通過！');
 
+console.log('\n--- 測試 8: 終始針法奇經八脈選穴邏輯與介面驗證 ---');
+const { EIGHT_EXTRA_DIRECTIONS, evaluateExtraordinaryMeridian } = require('./lib/rules.js');
+
+// 驗證八方位代號
+const expectedCodes = {
+  'up': '外開', 'up-left': '浮弦澀', 'left': '關偏', 'down-left': '沉弦',
+  'up-right': '寸偏', 'right': '牢', 'down-right': '尺偏', 'down': '內收'
+};
+for (const [dir, code] of Object.entries(expectedCodes)) {
+  assert.strictEqual(EIGHT_EXTRA_DIRECTIONS[dir].code, code, `${dir} 代號應為 ${code}`);
+}
+
+// 驗證 申脈、照海 穴位位置
+assert.ok(POINT_LOCATIONS['申脈'] && POINT_LOCATIONS['照海'], 'lib/rules.js 應包含申脈與照海位置');
+assert.ok(indexHtml.includes("'申脈'") && indexHtml.includes("'照海'"), 'index.html 應包含申脈與照海位置');
+
+// 模擬終始針法解答：男 人迎一盛（補肝瀉膽） -> 陰經(曲泉)在右、遠心、順轉
+const zsMaleRenying = { method: '人迎一盛（補肝瀉膽）', ...ZHONGSHI_RULES.male['人迎一盛（補肝瀉膽）'] };
+// 模擬終始針法解答：男 脈口一盛（補膽瀉肝） -> 陰經(行間)在左、遠心、順轉
+const zsMaleMaikou = { method: '脈口一盛（補膽瀉肝）', ...ZHONGSHI_RULES.male['脈口一盛（補膽瀉肝）'] };
+
+// 1. 雙手右方(牢) -> 公孫 (與陰經相反側：人迎陰經在右 -> 公孫在左)
+let resExtra = evaluateExtraordinaryMeridian('right', 'right', zsMaleRenying);
+assert.strictEqual(resExtra.status, 'single');
+assert.strictEqual(resExtra.points[0].point, '公孫');
+assert.strictEqual(resExtra.points[0].side, 'left');
+assert.ok(resExtra.points[0].desc.includes('遠心') && resExtra.points[0].desc.includes('順轉'));
+
+// 2. 單手右方(牢) -> 防呆：脈象不完全符合奇經八脈
+resExtra = evaluateExtraordinaryMeridian('right', null, zsMaleRenying);
+assert.strictEqual(resExtra.status, 'unmatched');
+assert.strictEqual(resExtra.message, '脈象不完全符合奇經八脈');
+
+// 3. 右手左上(浮弦澀) -> 列缺 (與陰經相同側：脈口陰經在左 -> 列缺在左)
+resExtra = evaluateExtraordinaryMeridian('up-left', null, zsMaleMaikou);
+assert.strictEqual(resExtra.points[0].point, '列缺');
+assert.strictEqual(resExtra.points[0].side, 'left');
+
+// 4. 左手左上(浮弦澀) -> 後溪 (與陰經相同側：人迎陰經在右 -> 後溪在右)
+resExtra = evaluateExtraordinaryMeridian(null, 'up-left', zsMaleRenying);
+assert.strictEqual(resExtra.points[0].point, '後溪');
+assert.strictEqual(resExtra.points[0].side, 'right');
+
+// 5. 雙手同時選正上 -> 外關 (相同側) / 雙手同時選正下 -> 內關 (相同側)
+resExtra = evaluateExtraordinaryMeridian('up', 'up', zsMaleRenying);
+assert.strictEqual(resExtra.points[0].point, '外關');
+assert.strictEqual(resExtra.points[0].side, 'right');
+resExtra = evaluateExtraordinaryMeridian('down', 'down', zsMaleMaikou);
+assert.strictEqual(resExtra.points[0].point, '內關');
+assert.strictEqual(resExtra.points[0].side, 'left');
+
+// 6. 任一手選左方/右上/右下 -> 足臨泣/申脈/照海 (相反側)
+assert.strictEqual(evaluateExtraordinaryMeridian('left', null, zsMaleRenying).points[0].point, '足臨泣');
+assert.strictEqual(evaluateExtraordinaryMeridian('left', null, zsMaleRenying).points[0].side, 'left');
+assert.strictEqual(evaluateExtraordinaryMeridian(null, 'up-right', zsMaleRenying).points[0].point, '申脈');
+assert.strictEqual(evaluateExtraordinaryMeridian(null, 'up-right', zsMaleRenying).points[0].side, 'left');
+assert.strictEqual(evaluateExtraordinaryMeridian('down-right', null, zsMaleMaikou).points[0].point, '照海');
+assert.strictEqual(evaluateExtraordinaryMeridian('down-right', null, zsMaleMaikou).points[0].side, 'right');
+
+// 7. 同時符合兩條奇經八脈 -> 顯示兩個穴位與提示
+resExtra = evaluateExtraordinaryMeridian('up-left', 'up-left', zsMaleRenying);
+assert.strictEqual(resExtra.status, 'multiple');
+assert.deepStrictEqual(resExtra.points.map(p => p.point), ['列缺', '後溪']);
+assert.strictEqual(resExtra.note, '脈象同時符合兩條奇經八脈，請斟酌參考');
+
+// 8. 驗證 index.html UI 與邏輯同步
+assert.ok(indexHtml.includes('OctagonBox'), 'index.html 應包含 OctagonBox 八角形組件');
+assert.ok(indexHtml.includes('bg-amber-50'), 'index.html 應包含淡黃色第三區間');
+console.log('✅ 終始針法奇經八脈選穴邏輯與介面驗證通過！');
+
 testLineBot().then(() => {
   console.log('\n=========================================');
   console.log(' 🏁 全套自動化單元測試 100% 通過！');
