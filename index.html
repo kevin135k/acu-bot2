@@ -113,6 +113,8 @@
           '京骨': { icon: '🦶', text: '在足外側部，第5跖骨粗隆下方赤白肉際處，當小趾尖與足跟底後緣連線的中點。' },
           '太衝': { icon: '🦶', text: '足背第1～2跖骨間隙的後方凹陷處。當行間後二寸。' },
           '太溪': { icon: '🦶', text: '足內側部，內踝後方，內踝尖與跟腱之間凹陷處。' },
+          '申脈': { icon: '🦶', text: '足外側部，外踝直下方凹陷中。' },
+          '照海': { icon: '🦶', text: '足內側部，內踝尖下方凹陷處。' },
         };
 
         const TANGYE_RULES = {
@@ -510,7 +512,72 @@
             }
         };
 
-        const ResultCard = ({ result, gender, systemType }) => {
+        const EIGHT_EXTRA_DIRECTIONS = {
+            'up':         { dir: 'up',         label: '外開',           code: '外開',   angle: -90 },
+            'up-right':   { dir: 'up-right',   label: '寸部偏移',       code: '寸偏',   angle: -45 },
+            'right':      { dir: 'right',      label: '雙手沉弦有力(牢)', code: '牢',    angle: 0 },
+            'down-right': { dir: 'down-right', label: '尺部偏移',       code: '尺偏',   angle: 45 },
+            'down':       { dir: 'down',       label: '內收',           code: '內收',   angle: 90 },
+            'down-left':  { dir: 'down-left',  label: '沉弦',           code: '沉弦',   angle: 135 },
+            'left':       { dir: 'left',       label: '關部偏移',       code: '關偏',   angle: 180 },
+            'up-left':    { dir: 'up-left',    label: '浮弦澀',         code: '浮弦澀', angle: -135 }
+        };
+
+        const OPPOSITE_SIDE_EXTRA_POINTS = new Set(['公孫', '足臨泣', '申脈', '照海']);
+
+        const evaluateExtraordinaryMeridian = (rightDir, leftDir, zhongshiResult) => {
+            if (!rightDir && !leftDir) return null;
+
+            const matchedPoints = [];
+            const addPoint = (pt) => { if (!matchedPoints.includes(pt)) matchedPoints.push(pt); };
+
+            if (rightDir === 'right' && leftDir === 'right') addPoint('公孫');
+            if (rightDir === 'up-left' || leftDir === 'down-left') addPoint('列缺');
+            if (leftDir === 'up-left' || rightDir === 'down-left') addPoint('後溪');
+            if (rightDir === 'left' || leftDir === 'left') addPoint('足臨泣');
+            if (rightDir === 'up-right' || leftDir === 'up-right') addPoint('申脈');
+            if (rightDir === 'down-right' || leftDir === 'down-right') addPoint('照海');
+            if (rightDir === 'up' && leftDir === 'up') addPoint('外關');
+            if (rightDir === 'down' && leftDir === 'down') addPoint('內關');
+
+            if (matchedPoints.length === 0) {
+                return {
+                    status: 'unmatched',
+                    message: '脈象不完全符合奇經八脈',
+                    points: []
+                };
+            }
+
+            let yinAction = null;
+            let yinType = 'tonify';
+            if (zhongshiResult) {
+                const isMaikou = zhongshiResult.method && zhongshiResult.method.includes('脈口');
+                yinAction = isMaikou ? zhongshiResult.sedate : zhongshiResult.tonify;
+                yinType = isMaikou ? 'sedate' : 'tonify';
+            }
+
+            const points = matchedPoints.map((pt) => {
+                if (!yinAction) {
+                    return { point: pt, side: null, desc: '遠心、順轉（請先選擇上方寸關尺脈位以決定左右側）', type: yinType };
+                }
+                const isOpposite = OPPOSITE_SIDE_EXTRA_POINTS.has(pt);
+                const side = isOpposite ? (yinAction.side === 'left' ? 'right' : 'left') : yinAction.side;
+                return {
+                    point: pt,
+                    side,
+                    desc: yinAction.desc,
+                    type: yinType
+                };
+            });
+
+            return {
+                status: matchedPoints.length >= 2 ? 'multiple' : 'single',
+                note: matchedPoints.length >= 2 ? '脈象同時符合兩條奇經八脈，請斟酌參考' : null,
+                points
+            };
+        };
+
+        const ResultCard = ({ result, gender, systemType, extraResult = null }) => {
             const [copied, setCopied] = useState(false);
             const [viewMode, setViewMode] = useState('acupuncture'); // 'acupuncture' | 'medicine'
             const [medStrategy, setMedStrategy] = useState('pan'); // 'pan' | 'xiao'
@@ -531,7 +598,6 @@
             }, [result, gender, systemType]);
 
             const locationHints = useMemo(() => {
-                if (!result) return [];
                 const points = new Set();
                 const extract = (item) => {
                     if(!item || !item.point) return;
@@ -539,23 +605,40 @@
                     if (item.alias) names.push(item.alias);
                     names.forEach(n => n.split('/').forEach(subName => points.add(subName)));
                 };
-                extract(result.tonify); extract(result.sedate);
+                if (result) {
+                    extract(result.tonify); extract(result.sedate);
+                }
+                if (systemType === 'zhongshi' && extraResult && extraResult.points) {
+                    extraResult.points.forEach(pt => extract(pt));
+                }
                 const hints = [];
                 points.forEach(p => { if (POINT_LOCATIONS[p]) hints.push({ name: p, ...POINT_LOCATIONS[p] }); });
                 return hints;
-            }, [result]);
+            }, [result, extraResult, systemType]);
 
             const handleCopy = async () => {
-                if (!result) return;
-                const lines = [
-                    `【${result.title}】 ${result.method} (${gender === 'male' ? '男' : '女'})`
-                ];
-                displayActions.forEach(action => {
-                    const isTonify = action.type === 'tonify';
-                    const sideText = action.side === 'left' ? '左' : '右';
-                    const pointText = action.alias ? `${action.point}/${action.alias}` : action.point;
-                    lines.push(`${isTonify ? '補' : '瀉'} ${sideText}${pointText} (${action.desc})`);
-                });
+                if (!result && !extraResult) return;
+                const lines = [];
+                if (result) {
+                    lines.push(`【${result.title}】 ${result.method} (${gender === 'male' ? '男' : '女'})`);
+                    displayActions.forEach(action => {
+                        const isTonify = action.type === 'tonify';
+                        const sideText = action.side === 'left' ? '左' : '右';
+                        const pointText = action.alias ? `${action.point}/${action.alias}` : action.point;
+                        lines.push(`${isTonify ? '補' : '瀉'} ${sideText}${pointText} (${action.desc})`);
+                    });
+                }
+                if (systemType === 'zhongshi' && extraResult) {
+                    if (extraResult.status === 'unmatched') {
+                        lines.push(`【奇經八脈】 ${extraResult.message}`);
+                    } else if (extraResult.points) {
+                        extraResult.points.forEach(pt => {
+                            const sideText = pt.side ? (pt.side === 'left' ? '左' : '右') : '';
+                            lines.push(`奇經八脈 ${sideText}${pt.point} (${pt.desc})`);
+                        });
+                        if (extraResult.note) lines.push(`註：${extraResult.note}`);
+                    }
+                }
                 
                 const copyText = lines.join('\n');
                 let success = false;
@@ -633,38 +716,73 @@
                 return systems;
             }, [result, systemType]);
 
-            if (!result) return null;
+            if (!result && !(systemType === 'zhongshi' && extraResult)) return null;
 
             return (
-                <div className="mt-8 animate-in slide-in-from-bottom-8 duration-700">
+                <div className="mt-6 animate-in slide-in-from-bottom-8 duration-700">
                     <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
                         <div className="bg-indigo-900 text-white p-4">
                             <div className="flex justify-between items-center">
-                                <h4 className="text-lg font-bold">{result.method}</h4>
-                                <span className="bg-white/20 px-3 py-1 rounded-full text-sm">{result.title}</span>
+                                <h4 className="text-lg font-bold">{result ? result.method : '奇經八脈辨脈'}</h4>
+                                <span className="bg-white/20 px-3 py-1 rounded-full text-sm">{result ? result.title : '終始針法 處方'}</span>
                             </div>
                         </div>
                         
-                        {viewMode === 'acupuncture' ? (
+                        {viewMode === 'acupuncture' || !result ? (
                             <div className="p-6">
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                                    {displayActions.map((action, idx) => {
-                                        const isTonify = action.type === 'tonify';
-                                        return (
-                                            <div key={idx} className={`${isTonify ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'} border-l-4 p-4 rounded-r-lg`}>
-                                                <h5 className={`font-bold ${isTonify ? 'text-green-800' : 'text-red-800'} flex items-center gap-2 mb-2`}>
-                                                    {isTonify ? <Icons.ArrowRight className="w-5 h-5" /> : <Icons.RotateCcw className="w-5 h-5" />}
-                                                    {isTonify ? '補法 (Tonify)' : '瀉法 (Sedate)'}
-                                                </h5>
-                                                <div className="text-lg font-bold mb-1">
-                                                    {action.side === 'left' ? '左' : '右'}
-                                                    {action.alias ? `${action.point}/${action.alias}` : action.point}
+                                {result && (
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                                        {displayActions.map((action, idx) => {
+                                            const isTonify = action.type === 'tonify';
+                                            return (
+                                                <div key={idx} className={`${isTonify ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'} border-l-4 p-4 rounded-r-lg`}>
+                                                    <h5 className={`font-bold ${isTonify ? 'text-green-800' : 'text-red-800'} flex items-center gap-2 mb-2`}>
+                                                        {isTonify ? <Icons.ArrowRight className="w-5 h-5" /> : <Icons.RotateCcw className="w-5 h-5" />}
+                                                        {isTonify ? '補法 (Tonify)' : '瀉法 (Sedate)'}
+                                                    </h5>
+                                                    <div className="text-lg font-bold mb-1">
+                                                        {action.side === 'left' ? '左' : '右'}
+                                                        {action.alias ? `${action.point}/${action.alias}` : action.point}
+                                                    </div>
+                                                    <p className={`${isTonify ? 'text-green-700' : 'text-red-700'} text-sm leading-relaxed`}>{action.desc}</p>
                                                 </div>
-                                                <p className={`${isTonify ? 'text-green-700' : 'text-red-700'} text-sm leading-relaxed`}>{action.desc}</p>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+
+                                {systemType === 'zhongshi' && extraResult && (
+                                    <div className="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg mb-6 animate-in fade-in">
+                                        <h5 className="font-bold text-amber-800 flex items-center gap-2 mb-2">
+                                            ✨ 奇經八脈額外選穴
+                                        </h5>
+                                        {extraResult.status === 'unmatched' ? (
+                                            <p className="text-amber-800 font-bold text-base">{extraResult.message}</p>
+                                        ) : (
+                                            <div className="space-y-3">
+                                                {extraResult.points.map((pt, i) => (
+                                                    <div key={i} className="border-b border-amber-200/60 last:border-b-0 pb-2 last:pb-0">
+                                                        <div className="text-lg font-bold text-amber-900 mb-0.5 flex items-center gap-2">
+                                                            <span>
+                                                                {pt.side ? (pt.side === 'left' ? '左' : '右') : ''}
+                                                                {pt.point}
+                                                            </span>
+                                                            <span className="text-xs font-semibold px-2 py-0.5 rounded bg-amber-200/70 text-amber-900">
+                                                                {pt.type === 'sedate' ? '陰經瀉法手法' : '陰經補法手法'}
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-amber-800 text-sm leading-relaxed">{pt.desc}</p>
+                                                    </div>
+                                                ))}
+                                                {extraResult.note && (
+                                                    <p className="text-xs font-bold text-amber-800 bg-amber-100/90 px-3 py-2 rounded-lg border border-amber-200">
+                                                        ⚠️ {extraResult.note}
+                                                    </p>
+                                                )}
                                             </div>
-                                        );
-                                    })}
-                                </div>
+                                        )}
+                                    </div>
+                                )}
                                 
                                 {/* 複製與切換按鈕區塊 */}
                                 <div className="flex gap-3 mb-6">
@@ -957,10 +1075,24 @@
             'right-chi':  { element: '腎水', zs: '人迎二盛' }
         };
 
+        const getOctagonDirectionFromDelta = (dx, dy) => {
+            const deg = Math.atan2(dy, dx) * (180 / Math.PI);
+            if (deg >= -112.5 && deg < -67.5) return 'up';
+            if (deg >= -67.5 && deg < -22.5) return 'up-right';
+            if (deg >= -22.5 && deg < 22.5) return 'right';
+            if (deg >= 22.5 && deg < 67.5) return 'down-right';
+            if (deg >= 67.5 && deg < 112.5) return 'down';
+            if (deg >= 112.5 && deg < 157.5) return 'down-left';
+            if (deg >= -157.5 && deg < -112.5) return 'up-left';
+            return 'left';
+        };
+
         const QuickButtonPage = () => {
             const [gender, setGender] = useState('male');
             const [system, setSystem] = useState('tangye'); // tangye, zhongshi, yuanluo
             const [swipeState, setSwipeState] = useState({ box: null, dir: null });
+            const [extraState, setExtraState] = useState({ right: null, left: null });
+            const [activeMenu, setActiveMenu] = useState(null);
 
             // Maps physical box to Element/Zhongshi label based on Gender
             const getBoxElement = (boxId) => {
@@ -998,83 +1130,270 @@
                 return null;
             }, [gender, system, swipeState]);
 
-            const handleDragEnd = (boxId, deltaY) => {
-                if (deltaY < -20) setSwipeState({ box: boxId, dir: 'up' });
-                else if (deltaY > 20) setSwipeState({ box: boxId, dir: 'down' });
-            };
+            const extraResult = useMemo(() => {
+                if (system !== 'zhongshi') return null;
+                return evaluateExtraordinaryMeridian(extraState.right, extraState.left, result);
+            }, [system, extraState, result]);
 
             const Box = ({ id, labelRight, labelLeft }) => {
-                const startY = useRef(0);
+                const startPos = useRef({ x: 0, y: 0 });
+                const [dragDir, setDragDir] = useState(null);
                 const isSelected = swipeState.box === id;
+                const isMenuOpen = activeMenu === id;
                 const activeColor = gender === 'male' ? 'bg-blue-100 border-blue-400' : 'bg-pink-100 border-pink-400';
-                
+
+                const upLabel = system === 'zhongshi' ? '躁' : '太過';
+                const downLabel = system === 'zhongshi' ? '不躁' : '不足';
+
                 let text = '';
-                if (isSelected) {
-                    if (system === 'zhongshi') text = swipeState.dir === 'up' ? '躁' : '無躁';
-                    else text = swipeState.dir === 'up' ? '太過' : '不足';
+                if (dragDir) {
+                    text = dragDir === 'up' ? upLabel : downLabel;
+                } else if (isSelected) {
+                    text = swipeState.dir === 'up' ? upLabel : downLabel;
                 }
 
                 return (
-                    <div className="flex items-center w-full justify-between">
-                        <div className="w-6 text-center text-sm font-bold text-slate-400">{labelLeft}</div>
-                        <div 
-                            className={`w-28 sm:w-36 aspect-square rounded-xl shadow-[4px_4px_10px_rgba(0,0,0,0.1)] border-2 flex items-center justify-center cursor-grab active:cursor-grabbing swipe-box transition-colors duration-200 select-none ${isSelected ? activeColor : 'bg-white border-white hover:border-slate-200'}`}
-                            onPointerDown={(e) => { startY.current = e.clientY; e.target.setPointerCapture(e.pointerId); }}
-                            onPointerUp={(e) => { e.target.releasePointerCapture(e.pointerId); handleDragEnd(id, e.clientY - startY.current); }}
-                        >
-                            {text && <span className="text-xl font-bold text-slate-500 opacity-70 pointer-events-none">{text}</span>}
-                            {!text && <span className="text-xs text-slate-300 opacity-50 pointer-events-none flex flex-col items-center gap-1"><span>↑上滑</span><span>下滑↓</span></span>}
+                    <div className="flex items-center justify-end gap-1.5 sm:gap-2 relative">
+                        {labelLeft && <div className="w-4 sm:w-5 text-center text-xs sm:text-sm font-bold text-slate-400 select-none">{labelLeft}</div>}
+                        <div className="relative">
+                            <div 
+                                className={`w-20 h-20 sm:w-28 sm:h-28 rounded-xl shadow-[3px_3px_8px_rgba(0,0,0,0.08)] border-2 flex items-center justify-center cursor-pointer swipe-box transition-colors duration-200 select-none ${isSelected || dragDir ? activeColor : 'bg-white border-white hover:border-slate-200'}`}
+                                onPointerDown={(e) => {
+                                    e.stopPropagation();
+                                    startPos.current = { x: e.clientX, y: e.clientY };
+                                    e.currentTarget.setPointerCapture(e.pointerId);
+                                }}
+                                onPointerMove={(e) => {
+                                    if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
+                                    const dy = e.clientY - startPos.current.y;
+                                    if (dy < -18) setDragDir('up');
+                                    else if (dy > 18) setDragDir('down');
+                                    else setDragDir(null);
+                                }}
+                                onPointerUp={(e) => {
+                                    e.stopPropagation();
+                                    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+                                        e.currentTarget.releasePointerCapture(e.pointerId);
+                                    }
+                                    const dx = e.clientX - startPos.current.x;
+                                    const dy = e.clientY - startPos.current.y;
+                                    setDragDir(null);
+                                    if (Math.hypot(dx, dy) < 10) {
+                                        setActiveMenu(prev => prev === id ? null : id);
+                                    } else if (dy < -18) {
+                                        setSwipeState({ box: id, dir: 'up' });
+                                        setActiveMenu(null);
+                                    } else if (dy > 18) {
+                                        setSwipeState({ box: id, dir: 'down' });
+                                        setActiveMenu(null);
+                                    }
+                                }}
+                            >
+                                {text && <span className="text-base sm:text-xl font-bold text-slate-600 pointer-events-none">{text}</span>}
+                                {!text && <span className="text-[10px] sm:text-xs text-slate-300 opacity-70 pointer-events-none flex flex-col items-center gap-0.5"><span>↑{upLabel}</span><span>↓{downLabel}</span></span>}
+                            </div>
+
+                            {/* Radial Menu (Up / Down) */}
+                            {isMenuOpen && (
+                                <div className="absolute inset-0 z-30 pointer-events-none flex items-center justify-center">
+                                    <button
+                                        type="button"
+                                        onClick={(e) => { e.stopPropagation(); setSwipeState({ box: id, dir: 'up' }); setActiveMenu(null); }}
+                                        className="pointer-events-auto absolute -top-10 sm:-top-12 px-3 py-1.5 rounded-full bg-indigo-600 text-white text-xs sm:text-sm font-bold shadow-lg border-2 border-white hover:bg-indigo-700 whitespace-nowrap animate-in zoom-in-75 duration-150"
+                                    >
+                                        ↑ {upLabel}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={(e) => { e.stopPropagation(); setSwipeState({ box: id, dir: 'down' }); setActiveMenu(null); }}
+                                        className="pointer-events-auto absolute -bottom-10 sm:-bottom-12 px-3 py-1.5 rounded-full bg-indigo-600 text-white text-xs sm:text-sm font-bold shadow-lg border-2 border-white hover:bg-indigo-700 whitespace-nowrap animate-in zoom-in-75 duration-150"
+                                    >
+                                        ↓ {downLabel}
+                                    </button>
+                                </div>
+                            )}
                         </div>
-                        <div className="w-6 text-center text-sm font-bold text-slate-400">{labelRight}</div>
+                        {labelRight && <div className="w-4 sm:w-5 text-center text-xs sm:text-sm font-bold text-slate-400 select-none">{labelRight}</div>}
+                    </div>
+                );
+            };
+
+            const OctagonBox = ({ handKey, labelLeft, labelRight }) => {
+                const menuId = `${handKey}-oct`;
+                const startPos = useRef({ x: 0, y: 0 });
+                const [dragDir, setDragDir] = useState(null);
+                const selectedDir = extraState[handKey];
+                const isMenuOpen = activeMenu === menuId;
+                const isSelected = Boolean(selectedDir);
+
+                const fillColor = (isSelected || dragDir)
+                    ? (gender === 'male' ? '#dbeafe' : '#fce7f3')
+                    : '#ffffff';
+                const strokeColor = (isSelected || dragDir)
+                    ? (gender === 'male' ? '#60a5fa' : '#f472b6')
+                    : '#e2e8f0';
+
+                const displayCode = selectedDir ? EIGHT_EXTRA_DIRECTIONS[selectedDir].code : '';
+                const dragLabel = dragDir ? EIGHT_EXTRA_DIRECTIONS[dragDir].label : '';
+
+                const radius = 58; // px for mobile radial menu
+
+                return (
+                    <div className="flex items-center justify-end gap-1.5 sm:gap-2 relative">
+                        {labelLeft && <div className="w-4 sm:w-5 text-center text-xs sm:text-sm font-bold text-slate-400 select-none">{labelLeft}</div>}
+                        <div className="relative">
+                            {/* Floating full description while swiping */}
+                            {dragLabel && (
+                                <div className="absolute -top-9 left-1/2 -translate-x-1/2 z-40 px-2.5 py-1 rounded-full bg-slate-800 text-white text-xs font-bold whitespace-nowrap shadow-md pointer-events-none">
+                                    {dragLabel}
+                                </div>
+                            )}
+
+                            <div
+                                className="w-20 h-20 sm:w-28 sm:h-28 relative flex items-center justify-center cursor-pointer swipe-box select-none"
+                                onPointerDown={(e) => {
+                                    e.stopPropagation();
+                                    startPos.current = { x: e.clientX, y: e.clientY };
+                                    e.currentTarget.setPointerCapture(e.pointerId);
+                                }}
+                                onPointerMove={(e) => {
+                                    if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
+                                    const dx = e.clientX - startPos.current.x;
+                                    const dy = e.clientY - startPos.current.y;
+                                    if (Math.hypot(dx, dy) > 16) {
+                                        setDragDir(getOctagonDirectionFromDelta(dx, dy));
+                                    } else {
+                                        setDragDir(null);
+                                    }
+                                }}
+                                onPointerUp={(e) => {
+                                    e.stopPropagation();
+                                    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+                                        e.currentTarget.releasePointerCapture(e.pointerId);
+                                    }
+                                    const dx = e.clientX - startPos.current.x;
+                                    const dy = e.clientY - startPos.current.y;
+                                    const dist = Math.hypot(dx, dy);
+                                    setDragDir(null);
+                                    if (dist < 10) {
+                                        setActiveMenu(prev => prev === menuId ? null : menuId);
+                                    } else if (dist >= 16) {
+                                        const dir = getOctagonDirectionFromDelta(dx, dy);
+                                        setExtraState(prev => ({ ...prev, [handKey]: dir }));
+                                        setActiveMenu(null);
+                                    }
+                                }}
+                            >
+                                <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-[2px_3px_6px_rgba(0,0,0,0.08)] pointer-events-none">
+                                    <polygon
+                                        points="30,3 70,3 97,30 97,70 70,97 30,97 3,70 3,30"
+                                        fill={fillColor}
+                                        stroke={strokeColor}
+                                        strokeWidth="3.5"
+                                    />
+                                </svg>
+                                <span className={`absolute inset-0 flex items-center justify-center font-bold pointer-events-none px-1 text-center leading-tight ${isSelected ? 'text-sm sm:text-base text-slate-700' : 'text-xl sm:text-2xl text-slate-400'}`}>
+                                    {dragDir ? EIGHT_EXTRA_DIRECTIONS[dragDir].code : (displayCode || '?')}
+                                </span>
+                            </div>
+
+                            {/* 8-way Radial Menu */}
+                            {isMenuOpen && (
+                                <div className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none">
+                                    {Object.values(EIGHT_EXTRA_DIRECTIONS).map((item) => {
+                                        const rad = (item.angle * Math.PI) / 180;
+                                        const tx = Math.cos(rad) * radius;
+                                        const ty = Math.sin(rad) * radius;
+                                        const isActive = selectedDir === item.dir;
+                                        return (
+                                            <button
+                                                key={item.dir}
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setExtraState(prev => ({ ...prev, [handKey]: item.dir }));
+                                                    setActiveMenu(null);
+                                                }}
+                                                style={{ transform: `translate(${tx}px, ${ty}px)` }}
+                                                className={`pointer-events-auto absolute px-2 py-1 rounded-full text-[11px] sm:text-xs font-bold shadow-lg border whitespace-nowrap transition-transform animate-in zoom-in-75 duration-150 ${isActive ? 'bg-amber-500 text-white border-white' : 'bg-indigo-600 text-white border-white hover:bg-indigo-700'}`}
+                                            >
+                                                {item.code}
+                                            </button>
+                                        );
+                                    })}
+                                    {isSelected && (
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setExtraState(prev => ({ ...prev, [handKey]: null }));
+                                                setActiveMenu(null);
+                                            }}
+                                            className="pointer-events-auto w-8 h-8 rounded-full bg-slate-700 text-white text-xs font-bold shadow-md border-2 border-white flex items-center justify-center hover:bg-slate-800"
+                                            title="清除"
+                                        >
+                                            ✕
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                        {labelRight && <div className="w-4 sm:w-5 text-center text-xs sm:text-sm font-bold text-slate-400 select-none">{labelRight}</div>}
                     </div>
                 );
             };
 
             return (
-                <div className="space-y-6 pb-20">
-                    <header className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-indigo-500">
-                        <h1 className="text-2xl font-bold flex items-center gap-2 text-indigo-900">
+                <div className="space-y-3 sm:space-y-5 pb-20" onClick={() => activeMenu && setActiveMenu(null)}>
+                    <header className="bg-white p-3.5 sm:p-5 rounded-xl shadow-sm border-l-4 border-indigo-500">
+                        <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2 text-indigo-900">
                             快速按鈕輔助
                         </h1>
-                        <p className="text-slate-500 mt-2">滑動對應脈位，快速生成處方</p>
-                        <p className="text-indigo-600 text-sm font-medium mt-1">※ 脈法判讀為蕭醫師的脈法</p>
+                        <p className="text-slate-500 mt-1 text-xs sm:text-sm">點擊中央彈出選單或直接滑動脈位生成處方</p>
+                        <p className="text-indigo-600 text-xs sm:text-sm font-medium mt-0.5">※ 脈法判讀為蕭醫師的脈法</p>
                     </header>
 
                     {/* Gender Toggle */}
-                    <div className="bg-white rounded-xl shadow-sm p-2 flex relative overflow-hidden border border-slate-200">
+                    <div className="bg-white rounded-xl shadow-sm p-1.5 flex relative overflow-hidden border border-slate-200">
                         <div className={`absolute top-0 bottom-0 w-1/2 transition-transform duration-300 ease-in-out ${gender === 'male' ? 'bg-blue-100 translate-x-0' : 'bg-pink-100 translate-x-full'}`}></div>
-                        <button onClick={() => { setSwipeState({box:null, dir:null}); setGender('male'); }} className={`flex-1 py-3 font-bold z-10 transition-colors ${gender === 'male' ? 'text-blue-800' : 'text-slate-400'}`}>男性</button>
-                        <button onClick={() => { setSwipeState({box:null, dir:null}); setGender('female'); }} className={`flex-1 py-3 font-bold z-10 transition-colors ${gender === 'female' ? 'text-pink-800' : 'text-slate-400'}`}>女性</button>
+                        <button onClick={() => { setSwipeState({box:null, dir:null}); setExtraState({right:null, left:null}); setActiveMenu(null); setGender('male'); }} className={`flex-1 py-2 sm:py-2.5 font-bold z-10 transition-colors text-sm sm:text-base ${gender === 'male' ? 'text-blue-800' : 'text-slate-400'}`}>男性</button>
+                        <button onClick={() => { setSwipeState({box:null, dir:null}); setExtraState({right:null, left:null}); setActiveMenu(null); setGender('female'); }} className={`flex-1 py-2 sm:py-2.5 font-bold z-10 transition-colors text-sm sm:text-base ${gender === 'female' ? 'text-pink-800' : 'text-slate-400'}`}>女性</button>
                     </div>
 
                     {/* System Toggle */}
                     <div className="grid grid-cols-3 gap-2">
-                        <button onClick={() => { setSwipeState({box:null, dir:null}); setSystem('tangye'); }} className={`py-3 rounded-lg font-bold border transition-all ${system === 'tangye' ? 'bg-teal-100 text-teal-800 border-teal-300' : 'bg-white text-slate-400 border-slate-200'}`}>湯液</button>
-                        <button onClick={() => { setSwipeState({box:null, dir:null}); setSystem('zhongshi'); }} className={`py-3 rounded-lg font-bold border transition-all ${system === 'zhongshi' ? 'bg-orange-100 text-orange-800 border-orange-300' : 'bg-white text-slate-400 border-slate-200'}`}>終始</button>
-                        <button onClick={() => { setSwipeState({box:null, dir:null}); setSystem('yuanluo'); }} className={`py-3 rounded-lg font-bold border transition-all ${system === 'yuanluo' ? 'bg-blue-100 text-blue-800 border-blue-300' : 'bg-white text-slate-400 border-slate-200'}`}>原絡</button>
+                        <button onClick={() => { setSwipeState({box:null, dir:null}); setExtraState({right:null, left:null}); setActiveMenu(null); setSystem('tangye'); }} className={`py-2 sm:py-2.5 rounded-lg font-bold border transition-all text-sm sm:text-base ${system === 'tangye' ? 'bg-teal-100 text-teal-800 border-teal-300' : 'bg-white text-slate-400 border-slate-200'}`}>湯液</button>
+                        <button onClick={() => { setSwipeState({box:null, dir:null}); setExtraState({right:null, left:null}); setActiveMenu(null); setSystem('zhongshi'); }} className={`py-2 sm:py-2.5 rounded-lg font-bold border transition-all text-sm sm:text-base ${system === 'zhongshi' ? 'bg-orange-100 text-orange-800 border-orange-300' : 'bg-white text-slate-400 border-slate-200'}`}>終始</button>
+                        <button onClick={() => { setSwipeState({box:null, dir:null}); setExtraState({right:null, left:null}); setActiveMenu(null); setSystem('yuanluo'); }} className={`py-2 sm:py-2.5 rounded-lg font-bold border transition-all text-sm sm:text-base ${system === 'yuanluo' ? 'bg-blue-100 text-blue-800 border-blue-300' : 'bg-white text-slate-400 border-slate-200'}`}>原絡</button>
                     </div>
 
-                    {/* Grid */}
-                    <div className="bg-slate-100 rounded-xl p-6 py-8">
-                        <div className="max-w-md mx-auto relative flex gap-4">
+                    {/* Grid (Center blank space remains scrollable) */}
+                    <div className="bg-slate-100 rounded-xl p-3 py-4 sm:p-6 sm:py-6">
+                        <div className="max-w-md mx-auto relative flex justify-center gap-8 sm:gap-12">
                             {/* Left Column (Right Hand) */}
-                            <div className="flex-1 flex flex-col gap-6 items-end">
+                            <div className="flex flex-col gap-2.5 sm:gap-4 items-end">
                                 <Box id="right-chi" labelRight="" labelLeft="尺" />
                                 <Box id="right-guan" labelRight="" labelLeft="關" />
                                 <Box id="right-chun" labelRight="" labelLeft="寸" />
-                                <div className="text-center font-bold text-slate-500 mt-2 w-28 sm:w-36">右手</div>
+                                {system === 'zhongshi' && (
+                                    <OctagonBox handKey="right" labelRight="" labelLeft="奇" />
+                                )}
+                                <div className="text-center font-bold text-slate-500 mt-0.5 text-sm sm:text-base w-20 sm:w-28">右手</div>
                             </div>
                             {/* Right Column (Left Hand) */}
-                            <div className="flex-1 flex flex-col gap-6 items-start">
+                            <div className="flex flex-col gap-2.5 sm:gap-4 items-start">
                                 <Box id="left-chi" labelRight="尺" labelLeft="" />
                                 <Box id="left-guan" labelRight="關" labelLeft="" />
                                 <Box id="left-chun" labelRight="寸" labelLeft="" />
-                                <div className="text-center font-bold text-slate-500 mt-2 w-28 sm:w-36">左手</div>
+                                {system === 'zhongshi' && (
+                                    <OctagonBox handKey="left" labelRight="奇" labelLeft="" />
+                                )}
+                                <div className="text-center font-bold text-slate-500 mt-0.5 text-sm sm:text-base w-20 sm:w-28">左手</div>
                             </div>
                         </div>
                     </div>
 
-                    <ResultCard result={result} gender={gender} systemType={system} />
+                    <ResultCard result={result} gender={gender} systemType={system} extraResult={extraResult} />
                 </div>
             );
         };
