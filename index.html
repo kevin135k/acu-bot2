@@ -424,6 +424,35 @@
             />
         );
 
+        const LingguiBafaView = () => {
+            const notes = [
+                { text: '離(火)：列缺', bg: 'bg-red-50 border-red-200 text-red-900' },
+                { text: '坎(水)：申脈', bg: 'bg-blue-50 border-blue-200 text-blue-900' },
+                { text: '坤、艮(土)：照海、內關', bg: 'bg-amber-50 border-amber-200 text-amber-900' },
+                { text: '震、巽(木)：外關、足臨泣', bg: 'bg-emerald-50 border-emerald-200 text-emerald-900' },
+                { text: '兌、乾(金)：後溪、公孫', bg: 'bg-slate-100 border-slate-300 text-slate-800' }
+            ];
+
+            return (
+                <div className="space-y-6 animate-in fade-in duration-500 pb-20">
+                    <header className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-indigo-500">
+                        <h1 className="text-2xl font-bold flex items-center gap-2 text-indigo-900">
+                            靈龜八法穴組參考
+                        </h1>
+                        <p className="text-slate-500 mt-2 text-sm">八卦五行對應穴組純文字筆記參考</p>
+                    </header>
+
+                    <div className="space-y-3">
+                        {notes.map((item, idx) => (
+                            <div key={idx} className={`p-5 rounded-xl border font-bold text-lg shadow-sm ${item.bg}`}>
+                                {item.text}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
         const AcupointGalleryView = () => {
             const handImages = [
                 { src: 'hand1.jpg', label: '手部穴位圖 1' },
@@ -1399,7 +1428,7 @@
         };
 
         const App = () => {
-            const [currentPage, setCurrentPage] = useState('calculator'); // calculator, quick, pan_medicine, xiao_medicine, gallery
+            const [currentPage, setCurrentPage] = useState('calculator'); // calculator, quick, pan_medicine, xiao_medicine, linggui_bafa, gallery
             const [isMenuOpen, setIsMenuOpen] = useState(false);
 
             return (
@@ -1428,6 +1457,7 @@
                             <button onClick={() => { setCurrentPage('quick'); setIsMenuOpen(false); }} className={`p-4 rounded-xl text-left font-bold transition-colors ${currentPage === 'quick' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-700 hover:bg-slate-100'}`}>湯液/終始/原絡快速按鈕</button>
                             <button onClick={() => { setCurrentPage('pan_medicine'); setIsMenuOpen(false); }} className={`p-4 rounded-xl text-left font-bold transition-colors ${currentPage === 'pan_medicine' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-700 hover:bg-slate-100'}`}>潘老師用藥策略</button>
                             <button onClick={() => { setCurrentPage('xiao_medicine'); setIsMenuOpen(false); }} className={`p-4 rounded-xl text-left font-bold transition-colors ${currentPage === 'xiao_medicine' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-700 hover:bg-slate-100'}`}>蕭醫師用藥策略</button>
+                            <button onClick={() => { setCurrentPage('linggui_bafa'); setIsMenuOpen(false); }} className={`p-4 rounded-xl text-left font-bold transition-colors ${currentPage === 'linggui_bafa' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-700 hover:bg-slate-100'}`}>靈龜八法穴組參考</button>
                             <button onClick={() => { setCurrentPage('gallery'); setIsMenuOpen(false); }} className={`p-4 rounded-xl text-left font-bold transition-colors ${currentPage === 'gallery' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-700 hover:bg-slate-100'}`}>穴位圖一覽</button>
                         </div>
                     </div>
@@ -1450,6 +1480,7 @@
                                 systems={XIAO_MEDICINE_SYSTEMS} 
                             />
                         )}
+                        {currentPage === 'linggui_bafa' && <LingguiBafaView />}
                         {currentPage === 'gallery' && <AcupointGalleryView />}
                     </main>
                 </div>

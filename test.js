@@ -311,6 +311,9 @@ assert.strictEqual(resExtra.note, '脈象同時符合兩條奇經八脈，請斟
 // 8. 驗證 index.html UI 與邏輯同步
 assert.ok(indexHtml.includes('OctagonBox'), 'index.html 應包含 OctagonBox 八角形組件');
 assert.ok(indexHtml.includes('bg-amber-50'), 'index.html 應包含淡黃色第三區間');
+assert.ok(indexHtml.includes('靈龜八法穴組參考'), 'index.html 應包含靈龜八法穴組參考頁面');
+assert.ok(indexHtml.includes('離(火)：列缺') && indexHtml.includes('坎(水)：申脈') && indexHtml.includes('坤、艮(土)：照海、內關') && indexHtml.includes('震、巽(木)：外關、足臨泣') && indexHtml.includes('兌、乾(金)：後溪、公孫'), 'index.html 應包含完整靈龜八法穴組筆記');
+assert.ok(indexHtml.indexOf("setCurrentPage('linggui_bafa')") < indexHtml.indexOf("setCurrentPage('gallery')"), '靈龜八法穴組參考應排在穴位圖一覽上一層');
 console.log('✅ 終始針法奇經八脈選穴邏輯與介面驗證通過！');
 
 testLineBot().then(() => {
