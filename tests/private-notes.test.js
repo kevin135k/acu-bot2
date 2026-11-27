@@ -444,6 +444,299 @@ async function runAll() {
     }
   });
 
+  // 輔助工具：從 index.html 擷取 PrivateNotesView 的實際非同步 handler 並以模擬 state 執行
+  function extractAsyncHandlerSource(html, fnName) {
+    const marker = `const ${fnName} = async () => {`;
+    const start = html.indexOf(marker);
+    assert.ok(start !== -1, `index.html 應包含 ${fnName}`);
+    let depth = 0;
+    let bodyStart = -1;
+    for (let i = start; i < html.length; i++) {
+      if (html[i] === '{') {
+        if (depth === 0) bodyStart = i;
+        depth++;
+      } else if (html[i] === '}') {
+        depth--;
+        if (depth === 0) {
+          return html.slice(bodyStart, i + 1);
+        }
+      }
+    }
+    throw new Error(`無法解析 ${fnName} 函式區塊`);
+  }
+
+  function buildHandlerHarness(fnName, overrides = {}) {
+    const indexHtml = fs.readFileSync(path.join(REPO_ROOT, 'index.html'), 'utf8');
+    const bodyBlock = extractAsyncHandlerSource(indexHtml, fnName);
+
+    const state = {
+      notes: overrides.notes || [{ id: 'n1', content: '既有筆記', createdAt: '2026-11-27T00:00:00.000Z', updatedAt: '2026-11-27T00:00:00.000Z' }],
+      isLoading: false,
+      corrupted: false,
+      loadError: null,
+      editingId: overrides.editingId || null,
+      isSaving: false,
+      saveStatus: null,
+      saveMessage: '',
+      deleteTarget: overrides.deleteTarget || null,
+      isDeleting: false,
+      editorCleared: false,
+      editorText: overrides.editorText !== undefined ? overrides.editorText : '正在編輯的珍貴內容'
+    };
+
+    const isSavingRef = { current: false };
+    const editorRef = {
+      current: {
+        childNodes: state.editorText ? [{ nodeType: 3, nodeValue: state.editorText }] : []
+      }
+    };
+
+    const env = {
+      notesApi: overrides.notesApi || Notes,
+      notesRepo: overrides.notesRepo,
+      corrupted: state.corrupted,
+      editingId: state.editingId,
+      deleteTarget: state.deleteTarget,
+      isDeleting: state.isDeleting,
+      editorRef,
+      isSavingRef,
+      clearEditor: () => {
+        state.editorCleared = true;
+        state.editingId = null;
+      },
+      setNotes: (v) => { state.notes = v; },
+      setIsLoading: (v) => { state.isLoading = v; },
+      setCorrupted: (v) => { state.corrupted = v; },
+      setLoadError: (v) => { state.loadError = v; },
+      setIsSaving: (v) => { state.isSaving = v; },
+      setSaveStatus: (v) => { state.saveStatus = v; },
+      setSaveMessage: (v) => { state.saveMessage = v; },
+      setDeleteTarget: (v) => { state.deleteTarget = v; },
+      setIsDeleting: (v) => { state.isDeleting = v; }
+    };
+
+    const argNames = Object.keys(env);
+    const argValues = argNames.map((k) => env[k]);
+    const compiled = new Function(...argNames, `return (async () => ${bodyBlock})();`);
+
+    return {
+      state,
+      isSavingRef,
+      run: () => compiled(...argValues)
+    };
+  }
+
+  // --- 情境 10: repository.create() 非預期 throw 時，UI 不誤報成功、保留編輯內容且解除儲存中 ---
+  await test('情境 10: repository.create() 非預期 throw 時顯示安全錯誤、保留編輯內容、不顯示已儲存且不卡住', async () => {
+    const throwingRepo = {
+      async create() {
+        throw new Error('INTERNAL_SQL_SECRET_STACK_TRACE_CREATE');
+      }
+    };
+
+    const harness = buildHandlerHarness('handleSave', {
+      notesRepo: throwingRepo,
+      editingId: null,
+      editorText: '尚未儲存的臨床心得'
+    });
+
+    await harness.run();
+
+    assert.strictEqual(harness.state.saveStatus, 'error', '非預期 throw 必須進入 error 狀態');
+    assert.notStrictEqual(harness.state.saveStatus, 'saved', '絕不可顯示已儲存');
+    assert.ok(harness.state.saveMessage.includes('非預期錯誤'), '應顯示使用者看得懂的錯誤訊息');
+    assert.ok(!harness.state.saveMessage.includes('INTERNAL_SQL_SECRET_STACK_TRACE_CREATE'), '錯誤訊息不可暴露內部細節或 stack trace');
+    assert.strictEqual(harness.state.editorCleared, false, '非預期失敗時必須保留編輯器內容');
+    assert.strictEqual(harness.state.isSaving, false, 'finally 必須解除 isSaving');
+    assert.strictEqual(harness.isSavingRef.current, false, 'finally 必須解除 isSavingRef');
+  });
+
+  // --- 情境 11: repository.update()、delete() 與 list() 非預期 throw ---
+  await test('情境 11: repository.update()、delete() 與 list() 非預期 throw 時妥善收斂狀態且不暴露內部細節', async () => {
+    const throwingRepo = {
+      async list() {
+        throw new Error('INTERNAL_LIST_SECRET');
+      },
+      async update() {
+        throw new Error('INTERNAL_UPDATE_SECRET');
+      },
+      async delete() {
+        throw new Error('INTERNAL_DELETE_SECRET');
+      }
+    };
+
+    // 11a: update() throw
+    const updateHarness = buildHandlerHarness('handleSave', {
+      notesRepo: throwingRepo,
+      editingId: 'n1',
+      editorText: '編輯中的筆記內容'
+    });
+    await updateHarness.run();
+    assert.strictEqual(updateHarness.state.saveStatus, 'error');
+    assert.ok(!updateHarness.state.saveMessage.includes('INTERNAL_UPDATE_SECRET'));
+    assert.strictEqual(updateHarness.state.editorCleared, false, 'update 失敗時不可清空編輯器');
+    assert.strictEqual(updateHarness.state.isSaving, false);
+    assert.strictEqual(updateHarness.isSavingRef.current, false);
+
+    // 11b: delete() throw
+    const deleteHarness = buildHandlerHarness('handleConfirmDelete', {
+      notesRepo: throwingRepo,
+      deleteTarget: { id: 'n1', content: '待刪筆記' }
+    });
+    await deleteHarness.run();
+    assert.strictEqual(deleteHarness.state.saveStatus, 'error');
+    assert.ok(deleteHarness.state.saveMessage.includes('非預期錯誤'));
+    assert.ok(!deleteHarness.state.saveMessage.includes('INTERNAL_DELETE_SECRET'));
+    assert.strictEqual(deleteHarness.state.isDeleting, false, 'finally 必須解除 isDeleting');
+    assert.strictEqual(deleteHarness.state.deleteTarget, null, '刪除視窗應關閉避免卡住');
+
+    // 11c: list() throw
+    const listHarness = buildHandlerHarness('loadNotes', {
+      notesRepo: throwingRepo
+    });
+    await listHarness.run();
+    assert.strictEqual(listHarness.state.isLoading, false, 'finally 必須解除 isLoading');
+    assert.ok(listHarness.state.loadError && listHarness.state.loadError.includes('非預期錯誤'));
+    assert.ok(!listHarness.state.loadError.includes('INTERNAL_LIST_SECRET'));
+  });
+
+  // --- 情境 12: 單篇筆記超過 MAX_NOTE_LENGTH ---
+  await test('情境 12: 超過單篇字元上限時拒絕新增與更新，不寫入 localStorage 且保留既有筆記', async () => {
+    assert.ok(typeof Notes.MAX_NOTE_LENGTH === 'number' && Notes.MAX_NOTE_LENGTH > 0);
+    assert.ok(typeof Notes.MAX_NOTES_COUNT === 'number' && Notes.MAX_NOTES_COUNT > 0);
+    assert.ok(typeof Notes.MAX_STORAGE_BYTES === 'number' && Notes.MAX_STORAGE_BYTES > 0);
+
+    const storage = createMockStorage();
+    let setItemCalls = 0;
+    const origSetItem = storage.setItem.bind(storage);
+    storage.setItem = (k, v) => {
+      setItemCalls++;
+      return origSetItem(k, v);
+    };
+
+    const repo = Notes.createLocalNotesRepository({ storage, maxNoteLength: 50 });
+    const seed = await repo.create({ content: '既有安全筆記' });
+    assert.strictEqual(seed.ok, true);
+    const callsAfterSeed = setItemCalls;
+    const rawBefore = storage.getItem(Notes.STORAGE_KEY);
+
+    // 新增超過上限
+    const tooLongCreate = await repo.create({ content: '甲'.repeat(51) });
+    assert.strictEqual(tooLongCreate.ok, false);
+    assert.strictEqual(tooLongCreate.error.code, Notes.ERROR_CODES.VALIDATION_TOO_LONG);
+    assert.strictEqual(setItemCalls, callsAfterSeed, '超限時不可呼叫 setItem');
+    assert.strictEqual(storage.getItem(Notes.STORAGE_KEY), rawBefore, '超限不可覆蓋既有筆記');
+
+    // 更新超過上限
+    const tooLongUpdate = await repo.update(seed.note.id, { content: '乙'.repeat(51) });
+    assert.strictEqual(tooLongUpdate.ok, false);
+    assert.strictEqual(tooLongUpdate.error.code, Notes.ERROR_CODES.VALIDATION_TOO_LONG);
+    assert.strictEqual(setItemCalls, callsAfterSeed, '更新超限時不可呼叫 setItem');
+    assert.strictEqual(storage.getItem(Notes.STORAGE_KEY), rawBefore, '更新超限不可覆蓋既有筆記');
+  });
+
+  // --- 情境 13: 超過總筆記數上限 MAX_NOTES_COUNT ---
+  await test('情境 13: 超過總筆記數上限時拒絕新增，不寫入 localStorage，但既有筆記仍可更新', async () => {
+    const storage = createMockStorage();
+    let setItemCalls = 0;
+    const origSetItem = storage.setItem.bind(storage);
+    storage.setItem = (k, v) => {
+      setItemCalls++;
+      return origSetItem(k, v);
+    };
+
+    const repo = Notes.createLocalNotesRepository({ storage, maxNotesCount: 3 });
+    const n1 = await repo.create({ content: '筆記 1' });
+    const n2 = await repo.create({ content: '筆記 2' });
+    const n3 = await repo.create({ content: '筆記 3' });
+    assert.strictEqual(n1.ok && n2.ok && n3.ok, true);
+
+    const callsAtLimit = setItemCalls;
+    const rawAtLimit = storage.getItem(Notes.STORAGE_KEY);
+
+    const n4 = await repo.create({ content: '第 4 則超限筆記' });
+    assert.strictEqual(n4.ok, false);
+    assert.strictEqual(n4.error.code, Notes.ERROR_CODES.NOTES_LIMIT_REACHED);
+    assert.strictEqual(setItemCalls, callsAtLimit, '超過總數上限不可寫入 localStorage');
+    assert.strictEqual(storage.getItem(Notes.STORAGE_KEY), rawAtLimit, '既有筆記不可被覆蓋');
+
+    // 達總數上限時，更新既有的第 1 則筆記仍應成功
+    const u1 = await repo.update(n1.note.id, { content: '筆記 1（已更新）' });
+    assert.strictEqual(u1.ok, true);
+    assert.strictEqual(u1.notes.length, 3);
+  });
+
+  // --- 情境 14: 超過總儲存容量上限 MAX_STORAGE_BYTES ---
+  await test('情境 14: 超過總儲存大小上限時拒絕寫入，不覆蓋既有筆記，且仍可刪除釋放空間', async () => {
+    const storage = createMockStorage();
+    let setItemCalls = 0;
+    const origSetItem = storage.setItem.bind(storage);
+    storage.setItem = (k, v) => {
+      setItemCalls++;
+      return origSetItem(k, v);
+    };
+
+    const repo = Notes.createLocalNotesRepository({ storage, maxStorageBytes: 400 });
+    const n1 = await repo.create({ content: '第一則短筆記' });
+    assert.strictEqual(n1.ok, true);
+
+    const callsBeforeOverflow = setItemCalls;
+    const rawBeforeOverflow = storage.getItem(Notes.STORAGE_KEY);
+
+    // 嘗試新增會讓 JSON payload 超過 400 bytes 的筆記
+    const overflowCreate = await repo.create({ content: '中'.repeat(150) }); // ~450 UTF-8 bytes
+    assert.strictEqual(overflowCreate.ok, false);
+    assert.strictEqual(overflowCreate.error.code, Notes.ERROR_CODES.STORAGE_LIMIT_REACHED);
+    assert.strictEqual(setItemCalls, callsBeforeOverflow, '超過總儲存上限時不可呼叫 setItem');
+    assert.strictEqual(storage.getItem(Notes.STORAGE_KEY), rawBeforeOverflow, '既有筆記不可被覆蓋');
+
+    // 嘗試更新讓 JSON payload 超過 400 bytes
+    const overflowUpdate = await repo.update(n1.note.id, { content: '中'.repeat(150) });
+    assert.strictEqual(overflowUpdate.ok, false);
+    assert.strictEqual(overflowUpdate.error.code, Notes.ERROR_CODES.STORAGE_LIMIT_REACHED);
+    assert.strictEqual(setItemCalls, callsBeforeOverflow, '更新超過總儲存上限時不可呼叫 setItem');
+    assert.strictEqual(storage.getItem(Notes.STORAGE_KEY), rawBeforeOverflow);
+
+    // 刪除既有筆記仍可正常運作
+    const delRes = await repo.delete(n1.note.id);
+    assert.strictEqual(delRes.ok, true);
+    assert.strictEqual(delRes.notes.length, 0);
+  });
+
+  // --- 情境 15: 未超限資料（含精確邊界）仍可正常保存 ---
+  await test('情境 15: 未超限與剛好達邊界之資料可正常新增與更新', async () => {
+    const storage = createMockStorage();
+    const repo = Notes.createLocalNotesRepository({
+      storage,
+      maxNoteLength: 50,
+      maxNotesCount: 2,
+      maxStorageBytes: 2048
+    });
+
+    const exact50 = 'A'.repeat(50);
+    const c1 = await repo.create({ content: exact50 });
+    assert.strictEqual(c1.ok, true);
+    assert.strictEqual(c1.note.content.length, 50);
+
+    const c2 = await repo.create({ content: '<strong>第二則</strong><u>正常保存</u>' });
+    assert.strictEqual(c2.ok, true);
+
+    const listRes = await repo.list();
+    assert.strictEqual(listRes.ok, true);
+    assert.strictEqual(listRes.notes.length, 2);
+  });
+
+  // --- 情境 16: 手機可縮放 viewport 檢查 ---
+  await test('情境 16: index.html viewport 允許手機雙指縮放（不含 maximum-scale 或 user-scalable=no）', async () => {
+    const indexHtml = fs.readFileSync(path.join(REPO_ROOT, 'index.html'), 'utf8');
+    const viewportMatch = indexHtml.match(/<meta\s+name=["']viewport["']\s+content=["']([^"']+)["']/i);
+    assert.ok(viewportMatch, 'index.html 應有 viewport meta tag');
+    const content = viewportMatch[1];
+    assert.strictEqual(content.trim(), 'width=device-width, initial-scale=1.0', 'viewport 應為 width=device-width, initial-scale=1.0');
+    assert.ok(!/maximum-scale/i.test(content), 'viewport 不可含 maximum-scale');
+    assert.ok(!/user-scalable\s*=\s*no/i.test(content), 'viewport 不可含 user-scalable=no');
+  });
+
   console.log('\n====================================================');
   console.log(` 測試總結：通過 ${passed} 項，失敗 ${failed} 項`);
   console.log('====================================================');

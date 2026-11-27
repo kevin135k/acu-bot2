@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>針灸臨床決策輔助工具</title>
     
     <!-- PWA 設定 -->
@@ -1505,21 +1505,28 @@
                 }
                 setIsLoading(true);
                 setLoadError(null);
-                const res = await notesRepo.list();
-                if (res.ok) {
-                    setNotes(res.notes);
-                    setCorrupted(false);
-                    setLoadError(null);
-                } else if (res.error && res.error.code === notesApi.ERROR_CODES.CORRUPT_DATA) {
+                try {
+                    const res = await notesRepo.list();
+                    if (res && res.ok) {
+                        setNotes(Array.isArray(res.notes) ? res.notes : []);
+                        setCorrupted(false);
+                        setLoadError(null);
+                    } else if (res && res.error && res.error.code === notesApi.ERROR_CODES.CORRUPT_DATA) {
+                        setNotes([]);
+                        setCorrupted(true);
+                        setLoadError(res.error.message || '本機筆記資料格式受損，無法讀取。');
+                    } else {
+                        setNotes([]);
+                        setCorrupted(false);
+                        setLoadError(res && res.error && res.error.message ? res.error.message : '載入筆記失敗，請稍後重試。');
+                    }
+                } catch (_err) {
                     setNotes([]);
-                    setCorrupted(true);
-                    setLoadError(res.error.message);
-                } else {
-                    setNotes([]);
                     setCorrupted(false);
-                    setLoadError(res.error ? res.error.message : '載入筆記失敗。');
+                    setLoadError('載入筆記時發生非預期錯誤，請重新整理頁面或稍後重試。');
+                } finally {
+                    setIsLoading(false);
                 }
-                setIsLoading(false);
             };
 
             useEffect(() => {
@@ -1553,34 +1560,39 @@
                 e.preventDefault();
                 if (corrupted || isSaving || !notesApi) return;
 
-                const clipboard = e.clipboardData || window.clipboardData;
-                const rawHtml = clipboard ? clipboard.getData('text/html') : '';
-                const rawPlain = clipboard ? clipboard.getData('text/plain') : '';
-                const sanitized = notesApi.sanitizeNoteHtml(rawHtml || rawPlain);
+                try {
+                    const clipboard = e.clipboardData || window.clipboardData;
+                    const rawHtml = clipboard ? clipboard.getData('text/html') : '';
+                    const rawPlain = clipboard ? clipboard.getData('text/plain') : '';
+                    const sanitized = notesApi.sanitizeNoteHtml(rawHtml || rawPlain);
 
-                const frag = document.createDocumentFragment();
-                notesApi.renderAstIntoDom(frag, sanitized, document);
+                    const frag = document.createDocumentFragment();
+                    notesApi.renderAstIntoDom(frag, sanitized, document);
 
-                const sel = window.getSelection ? window.getSelection() : null;
-                if (sel && sel.rangeCount > 0) {
-                    const range = sel.getRangeAt(0);
-                    range.deleteContents();
-                    const lastNode = frag.lastChild;
-                    range.insertNode(frag);
-                    if (lastNode) {
-                        const newRange = document.createRange();
-                        newRange.setStartAfter(lastNode);
-                        newRange.collapse(true);
-                        sel.removeAllRanges();
-                        sel.addRange(newRange);
+                    const sel = window.getSelection ? window.getSelection() : null;
+                    if (sel && sel.rangeCount > 0) {
+                        const range = sel.getRangeAt(0);
+                        range.deleteContents();
+                        const lastNode = frag.lastChild;
+                        range.insertNode(frag);
+                        if (lastNode) {
+                            const newRange = document.createRange();
+                            newRange.setStartAfter(lastNode);
+                            newRange.collapse(true);
+                            sel.removeAllRanges();
+                            sel.addRange(newRange);
+                        }
+                    } else if (editorRef.current) {
+                        editorRef.current.appendChild(frag);
                     }
-                } else if (editorRef.current) {
-                    editorRef.current.appendChild(frag);
-                }
 
-                if (saveStatus === 'saved') {
-                    setSaveStatus(null);
-                    setSaveMessage('');
+                    if (saveStatus === 'saved') {
+                        setSaveStatus(null);
+                        setSaveMessage('');
+                    }
+                } catch (_err) {
+                    setSaveStatus('error');
+                    setSaveMessage('貼上內容時發生非預期錯誤，請改用手動輸入或稍後重試。');
                 }
             };
 
@@ -1611,20 +1623,24 @@
                         ? await notesRepo.update(editingId, { content: serialized })
                         : await notesRepo.create({ content: serialized });
 
-                    if (res.ok) {
-                        setNotes(res.notes);
+                    if (res && res.ok) {
+                        setNotes(Array.isArray(res.notes) ? res.notes : []);
                         clearEditor();
                         setSaveStatus('saved');
                         setSaveMessage(wasEditing ? '已儲存筆記變更' : '已儲存新筆記');
                     } else {
-                        if (res.error && res.error.code === notesApi.ERROR_CODES.CORRUPT_DATA) {
+                        if (res && res.error && res.error.code === notesApi.ERROR_CODES.CORRUPT_DATA) {
                             setCorrupted(true);
-                            setLoadError(res.error.message);
+                            setLoadError(res.error.message || '本機筆記資料格式受損，無法讀取。');
                         }
                         // 寫入失敗時保留編輯器內容，絕不顯示已儲存
                         setSaveStatus('error');
-                        setSaveMessage(res.error ? res.error.message : '儲存失敗，您的編輯內容已保留。');
+                        setSaveMessage(res && res.error && res.error.message ? res.error.message : '儲存失敗，您的編輯內容已保留。');
                     }
+                } catch (_err) {
+                    // 非預期例外時保留編輯器內容、絕不顯示已儲存，且不暴露內部錯誤細節
+                    setSaveStatus('error');
+                    setSaveMessage('儲存筆記時發生非預期錯誤，您的編輯內容已保留，請稍後重試。');
                 } finally {
                     isSavingRef.current = false;
                     setIsSaving(false);
@@ -1654,21 +1670,25 @@
                 setIsDeleting(true);
                 try {
                     const res = await notesRepo.delete(deleteTarget.id);
-                    if (res.ok) {
-                        setNotes(res.notes);
+                    if (res && res.ok) {
+                        setNotes(Array.isArray(res.notes) ? res.notes : []);
                         if (editingId === deleteTarget.id) {
                             clearEditor();
                         }
                         setDeleteTarget(null);
                     } else {
-                        if (res.error && res.error.code === notesApi.ERROR_CODES.CORRUPT_DATA) {
+                        if (res && res.error && res.error.code === notesApi.ERROR_CODES.CORRUPT_DATA) {
                             setCorrupted(true);
-                            setLoadError(res.error.message);
+                            setLoadError(res.error.message || '本機筆記資料格式受損，無法讀取。');
                         }
                         setSaveStatus('error');
-                        setSaveMessage(res.error ? res.error.message : '刪除失敗，請稍後再試。');
+                        setSaveMessage(res && res.error && res.error.message ? res.error.message : '刪除失敗，請稍後再試。');
                         setDeleteTarget(null);
                     }
+                } catch (_err) {
+                    setSaveStatus('error');
+                    setSaveMessage('刪除筆記時發生非預期錯誤，請稍後重試。');
+                    setDeleteTarget(null);
                 } finally {
                     setIsDeleting(false);
                 }
@@ -1679,7 +1699,7 @@
                 setIsResetting(true);
                 try {
                     const res = await notesRepo.resetCorruptedData({ confirmed: true });
-                    if (res.ok) {
+                    if (res && res.ok) {
                         setCorrupted(false);
                         setLoadError(null);
                         setNotes([]);
@@ -1689,9 +1709,13 @@
                         setSaveMessage('');
                     } else {
                         setSaveStatus('error');
-                        setSaveMessage(res.error ? res.error.message : '重設受損資料失敗。');
+                        setSaveMessage(res && res.error && res.error.message ? res.error.message : '重設受損資料失敗。');
                         setResetConfirmOpen(false);
                     }
+                } catch (_err) {
+                    setSaveStatus('error');
+                    setSaveMessage('重設受損資料時發生非預期錯誤，請稍後重試。');
+                    setResetConfirmOpen(false);
                 } finally {
                     setIsResetting(false);
                 }
